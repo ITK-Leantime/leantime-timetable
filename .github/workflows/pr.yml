@@ -46,6 +46,7 @@ jobs:
           - development-install shell-check
           - development-install code-analysis
           - development-install test-create-release
+          - development-install blade-check
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

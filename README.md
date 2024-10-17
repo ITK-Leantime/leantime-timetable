@@ -54,6 +54,16 @@ docker run --rm --volume $PWD:/md peterdavehello/markdownlint markdownlint --ign
 docker run --rm --volume $PWD:/md peterdavehello/markdownlint markdownlint --ignore vendor --ignore LICENSE.md '**/*.md' --fix
 ```
 
+#### Blade lint
+
+```shell name=blade-apply
+docker run --rm --volume "$PWD:/app" -w /app shufo/blade-formatter:1.11.11 Templates/*.blade.php --write
+```
+
+```shell name=blade-check
+docker run --rm --volume "$PWD:/app" -w /app shufo/blade-formatter:1.11.11 Templates/*.blade.php --check-formatted
+```
+
 #### Check with shellcheck
 
 ```shell name=shell-check
