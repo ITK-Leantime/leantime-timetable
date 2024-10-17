@@ -2,7 +2,7 @@
     "name": "leantime/time-table",
     "description": "A time table for leantime",
     "type": "leantime-plugin",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "homepage": "https://github.com/ITK-Leantime/leantime-timetable",
     "license": "MIT",
     "authors": [
