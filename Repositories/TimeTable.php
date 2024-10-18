@@ -116,12 +116,16 @@ class TimeTable
         $stmn->execute();
 
         $timesheet = $stmn->fetch(PDO::FETCH_ASSOC);
-
         $stmn->closeCursor();
 
         if ($timesheet) {
-            // if a record is found, update it
-            $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description) WHERE id = :id';
+            if ($originalId && $originalId == $timesheet['id']) {
+                // Just update the existing without adding hours or concatenating description
+                $sql = 'UPDATE zp_timesheets SET hours = :hours, description = :description WHERE id = :id';
+            } else {
+                // if a different record is found on the same date, update it by appending hours and description
+                $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description) WHERE id = :id';
+            }
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $timesheet['id'], PDO::PARAM_INT);
@@ -130,20 +134,20 @@ class TimeTable
         } else {
             // else, insert new record
             $sql = 'INSERT INTO zp_timesheets (
-            userId,
-            ticketId,
-            workDate,
-            hours,
-            description,
-            kind
-       ) VALUES (
-            :userId,
-            :ticket,
-            :date,
-            :hours,
-            :description,
-            :kind
-    )';
+        userId,
+        ticketId,
+        workDate,
+        hours,
+        description,
+        kind
+   ) VALUES (
+        :userId,
+        :ticket,
+        :date,
+        :hours,
+        :description,
+        :kind
+)';
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
@@ -156,8 +160,7 @@ class TimeTable
         $stmn->execute();
         $stmn->closeCursor();
 
-        // Finally, if there was an originally logged time, it is removed
-        if ($originalId) {
+        if ($originalId && (empty($timesheet) || $values['workDate'] == $timesheet['workDate'] && $values['timesheetId'] != $timesheet['id'])) {
             $sql = 'DELETE FROM zp_timesheets WHERE id = :id';
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $originalId, PDO::PARAM_INT);

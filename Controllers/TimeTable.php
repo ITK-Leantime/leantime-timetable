@@ -72,6 +72,7 @@ class TimeTable extends Controller
             $workDate = $workDate->setToDbTimezone();
 
             $values = [
+                'timesheetId' => $_POST['timesheet-id'],
                 'userId' => session('userdata.id'),
                 'hours' => $_POST['timesheet-hours'],
                 'workDate' => $workDate,
