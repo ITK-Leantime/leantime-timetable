@@ -3,12 +3,10 @@ import TimeTableApiHandler from "./plugin-timeTableApiHandler.js?v=%%VERSION%%";
 jQuery(document).ready(function ($) {
   class TimeTable {
     constructor() {
-        this.currentViewWeek = $(
-            "input[name='timetable-current-week']",
-        ).val();
-        this.currentViewFirstDay = $(
-            "input[name='timetable-current-week-first-day']",
-        ).val();
+      this.currentViewWeek = $("input[name='timetable-current-week']").val();
+      this.currentViewFirstDay = $(
+        "input[name='timetable-current-week-first-day']",
+      ).val();
       // General selectors
       this.prevWeekButton = $("button.timetable-week-prev");
       this.nextWeekButton = $("button.timetable-week-next");
@@ -36,7 +34,7 @@ jQuery(document).ready(function ($) {
         'input[name="timesheet-hours"]',
       );
       this.modalInputHoursLeft = this.timeEditModal.find(
-          'input[name="timesheet-hours-left"]',
+        'input[name="timesheet-hours-left"]',
       );
       this.modalTextareaDescription = this.timeEditModal.find(
         'textarea[name="timesheet-description"]',
@@ -123,7 +121,14 @@ jQuery(document).ready(function ($) {
           let intervalId = setInterval(() => {
             if (!this.isFetching) {
               clearInterval(intervalId);
-              this.editTimeEntry(id, ticketId, hours, hoursLeft, description, date);
+              this.editTimeEntry(
+                id,
+                ticketId,
+                hours,
+                hoursLeft,
+                description,
+                date,
+              );
             }
           }, 500);
         } else {
@@ -209,7 +214,7 @@ jQuery(document).ready(function ($) {
       // Set values from selected ticket
       this.modalTicketInput.val(taskName);
       this.modalTicketIdInput.val(taskId);
-      this.modalInputHoursLeft.val(hoursLeft).attr('data-value', hoursLeft);
+      this.modalInputHoursLeft.val(hoursLeft).attr("data-value", hoursLeft);
 
       // Reset search
       this.modalTicketResults.empty();
@@ -310,7 +315,15 @@ jQuery(document).ready(function ($) {
         this.openEditTimeSyncModal();
         TimeTableApiHandler.fetchTicketDatum(ticketId).then((availableTags) => {
           this.closeEditTimeSyncModal();
-          this.editTimeEntry(id, ticketId, hours, hoursLeft, description, date, offset);
+          this.editTimeEntry(
+            id,
+            ticketId,
+            hours,
+            hoursLeft,
+            description,
+            date,
+            offset,
+          );
         });
         return false;
       }
@@ -328,7 +341,7 @@ jQuery(document).ready(function ($) {
       this.modalInputTicketId.val(ticket.id);
       this.modalInputTicketName.val(ticket.text).attr("disabled", "disabled");
       this.modalInputHours.val(hours);
-      this.modalInputHoursLeft.val(hoursLeft).attr('data-value', hoursLeft);
+      this.modalInputHoursLeft.val(hoursLeft).attr("data-value", hoursLeft);
       this.modalTextareaDescription.val(description);
       this.modalInputDate.val(date);
 
@@ -473,7 +486,7 @@ jQuery(document).ready(function ($) {
     closeEditTimeLogModal() {
       $(this.timeEditModal).hide().find("input, textarea").val("");
       $(this.modalTicketResults).empty();
-      $(this.modalInputHoursLeft).removeAttr('data-value');
+      $(this.modalInputHoursLeft).removeAttr("data-value");
       $(document).off("mousedown", this.boundClickOutsideModalHandler);
     }
 

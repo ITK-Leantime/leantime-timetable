@@ -92,12 +92,12 @@ class TimeTable extends Controller
             $this->timeTableService->logTimeOnTicket($values, $timesheetId);
         /*}*/
 
-        $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
-        if (isset($_GET['offset'])) {
-            $redirectUrl = $redirectUrl . '?offset=' . $_GET['offset'];
-        }
+            $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
+            if (isset($_GET['offset'])) {
+                $redirectUrl = $redirectUrl . '?offset=' . $_GET['offset'];
+            }
 
-        return Frontcontroller::redirect($redirectUrl);
+            return Frontcontroller::redirect($redirectUrl);
     }
 
     /**

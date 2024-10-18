@@ -696,32 +696,31 @@
 }
 
 .timetable-hours-left {
+  display: flex;
+  flex-direction: row;
+
+  div {
     display: flex;
     flex-direction: row;
+    height: 30px;
+    pointer-events: none;
 
-    div {
-        display: flex;
-        flex-direction: row;
-        height: 30px;
-        pointer-events: none;
-
-        span {
-            white-space: nowrap;
-            margin: auto 0px auto 5px;
-
-        }
-        input {
-            margin: auto 5px;
-            width: 23px !important;
-            padding: 0;
-            color: var(--primary-font-color);
-            opacity: 1 !important;
-            text-align: center;
-
-            &[data-value="0"] {
-                opacity: 0 !important;
-                user-select: none;
-            }
-        }
+    span {
+      white-space: nowrap;
+      margin: auto 0px auto 5px;
     }
+    input {
+      margin: auto 5px;
+      width: 23px !important;
+      padding: 0;
+      color: var(--primary-font-color);
+      opacity: 1 !important;
+      text-align: center;
+
+      &[data-value="0"] {
+        opacity: 0 !important;
+        user-select: none;
+      }
+    }
+  }
 }
