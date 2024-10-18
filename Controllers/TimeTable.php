@@ -66,7 +66,7 @@ class TimeTable extends Controller
                 }
             }
         }
-        if (isset($_POST['timesheet-id']) && $_POST['timesheet-id'] !== '') {
+        /*if (isset($_POST['timesheet-id']) && $_POST['timesheet-id'] !== '') {
             $workDate = new CarbonImmutable($_POST['timesheet-date'], session('usersettings.timezone'));
             $workDate = $workDate->setToDbTimezone();
             $values = [
@@ -76,8 +76,9 @@ class TimeTable extends Controller
                 'id' => $_POST['timesheet-id'],
             ];
             $this->timeTableService->updateTime($values);
-        } else {
-            $workDate = new CarbonImmutable($_POST['timesheet-date'], session('usersettings.timezone'));
+        } else {*/
+        $timesheetId = isset($_POST['timesheet-id']) ? (int) $_POST['timesheet-id'] : 0;
+        $workDate = new CarbonImmutable($_POST['timesheet-date'], session('usersettings.timezone'));
             $workDate = $workDate->setToDbTimezone();
 
             $values = [
@@ -88,8 +89,8 @@ class TimeTable extends Controller
                 'description' => $_POST['timesheet-description'],
                 'kind' => 'GENERAL_BILLABLE',
             ];
-            $this->timeTableService->logTimeOnTicket($values);
-        }
+            $this->timeTableService->logTimeOnTicket($values, $timesheetId);
+        /*}*/
 
         $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
         if (isset($_GET['offset'])) {
