@@ -99,47 +99,14 @@ class TimeTable
     }
 
     /**
-     * updateTime - update specific time entry
+     * updateOrAddTimelogOnTicket - log time entry on a ticket
      *
      * @param array<string, mixed> $values
+     * @param int|null             $originalId
      *
      * @return void
      */
-    public function updateTime(array $values): void
-    {
-        $sql = 'UPDATE
-                    zp_timesheets
-                SET
-                    hours = :hours,
-                    description = :description,
-                    workDate = :date
-                WHERE
-                    id = :id';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':hours', $values['hours']);
-        $stmn->bindValue(':description', $values['description']);
-        $stmn->bindValue(':date', $values['workDate']);
-        $stmn->bindValue(':id', $values['id']);
-
-        $stmn->execute();
-        $stmn->closeCursor();
-    }
-
-    /**
-     * updateTime - update specific time entry
-     *
-     * @param array<string, mixed> $values
-     *
-     * @return void
-     */
-    /**
-     * logTimeOnTicket - update existing entry if exists, otherwise a new one is created
-     *
-     * @param array $values
-     *
-     * @return void
-     */
-    public function logTimeOnTicket(array $values, int $originalId = null): void
+    public function updateOrAddTimelogOnTicket(array $values, int $originalId = null): void
     {
         $sql = 'SELECT * FROM zp_timesheets WHERE ticketId = :ticketId AND workDate = :date';
 
