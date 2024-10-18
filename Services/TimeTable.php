@@ -93,19 +93,8 @@ class TimeTable
      * @param array<string, mixed> $values
      * @return void
      */
-    public function logTimeOnTicket(array $values, int $originalId): void
+    public function updateOrAddTimelogOnTicket(array $values, int $originalId): void
     {
         $this->timeTableRepo->logTimeOnTicket($values, $originalId);
-    }
-
-    /**
-     * updateTime - update specific time entry
-     * @param array<string, mixed> $values
-     *
-     * @return void
-     */
-    public function updateTime(array $values): void
-    {
-        $this->timeTableRepo->updateTime($values);
     }
 }
