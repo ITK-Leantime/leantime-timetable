@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+* [PR-24](https://github.com/ITK-Leantime/leantime-timetable/pull/24)
+  * Hide vertical scrollbar on description field on windows
+  * Remove concept of filtering tickets
+  * Removed time logging restrictions and now merge logs if one already exists
+
 ## [1.2.0] - 2024-10-17
 
 * [PR-21](https://github.com/ITK-Leantime/leantime-timetable/pull/21)
