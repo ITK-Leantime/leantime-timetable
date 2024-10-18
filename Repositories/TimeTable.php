@@ -99,12 +99,13 @@ class TimeTable
     }
 
     /**
-     * updateOrAddTimelogOnTicket - log time entry on a ticket
+     * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param array<string, mixed> $values
-     * @param int|null             $originalId
+     * @param array $values An array containing the values for the timelog entry
+     * @param int|null $originalId (Optional) The original timelog id to check for updates or deletion
      *
      * @return void
+     * @access public
      */
     public function updateOrAddTimelogOnTicket(array $values, int $originalId = null): void
     {
@@ -120,10 +121,8 @@ class TimeTable
 
         if ($timesheet) {
             if ($originalId && $originalId == $timesheet['id']) {
-                // Just update the existing without adding hours or concatenating description
                 $sql = 'UPDATE zp_timesheets SET hours = :hours, description = :description WHERE id = :id';
             } else {
-                // if a different record is found on the same date, update it by appending hours and description
                 $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description) WHERE id = :id';
             }
 
