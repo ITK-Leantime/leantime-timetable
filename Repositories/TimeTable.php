@@ -139,14 +139,13 @@ class TimeTable
      *
      * @return void
      */
-    public function logTimeOnTicket(array $values): void
+    public function logTimeOnTicket(array $values, int $originalId = null): void
     {
         $sql = 'SELECT * FROM zp_timesheets WHERE ticketId = :ticketId AND workDate = :date';
 
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':ticketId', $values['ticketId']);
         $stmn->bindValue(':date', $values['workDate']);
-
         $stmn->execute();
 
         $timesheet = $stmn->fetch(PDO::FETCH_ASSOC);
@@ -154,7 +153,7 @@ class TimeTable
         $stmn->closeCursor();
 
         if ($timesheet) {
-            // if a records is found, update it
+            // if a record is found, update it
             $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description) WHERE id = :id';
 
             $stmn = $this->db->database->prepare($sql);
@@ -164,20 +163,20 @@ class TimeTable
         } else {
             // else, insert new record
             $sql = 'INSERT INTO zp_timesheets (
-                userId,
-                ticketId,
-                workDate,
-                hours,
-                description,
-                kind
-           ) VALUES (
-                :userId,
-                :ticket,
-                :date,
-                :hours,
-                :description,
-                :kind
-        )';
+            userId,
+            ticketId,
+            workDate,
+            hours,
+            description,
+            kind
+       ) VALUES (
+            :userId,
+            :ticket,
+            :date,
+            :hours,
+            :description,
+            :kind
+    )';
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
@@ -187,8 +186,16 @@ class TimeTable
             $stmn->bindValue(':description', $values['description']);
             $stmn->bindValue(':hours', $values['hours']);
         }
-
         $stmn->execute();
         $stmn->closeCursor();
+
+        // Finally, if there was an originally logged time, it is removed
+        if ($originalId) {
+            $sql = 'DELETE FROM zp_timesheets WHERE id = :id';
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':id', $originalId, PDO::PARAM_INT);
+            $stmn->execute();
+            $stmn->closeCursor();
+        }
     }
 }
