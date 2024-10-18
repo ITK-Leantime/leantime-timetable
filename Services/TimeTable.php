@@ -93,9 +93,9 @@ class TimeTable
      * @param array<string, mixed> $values
      * @return void
      */
-    public function logTimeOnTicket(array $values): void
+    public function logTimeOnTicket(array $values, int $originalId): void
     {
-        $this->timeTableRepo->logTimeOnTicket($values);
+        $this->timeTableRepo->logTimeOnTicket($values, $originalId);
     }
 
     /**
