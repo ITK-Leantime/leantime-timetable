@@ -108,25 +108,6 @@ class TimeTable extends Controller
      */
     public function get(): Response
     {
-        if (isset($_GET['getActiveTicketIdsOfPeriod'])) {
-            $startDate = filter_input(INPUT_GET, 'start', FILTER_SANITIZE_STRING);
-            $endDate = filter_input(INPUT_GET, 'end', FILTER_SANITIZE_STRING);
-            if (!$startDate || !$endDate) {
-                echo json_encode([]);
-                exit();
-            }
-
-            $startDate = (new CarbonImmutable($startDate, session('usersettings.timezone')))->setToDbTimezone();
-            $endDate = (new CarbonImmutable($endDate, session('usersettings.timezone')))->setToDbTimezone();
-
-            $data = $this->timeTableService->getUniqueTicketIds($startDate, $endDate);
-
-            $ticketIds = $data ? array_column($data, 'ticketId') : [];
-
-            echo json_encode($ticketIds);
-            exit();
-        }
-
         // Filters for the sql select
         $userIdForFilter = null;
         $searchTermForFilter = null;
