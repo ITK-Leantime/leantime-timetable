@@ -341,6 +341,7 @@
   .edit-time-log-form input {
     width: 100%;
     border-radius: 3px;
+    margin-right: 10px;
   }
 
   .edit-time-log-form .fa-clock {
@@ -692,4 +693,35 @@
       }
     }
   }
+}
+
+.timetable-hours-left {
+    display: flex;
+    flex-direction: row;
+
+    div {
+        display: flex;
+        flex-direction: row;
+        height: 30px;
+        pointer-events: none;
+
+        span {
+            white-space: nowrap;
+            margin: auto 0px auto 5px;
+
+        }
+        input {
+            margin: auto 5px;
+            width: 23px !important;
+            padding: 0;
+            color: var(--primary-font-color);
+            opacity: 1 !important;
+            text-align: center;
+
+            &[data-value="0"] {
+                opacity: 0 !important;
+                user-select: none;
+            }
+        }
+    }
 }
