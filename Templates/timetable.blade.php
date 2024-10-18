@@ -15,7 +15,6 @@
     <div class="maincontent">
         <div class="maincontentinner">
             <div class="timetable">
-                <input type="hidden" name="timetable-ticket-ids" value="{{$ticketIds}}" />
                 <input type="hidden" id="timetable-ticketCacheExpiration" name="timetable-ticket-cache" value="{{$ticketCacheExpiration}}" />
                 <div class="flex-container gap-3 tools">
                     <button type="button" class="timetable-week-prev btn btn-default"><i class="fa fa-arrow-left"></i> {{ __('timeTable.button_prev_week') }}</button>
@@ -74,6 +73,8 @@
                                         $id = $timesheetDate[0]["id"] ?? null;
                                         $hours =
                                             $timesheetDate[0]["hours"] ?? null;
+                                        $hoursLeft =
+                                            $timesheetDate[0]["hourRemaining"] ?? null;
                                         $description =
                                             $timesheetDate[0]["description"] ??
                                             null;
@@ -118,6 +119,7 @@
                                         data-id="{{$id}}"
                                         data-ticketid="{{ $ticketId }}"
                                         data-hours="{{ $hours }}"
+                                        data-hoursleft="{{ $hoursLeft }}"
                                         data-description="{{ $description }}"
                                         data-date="{{$weekDate->format('Y-m-d')}}"
                                         title="{{ $isMissingDescription ? __("timeTable.description_missing") : '' }}"
@@ -166,8 +168,15 @@
                 <div class="timetable-ticket-results"></div>
             </div>
 
-            {{-- Hours input --}}
-            <input type="number" name="timesheet-hours" step="0.01" placeholder="{{__('timeTable.hours')}}" required />
+            <div class="timetable-hours-left">
+                <input type="number" name="timesheet-hours" step="0.01" placeholder="{{__('timeTable.hours')}}" required />
+                <div>
+                <span>Hours left: </span>
+                <input type="number" name="timesheet-hours-left" disabled="disabled" />
+                </div>
+            </div>
+
+
 
             {{-- Description input --}}
             <div class="description-wrapper">

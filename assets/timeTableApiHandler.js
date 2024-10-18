@@ -49,6 +49,7 @@ export default class TimeTableApiHandler {
             sprintName: ticket.sprintName,
             projectId: ticket.projectId,
             projectName: ticket.projectName,
+            hoursLeft: ticket.hourRemaining,
           };
           childrenForTicketGroup.push(option);
         });
@@ -96,6 +97,7 @@ export default class TimeTableApiHandler {
         sprintName: ticket.sprintName,
         projectId: ticket.projectId,
         projectName: ticket.projectName,
+        hoursLeft: ticket.hourRemaining,
       };
       ticketCacheData["children"].push(ticketData);
       this.writeToCache("tickets", {
@@ -110,32 +112,6 @@ export default class TimeTableApiHandler {
     return result
       .filter((result) => result.status === "fulfilled")
       .map((result) => result.value)[0];
-  }
-
-  static getActiveTicketIdsOfPeriod(startDate, endDate) {
-    const dateString1 = startDate.toISOString(); // convert to string
-    const dateString2 = endDate.toISOString(); // convert to string
-
-    const encodedDate =
-      "start=" +
-      encodeURIComponent(dateString1) +
-      "&end=" +
-      encodeURIComponent(dateString2);
-
-    return new Promise((resolve, reject) => {
-      jQuery.ajax({
-        url:
-          leantime.appUrl +
-          "/TimeTable/TimeTable?getActiveTicketIdsOfPeriod&" +
-          encodedDate,
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        success: resolve,
-        error: reject,
-      });
-    });
   }
 
   /**

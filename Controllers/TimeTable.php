@@ -66,21 +66,13 @@ class TimeTable extends Controller
                 }
             }
         }
-        if (isset($_POST['timesheet-id']) && $_POST['timesheet-id'] !== '') {
-            $workDate = new CarbonImmutable($_POST['timesheet-date'], session('usersettings.timezone'));
-            $workDate = $workDate->setToDbTimezone();
-            $values = [
-                'workDate' => $workDate,
-                'hours' => $_POST['timesheet-hours'],
-                'description' => $_POST['timesheet-description'],
-                'id' => $_POST['timesheet-id'],
-            ];
-            $this->timeTableService->updateTime($values);
-        } else {
-            $workDate = new CarbonImmutable($_POST['timesheet-date'], session('usersettings.timezone'));
+
+        $timesheetId = isset($_POST['timesheet-id']) ? (int) $_POST['timesheet-id'] : 0;
+        $workDate = new CarbonImmutable($_POST['timesheet-date'], session('usersettings.timezone'));
             $workDate = $workDate->setToDbTimezone();
 
             $values = [
+                'timesheetId' => $_POST['timesheet-id'],
                 'userId' => session('userdata.id'),
                 'hours' => $_POST['timesheet-hours'],
                 'workDate' => $workDate,
@@ -88,15 +80,14 @@ class TimeTable extends Controller
                 'description' => $_POST['timesheet-description'],
                 'kind' => 'GENERAL_BILLABLE',
             ];
-            $this->timeTableService->logTimeOnTicket($values);
-        }
+            $this->timeTableService->updateOrAddTimelogOnTicket($values, $timesheetId);
 
-        $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
-        if (isset($_GET['offset'])) {
-            $redirectUrl = $redirectUrl . '?offset=' . $_GET['offset'];
-        }
+            $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
+            if (isset($_GET['offset'])) {
+                $redirectUrl = $redirectUrl . '?offset=' . $_GET['offset'];
+            }
 
-        return Frontcontroller::redirect($redirectUrl);
+            return Frontcontroller::redirect($redirectUrl);
     }
 
     /**
@@ -108,25 +99,6 @@ class TimeTable extends Controller
      */
     public function get(): Response
     {
-        if (isset($_GET['getActiveTicketIdsOfPeriod'])) {
-            $startDate = filter_input(INPUT_GET, 'start', FILTER_SANITIZE_STRING);
-            $endDate = filter_input(INPUT_GET, 'end', FILTER_SANITIZE_STRING);
-            if (!$startDate || !$endDate) {
-                echo json_encode([]);
-                exit();
-            }
-
-            $startDate = (new CarbonImmutable($startDate, session('usersettings.timezone')))->setToDbTimezone();
-            $endDate = (new CarbonImmutable($endDate, session('usersettings.timezone')))->setToDbTimezone();
-
-            $data = $this->timeTableService->getUniqueTicketIds($startDate, $endDate);
-
-            $ticketIds = $data ? array_column($data, 'ticketId') : [];
-
-            echo json_encode($ticketIds);
-            exit();
-        }
-
         // Filters for the sql select
         $userIdForFilter = null;
         $searchTermForFilter = null;
