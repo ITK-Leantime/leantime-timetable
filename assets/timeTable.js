@@ -3,16 +3,12 @@ import TimeTableApiHandler from "./plugin-timeTableApiHandler.js?v=%%VERSION%%";
 jQuery(document).ready(function ($) {
   class TimeTable {
     constructor() {
-      this.activeTicketIds = new Set(
-        $('input[name="timetable-ticket-ids"]').val().split(","),
-        (this.currentViewWeek = $(
-          "input[name='timetable-current-week']",
-        ).val()),
-        (this.currentViewFirstDay = $(
-          "input[name='timetable-current-week-first-day']",
-        ).val()),
-      );
-
+        this.currentViewWeek = $(
+            "input[name='timetable-current-week']",
+        ).val();
+        this.currentViewFirstDay = $(
+            "input[name='timetable-current-week-first-day']",
+        ).val();
       // General selectors
       this.prevWeekButton = $("button.timetable-week-prev");
       this.nextWeekButton = $("button.timetable-week-next");
@@ -38,6 +34,9 @@ jQuery(document).ready(function ($) {
       );
       this.modalInputHours = this.timeEditModal.find(
         'input[name="timesheet-hours"]',
+      );
+      this.modalInputHoursLeft = this.timeEditModal.find(
+          'input[name="timesheet-hours-left"]',
       );
       this.modalTextareaDescription = this.timeEditModal.find(
         'textarea[name="timesheet-description"]',
@@ -116,6 +115,7 @@ jQuery(document).ready(function ($) {
         const id = e.target.dataset.id ?? null;
         const ticketId = e.target.dataset.ticketid ?? null;
         const hours = e.target.dataset.hours ?? null;
+        const hoursLeft = e.target.dataset.hoursleft ?? null;
         const description = e.target.dataset.description ?? null;
         const date = e.target.dataset.date ?? null;
 
@@ -123,11 +123,11 @@ jQuery(document).ready(function ($) {
           let intervalId = setInterval(() => {
             if (!this.isFetching) {
               clearInterval(intervalId);
-              this.editTimeEntry(id, ticketId, hours, description, date);
+              this.editTimeEntry(id, ticketId, hours, hoursLeft, description, date);
             }
           }, 500);
         } else {
-          this.editTimeEntry(id, ticketId, hours, description, date);
+          this.editTimeEntry(id, ticketId, hours, hoursLeft, description, date);
         }
       });
 
@@ -143,10 +143,6 @@ jQuery(document).ready(function ($) {
 
       this.boundClickOutsideModalHandler = (e) =>
         this.clickOutsideModalHandler(e);
-
-      this.modalInputDate.change((e) =>
-        this.getActiveTicketsOfWeek(e.target.value),
-      );
 
       $("#modal-form").on("submit", (e) => {
         this.modalSubmitButton.attr("disabled", "disabled");
@@ -164,43 +160,6 @@ jQuery(document).ready(function ($) {
           this.changeWeek(oppositeOffset);
         }
       });
-    }
-
-    getActiveTicketsOfWeek(dateString) {
-      if (this.modalInputTimesheetId.val()) {
-        return false;
-      }
-      let selectedDateTimestamp = new Date(dateString).getTime();
-      let day = new Date(dateString).getDay();
-
-      let diffToMonday = ((day === 0 ? -6 : 1) - day) * 24 * 60 * 60 * 1000;
-
-      let monday = new Date(selectedDateTimestamp + diffToMonday);
-      let sunday = new Date(
-        selectedDateTimestamp + diffToMonday + 6 * 24 * 60 * 60 * 1000,
-      );
-
-      $(this.modalTicketInput)
-        .val("")
-        .attr("placeholder", () => {
-          return $(this.modalTicketInput).attr("data-loading");
-        });
-
-      $(this.modalTicketSearch).addClass("ticket-loading");
-      // Reset search
-      this.modalTicketResults.empty();
-      TimeTableApiHandler.getActiveTicketIdsOfPeriod(monday, sunday).then(
-        (activeTicketIds) => {
-          activeTicketIds = JSON.parse(activeTicketIds);
-          this.activeTicketIds = new Set(activeTicketIds);
-          $(this.modalTicketSearch).removeClass("ticket-loading");
-          $(this.modalTicketInput)
-            .val("")
-            .attr("placeholder", () => {
-              return $(this.modalTicketInput).attr("data-placeholder");
-            });
-        },
-      );
     }
 
     /**
@@ -244,12 +203,13 @@ jQuery(document).ready(function ($) {
     selectTicket(target) {
       const {
         innerText: taskName,
-        dataset: { value: taskId },
+        dataset: { value: taskId, hoursleft: hoursLeft },
       } = target;
 
       // Set values from selected ticket
       this.modalTicketInput.val(taskName);
       this.modalTicketIdInput.val(taskId);
+      this.modalInputHoursLeft.val(hoursLeft).attr('data-value', hoursLeft);
 
       // Reset search
       this.modalTicketResults.empty();
@@ -298,9 +258,7 @@ jQuery(document).ready(function ($) {
         "text" in obj &&
         typeof text === "string" &&
         (text.toLowerCase().includes(lowerCaseQuery) ||
-          (id && id.toString().toLowerCase().includes(lowerCaseQuery))) &&
-        !this.activeTicketIds.has(String(obj.id)) &&
-        !this.activeTicketIds.has(Number(obj.id))
+          (id && id.toString().toLowerCase().includes(lowerCaseQuery)))
       ) {
         const index = text.toLowerCase().indexOf(lowerCaseQuery);
         const relevance = index === -1 ? 0 : text.length - index;
@@ -323,9 +281,9 @@ jQuery(document).ready(function ($) {
           `<div class="timetable-ticket-result-item-no-results" data-value="">No results</div>`,
         );
       }
-      results.forEach(({ id, text, projectName }) => {
+      results.forEach(({ id, text, projectName, hoursLeft }) => {
         this.modalTicketResults.append(
-          `<div class="timetable-ticket-result-item" data-project="${projectName}" data-value="${id}"><span>${text}</span></div>`,
+          `<div class="timetable-ticket-result-item" data-project="${projectName}" data-hoursleft="${hoursLeft}" data-value="${id}"><span>${text}</span></div>`,
         );
       });
       return results;
@@ -342,7 +300,7 @@ jQuery(document).ready(function ($) {
      * @param {number} offset
      * @return {boolean}
      */
-    editTimeEntry(id, ticketId, hours, description, date, offset) {
+    editTimeEntry(id, ticketId, hours, hoursLeft, description, date, offset) {
       // Find ticket in cache
       const ticket = TimeTableApiHandler.getTicketDataFromCache(
         parseInt(ticketId),
@@ -352,7 +310,7 @@ jQuery(document).ready(function ($) {
         this.openEditTimeSyncModal();
         TimeTableApiHandler.fetchTicketDatum(ticketId).then((availableTags) => {
           this.closeEditTimeSyncModal();
-          this.editTimeEntry(id, ticketId, hours, description, date, offset);
+          this.editTimeEntry(id, ticketId, hours, hoursLeft, description, date, offset);
         });
         return false;
       }
@@ -370,6 +328,7 @@ jQuery(document).ready(function ($) {
       this.modalInputTicketId.val(ticket.id);
       this.modalInputTicketName.val(ticket.text).attr("disabled", "disabled");
       this.modalInputHours.val(hours);
+      this.modalInputHoursLeft.val(hoursLeft).attr('data-value', hoursLeft);
       this.modalTextareaDescription.val(description);
       this.modalInputDate.val(date);
 
@@ -514,6 +473,7 @@ jQuery(document).ready(function ($) {
     closeEditTimeLogModal() {
       $(this.timeEditModal).hide().find("input, textarea").val("");
       $(this.modalTicketResults).empty();
+      $(this.modalInputHoursLeft).removeAttr('data-value');
       $(document).off("mousedown", this.boundClickOutsideModalHandler);
     }
 
