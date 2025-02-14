@@ -7,9 +7,10 @@ import TimeTableApiHandler from "./timeTableApiHandler";
 
 jQuery(document).ready(function ($) {
   const pluginSettings = {
-    userId: timetableSettings.settings.userId,
+    userId: $("select[name='manageAsUserId'] > option:selected").val(),
     allStateLabels: $("#all-state-labels").val(),
   };
+
 
   class TimeTable {
     constructor() {
