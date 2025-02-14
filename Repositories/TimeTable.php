@@ -60,7 +60,7 @@ class TimeTable
      * @access public
      * @param string          $ticketId   The ticket ID to filter the timesheet data.
      * @param CarbonInterface $workDate   The specific work date to filter the timesheet data.
-     * @param int $userId The id of the user to grab data for.
+     * @param int             $userId     The id of the user to grab data for.
      * @param string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
@@ -328,7 +328,7 @@ class TimeTable
      * getAllUsers - Retrieves a list of all users from the database
      *
      * @access public
-     * @return array<string, string> An array containing user details, including ID, full name, and role
+     * @return array<string, mixed> An array containing user details, including ID, full name, and role
      */
     public function getAllUsers(): array
     {
