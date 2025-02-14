@@ -60,6 +60,7 @@ class TimeTable
      * @access public
      * @param string          $ticketId   The ticket ID to filter the timesheet data.
      * @param CarbonInterface $workDate   The specific work date to filter the timesheet data.
+     * @param int $userId The id of the user to grab data for.
      * @param string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
