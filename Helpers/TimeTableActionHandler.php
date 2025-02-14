@@ -93,7 +93,7 @@ class TimeTableActionHandler
 
         $values = [
             'timesheetId' => $postData['timesheet-id'],
-            'userId' => session('userdata.id'),
+            'userId' => $postData['manageAsUserId'],
             'hours' => $postData['timesheet-hours'],
             'workDate' => $workDate,
             'ticketId' => $postData['timesheet-ticket-id'],
@@ -145,6 +145,7 @@ class TimeTableActionHandler
         // Use fromDate and toDate from POST if set, otherwise check GET
         $queryParams['fromDate'] = $postData['fromDate'] ?? $_GET['fromDate'] ?? null;
         $queryParams['toDate'] = $postData['toDate'] ?? $_GET['toDate'] ?? null;
+        $queryParams['manageAsUserId'] = $postData['manageAsUserId'] ?? $_GET['manageAsUserId'] ?? null;
 
         // Remove null values
         $queryParams = array_filter($queryParams);
@@ -189,6 +190,7 @@ class TimeTableActionHandler
         $ticketId = $postData['entryCopyTicketId'];
         $hours = $postData['entryCopyHours'];
         $description = $postData['entryCopyDescription'];
+        $userId = $_GET['manageAsUserId'] ?? $postData['manageAsUserId'];
 
         // Move to the next day to skip the first date
         $currentDate = $copyFromDate;
@@ -202,7 +204,7 @@ class TimeTableActionHandler
                 continue;
             }
             $values = [
-                'userId' => session('userdata.id'),
+                'userId' => $userId,
                 'ticketId' => $ticketId,
                 'workDate' => $currentDate,
                 'hours' => $hours,
@@ -225,6 +227,11 @@ class TimeTableActionHandler
         }
 
         // Delegate query parameter addition to appendQueryParams
+        return $this->appendQueryParams($postData, $redirectUrl);
+    }
+
+    public function manageAs(array $postData, string $redirectUrl): string
+    {
         return $this->appendQueryParams($postData, $redirectUrl);
     }
 }
