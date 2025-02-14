@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
 use Leantime\Core\Controller\Controller;
 use Leantime\Core\Controller\Frontcontroller;
+use Leantime\Domain\Users\Services\Users;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Symfony\Component\HttpFoundation\Response;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
@@ -66,6 +67,7 @@ class TimeTable extends Controller
                     $actionHandler->deleteTicket($_POST, $redirectUrl);
                 }, fn() => $redirectUrl)(),
                 'copyEntryForward' => $actionHandler->copyEntryForward($_POST, $redirectUrl),
+                'manageAs' => $actionHandler->manageAs($_POST, $redirectUrl),
                 default => $redirectUrl,
             };
         }
@@ -88,6 +90,8 @@ class TimeTable extends Controller
         $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
         $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         $allStateLabels = $this->timeTableService->getAllStateLabels();
+        $allUsers = $this->timeTableService->getAllUsers();
+        $userId = $_GET['manageAsUserId'] ?? htmlspecialchars(session('userdata.id'), ENT_QUOTES, 'UTF-8');
 
         try {
             if (isset($_GET['fromDate']) && $_GET['fromDate'] !== '') {
@@ -162,7 +166,7 @@ class TimeTable extends Controller
             $dateIterator = $dateIterator->addDay();
         }
 
-        $relevantTicketIds = $this->timeTableService->getUniqueTicketIds($weekStartDateDb, $weekEndDateDb);
+        $relevantTicketIds = $this->timeTableService->getUniqueTicketIds($weekStartDateDb, $weekEndDateDb, $userId);
 
         $timesheetsByTicket = [];
         $ticketIds = [];
@@ -173,7 +177,7 @@ class TimeTable extends Controller
             $ticketIds[] = intval($ticket['ticketId']);
             $timesheetsSortedByWeekdate = [];
             foreach ($weekDates as $weekDate) {
-                $timesheetsByTicketAndDate = $this->timeTableService->getTimesheetByTicketIdAndWorkDate($ticket['ticketId'], $weekDate->setToDbTimezone(), $searchTermForFilter);
+                $timesheetsByTicketAndDate = $this->timeTableService->getTimesheetByTicketIdAndWorkDate($ticket['ticketId'], $weekDate->setToDbTimezone(), $userId, $searchTermForFilter);
                 $timesheetsSortedByWeekdate[$weekDate->format('Y-m-d')] = $timesheetsByTicketAndDate;
                 if (count($timesheetsByTicketAndDate) > 0) {
                     $timesheetsSortedByWeekdate['ticketTitle'] = $timesheetsByTicketAndDate[0]['headline'];
@@ -196,6 +200,8 @@ class TimeTable extends Controller
         $this->template->assign('toDate', $toDate);
         $this->template->assign('allStateLabels', json_encode($allStateLabels));
         $this->template->assign('requireTimeRegistrationComment', $this->settings->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?? 0);
+        $this->template->assign('allUsers', $allUsers);
+        $this->template->assign('userId', $userId);
         return $this->template->display('TimeTable.timetable');
     }
 }
