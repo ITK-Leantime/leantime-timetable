@@ -233,8 +233,8 @@ class TimeTableActionHandler
     /**
      * Updates the managed user
      *
-     * @param array<string, mixed> $postData The POST data containing query parameters.
-     * @param string $redirectUrl The initial redirect URL to be modified.
+     * @param array<string, mixed> $postData    The POST data containing query parameters.
+     * @param string               $redirectUrl The initial redirect URL to be modified.
      * @return string The redirect URL updated with additional query parameters.
      */
     public function manageAs(array $postData, string $redirectUrl): string
