@@ -31,7 +31,7 @@ class TimeTable
     /**
      * @return array<array<string, string>>
      */
-    public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo): array
+    public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
         $sql = 'SELECT DISTINCT
         timesheet.ticketId
@@ -39,7 +39,6 @@ class TimeTable
         WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo ORDER BY timesheet.ticketId ASC';
         $stmn = $this->db->database->prepare($sql);
 
-        $userId = session('userdata.id');
         if ($userId !== '') {
             $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
         }
@@ -64,7 +63,7 @@ class TimeTable
      * @param string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
-    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, ?string $searchTerm): array
+    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
     {
 
         $searchTermQuery = isset($searchTerm)
@@ -91,8 +90,7 @@ class TimeTable
 
         $stmn = $this->db->database->prepare($sql);
 
-        $userId = session('userdata.id');
-        if ($userId !== '') {
+        if ($userId) {
             $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
         }
         if ($searchTerm !== null) {
@@ -323,5 +321,22 @@ class TimeTable
         $stmn->closeCursor();
 
         return $projectIds;
+    }
+
+    public function getAllUsers(): array
+    {
+        $sql = 'SELECT * FROM zp_user';
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->execute();
+        $users = $stmn->fetchAll(PDO::FETCH_ASSOC);
+        $stmn->closeCursor();
+
+        return array_map(function ($user) {
+            return [
+                'id' => $user['id'],
+                'fullName' => $user['firstname'] . ' ' . $user['lastname'],
+                'role' => $user['role'],
+            ];
+        }, $users);
     }
 }
