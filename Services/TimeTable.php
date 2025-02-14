@@ -124,6 +124,11 @@ class TimeTable
         return $this->timeTableRepo->getAllStateLabels($statusListSeed);
     }
 
+    /**
+     * Retrieves all users from the repository.
+     *
+     * @return array<string, string> List of users.
+     */
     public function getAllUsers(): array
     {
         return $this->timeTableRepo->getAllUsers();

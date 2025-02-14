@@ -3,9 +3,11 @@
 namespace Leantime\Plugins\TimeTable\Controllers;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Log;
 use Leantime\Core\Controller\Controller;
 use Leantime\Core\Controller\Frontcontroller;
+use Leantime\Domain\Auth\Services\Auth;
 use Leantime\Domain\Users\Services\Users;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Symfony\Component\HttpFoundation\Response;
@@ -81,6 +83,7 @@ class TimeTable extends Controller
      * @return Response
      *
      * @throws \Exception
+     * @throws BindingResolutionException
      */
     public function get(): Response
     {
@@ -91,7 +94,8 @@ class TimeTable extends Controller
         $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         $allStateLabels = $this->timeTableService->getAllStateLabels();
         $allUsers = $this->timeTableService->getAllUsers();
-        $userId = $_GET['manageAsUserId'] ?? htmlspecialchars(session('userdata.id'), ENT_QUOTES, 'UTF-8');
+        $userId = $_GET['manageAsUserId'] ?? session('userdata.id');
+        $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
 
         try {
             if (isset($_GET['fromDate']) && $_GET['fromDate'] !== '') {
@@ -202,6 +206,7 @@ class TimeTable extends Controller
         $this->template->assign('requireTimeRegistrationComment', $this->settings->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?? 0);
         $this->template->assign('allUsers', $allUsers);
         $this->template->assign('userId', $userId);
+        $this->template->assign('canCrossManage', $canCrossManage);
         return $this->template->display('TimeTable.timetable');
     }
 }

@@ -11,7 +11,6 @@ jQuery(document).ready(function ($) {
     allStateLabels: $("#all-state-labels").val(),
   };
 
-
   class TimeTable {
     constructor() {
       this.tomselect = null;

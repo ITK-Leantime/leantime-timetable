@@ -7,18 +7,20 @@
             <h5>{{ __('label.table-columns') }}</h5>
             <h1>{{ __('timeTable.headline') }}</h1>
         </div>
-        <div class="timetable-manage-as">
-            <form method="POST">
-            <input type="hidden" name="action" value="manageAs">
-                <label for="manageAsUserId">{{ __('timeTable.showing_calendar_for') }}</label>
-            <select name="manageAsUserId" onChange="this.form.submit()">
-            @foreach ($allUsers as $user)
-                    <option
-                        value="{{ $user['id'] }}" {{ $userId == $user['id'] ? 'selected' : '' }}>{{ $user['fullName'] }}</option>
-            @endforeach
-            </select>
-            </form>
-        </div>
+        @if ($canCrossManage)
+            <div class="timetable-manage-as">
+                <form method="POST">
+                    <input type="hidden" name="action" value="manageAs">
+                    <label for="manageAsUserId">{{ __('timeTable.showing_calendar_for') }}</label>
+                    <select name="manageAsUserId" onChange="this.form.submit()">
+                        @foreach ($allUsers as $user)
+                            <option value="{{ $user['id'] }}" {{ $userId == $user['id'] ? 'selected' : '' }}>
+                                {{ $user['fullName'] }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+        @endif
     </div>
 
     <!-- page header -->
@@ -103,7 +105,7 @@
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-
+                                            
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -113,7 +115,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-
+                                            
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
