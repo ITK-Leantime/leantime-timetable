@@ -265,6 +265,7 @@
     background: var(--itk-color-gray-50);
     border: 1px solid var(--itk-border-color);
     color: var(--itk-color-gray-700);
+    padding: var(--itk-spacing-xs) var(--itk-spacing);
 
     &:hover {
       color: var(--itk-color-black);
@@ -1284,4 +1285,29 @@ i.your-task {
 .flatpickr-calendar.flatpickr-move-timelog .flatpickr-day.today:focus {
   background: #e6e6e6;
   border-color: #e6e6e6;
+}
+
+.pageheader {
+  display: flex;
+  .timetable-manage-as {
+    display: flex;
+    margin: 15px 0 auto auto;
+    form {
+      position: relative;
+      display: flex;
+      gap: 10px;
+      label {
+        color: #fff;
+        margin-bottom: 0;
+        padding: 0;
+        align-self: end;
+        font-weight: 400;
+        font-size: 15px;
+      }
+      select {
+        margin: auto;
+        width: 250px;
+      }
+    }
+  }
 }

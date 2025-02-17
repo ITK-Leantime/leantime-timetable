@@ -79,17 +79,17 @@ class TimeTable
     /**
      * @return array<array<string, string>>
      */
-    public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo): array
+    public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
-        return $this->timeTableRepo->getUniqueTicketIds($dateFrom, $dateTo);
+        return $this->timeTableRepo->getUniqueTicketIds($dateFrom, $dateTo, $userId);
     }
 
     /**
      * @return array<array<string, string>>
      */
-    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, ?string $searchTerm): array
+    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
     {
-        return $this->timeTableRepo->getTimesheetByTicketIdAndWorkDate($ticketId, $workDate, $searchTerm);
+        return $this->timeTableRepo->getTimesheetByTicketIdAndWorkDate($ticketId, $workDate, $userId, $searchTerm);
     }
 
      /**
@@ -122,5 +122,15 @@ class TimeTable
     {
         $statusListSeed = $this->ticketRepo->statusListSeed;
         return $this->timeTableRepo->getAllStateLabels($statusListSeed);
+    }
+
+    /**
+     * Retrieves all users from the repository.
+     *
+     * @return array<string, string> List of users.
+     */
+    public function getAllUsers(): array
+    {
+        return $this->timeTableRepo->getAllUsers();
     }
 }
