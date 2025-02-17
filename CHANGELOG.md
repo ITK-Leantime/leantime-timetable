@@ -4,14 +4,16 @@
 
 ## [3.5.0] - 2025-02-17
 
+* [PR-41](https://github.com/ITK-Leantime/leantime-timetable/pull/41)
+    * Introduced cross user management for admins and above
+
 ## [3.4.0] - 2025-01-29
+
+* [PR-39](https://github.com/ITK-Leantime/leantime-timetable/pull/39)
+    * Require timelog comments via settings
 
 ## [3.3.0] - 2025-01-17
 
-* [PR-41](https://github.com/ITK-Leantime/leantime-timetable/pull/41)
-  * Introduced cross user management for admins and above
-* [PR-39](https://github.com/ITK-Leantime/leantime-timetable/pull/39)
-  * Require timelog comments via settings
 * [PR-37](https://github.com/ITK-Leantime/leantime-timetable/pull/37)
   * Reimplement ability to move timelog to another date
 
