@@ -88,14 +88,13 @@ class TimeTable extends Controller
     public function get(): Response
     {
         $searchTermForFilter = null;
-        $now = CarbonImmutable::now();
         $ticketCacheExpiration = $this->settings->getSetting('itk-leantime-timetable.ticketCacheExpiration') ?? 1200;
         $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
         $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         $allStateLabels = $this->timeTableService->getAllStateLabels();
         $allUsers = $this->timeTableService->getAllUsers();
-        $userId = $_GET['manageAsUserId'] ?? session('userdata.id');
         $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
+        $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
 
         try {
             if (isset($_GET['fromDate']) && $_GET['fromDate'] !== '') {
