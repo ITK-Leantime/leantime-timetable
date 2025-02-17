@@ -332,7 +332,7 @@ class TimeTable
      */
     public function getAllUsers(): array
     {
-        $sql = 'SELECT * FROM zp_user';
+        $sql = 'SELECT * FROM zp_user WHERE source != "api"';
         $stmn = $this->db->database->prepare($sql);
         $stmn->execute();
         $users = $stmn->fetchAll(PDO::FETCH_ASSOC);
