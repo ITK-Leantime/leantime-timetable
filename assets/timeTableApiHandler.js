@@ -22,12 +22,9 @@ export default class TimeTableApiHandler {
    * @returns {Promise<Array>} An array of ticket data.
    */
   static async fetchTicketData() {
-      let projectPromise;
-      let projectCacheData = this.getCacheData("timetable_projects");
-      if (projectCacheData) {
-          projectPromise = Promise.resolve(projectCacheData);
-      } else {
-          projectPromise = fetch('/TimeTable/TimeTable/getAllProjects', {
+      let projectPromise = this.getCacheData("timetable_projects")
+          ? await Promise.resolve(this.getCacheData("timetable_projects"))
+          : fetch('/TimeTable/TimeTable/getAllProjects', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -35,37 +32,17 @@ export default class TimeTableApiHandler {
           })
               .then(response => response.json())
               .then(data => {
-                  const projects = data.result;
-                  const projectGroup = {
-                      id: "project",
-                      text: "Projects",
-                      children: [],
-                      index: 1,
-                  };
-
-                  projects.forEach(project => {
-                      let option = {
-                          id: project.id,
-                          text: project.name,
-                          type: "project",
-                          client: project.clientName,
-                      };
-                      projectGroup.children.push(option);
-                  });
-
                   this.writeToCache("timetable_projects", {
-                      data: projectGroup,
+                      data: data.result,
                       expiration: Date.now(),
                   });
-                  return projectGroup;
+                  return data.result;
               })
               .catch(error => console.error('Error fetching projects:', error));
-      }
 
-      // Fetch all tickets
-      const ticketCacheData = this.getCacheData("timetable_tickets");
-      const ticketPromise = ticketCacheData
-          ? Promise.resolve(ticketCacheData)
+
+      let ticketPromise = this.getCacheData("timetable_tickets")
+          ? await Promise.resolve(this.getCacheData("timetable_tickets"))
           : fetch('/TimeTable/TimeTable/getAllTickets', {
               method: 'POST',
               headers: {
@@ -74,53 +51,21 @@ export default class TimeTableApiHandler {
           })
               .then(response => response.json())
               .then(data => {
-                  const tickets = data.result;
-
-                  const ticketGroup = {
-                      id: "task",
-                      text: "Todos",
-                      children: [],
-                      index: 2,
-                  };
-
-                  let childrenForTicketGroup = [];
-                  tickets.forEach(ticket => {
-                      let option = {
-                          id: ticket.id,
-                          text: ticket.headline,
-                          type: ticket.type,
-                          tags: ticket.tags,
-                          sprintName: ticket.sprintName,
-                          projectId: ticket.projectId,
-                          projectName: ticket.projectName,
-                          editorId: ticket.editorId,
-                          hoursLeft: ticket.hourRemaining,
-                          createdDate: ticket.date,
-                      };
-
-                      childrenForTicketGroup.push(option);
-                  });
-
-                  // Sort so the done tasks appear at the bottom of the search
-                  ticketGroup.children = [...childrenForTicketGroup].sort(
-                      (a, b) => Number(a.isDone) - Number(b.isDone),
-                  );
-
                   this.writeToCache("timetable_tickets", {
-                      data: ticketGroup,
+                      data: data.result,
                       expiration: Date.now(),
                   });
-                  return ticketGroup;
+                  return data.result;
               })
-              .catch(error => console.error('Error fetching tickets:', error));
-
+              .catch(error => console.error('Error fetching projects:', error));
       // Wait for all promises to settle
       const promises = [projectPromise, ticketPromise];
       const results = await Promise.allSettled(promises);
 
-      return results
+      return results;
+      /*return results
           .map(result => result.value)
-          .sort((a, b) => a.index - b.index); // Sort by index
+          .sort((a, b) => a.index - b.index); // Sort by index*/
   }
 
   /**
