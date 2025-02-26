@@ -27,7 +27,6 @@
     <div class="maincontent">
         <div class="maincontentinner">
             <div class="timetable">
-                <input type="hidden" id="all-state-labels" value="{{ $allStateLabels }}" />
                 <form method="POST">
                     <input type="hidden" name="action" value="adjustPeriod">
                     <div class="flex-container gap-3 tools">
@@ -105,7 +104,7 @@
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-                                            
+
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -115,7 +114,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-                                            
+
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
