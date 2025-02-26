@@ -8,7 +8,7 @@
 const pluginSettings = {
   ticketCacheTimeout: parseFloat(
     timetableSettings.settings.ticketCacheExpiration,
-  ),
+  )
 };
 export default class TimeTableApiHandler {
   static cacheTimeouts = {
@@ -21,102 +21,106 @@ export default class TimeTableApiHandler {
    *
    * @returns {Promise<Array>} An array of ticket data.
    */
-  static async fetchTicketData(allStateLabels) {
-    let projectPromise;
-    let ticketPromise;
-    allStateLabels = JSON.parse(allStateLabels);
-    let projectCacheData = this.getCacheData("timetable_projects");
-    if (projectCacheData) {
-      projectPromise = Promise.resolve(projectCacheData);
-    } else {
-      projectPromise = this.getAllProjects().then((data) => {
-        const projects = data.result;
-        const projectGroup = {
-          id: "project",
-          text: "Projects",
-          children: [],
-          index: 1,
-        };
-        projects.forEach((project) => {
-          let option = {
-            id: project.id,
-            text: project.name,
-            type: "project",
-            client: project.clientName,
-          };
-          projectGroup.children.push(option);
-        });
-        this.writeToCache("timetable_projects", {
-          data: projectGroup,
-          expiration: Date.now(),
-        });
-        return projectGroup;
-      });
-    }
+  static async fetchTicketData() {
+      let projectPromise;
+      let projectCacheData = this.getCacheData("timetable_projects");
+      if (projectCacheData) {
+          projectPromise = Promise.resolve(projectCacheData);
+      } else {
+          projectPromise = fetch('/TimeTable/TimeTable/getAllProjects', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              }
+          })
+              .then(response => response.json())
+              .then(data => {
+                  const projects = data.result;
+                  const projectGroup = {
+                      id: "project",
+                      text: "Projects",
+                      children: [],
+                      index: 1,
+                  };
 
-    let ticketCacheData = this.getCacheData("timetable_tickets");
-    if (ticketCacheData) {
-      ticketPromise = Promise.resolve(ticketCacheData);
-    } else {
-      ticketPromise = this.getAllTickets().then((data) => {
-        const result = data.result;
-        let tickets = result.filter(({ type, status, projectId }) => {
-          const projectLabels = allStateLabels[projectId] || {};
-          const statusInfo = projectLabels[status] || {};
-          const isDone = statusInfo.statusType === "DONE";
+                  projects.forEach(project => {
+                      let option = {
+                          id: project.id,
+                          text: project.name,
+                          type: "project",
+                          client: project.clientName,
+                      };
+                      projectGroup.children.push(option);
+                  });
 
-          return (
-            type.toLowerCase() !== "story" &&
-            type.toLowerCase() !== "milestone" &&
-            !isDone // Exclude tickets that are considered DONE
-          );
-        });
-        const ticketGroup = {
-          id: "task",
-          text: "Todos",
-          children: [],
-          index: 2,
-        };
+                  this.writeToCache("timetable_projects", {
+                      data: projectGroup,
+                      expiration: Date.now(),
+                  });
+                  return projectGroup;
+              })
+              .catch(error => console.error('Error fetching projects:', error));
+      }
 
-        let childrenForTicketGroup = [];
-        tickets.forEach((ticket) => {
-          let option = {
-            id: ticket.id,
-            text: ticket.headline,
-            type: ticket.type,
-            tags: ticket.tags,
-            sprintName: ticket.sprintName,
-            projectId: ticket.projectId,
-            projectName: ticket.projectName,
-            editorId: ticket.editorId,
-            hoursLeft: ticket.hourRemaining,
-            createdDate: ticket.date,
-          };
+      // Fetch all tickets
+      const ticketCacheData = this.getCacheData("timetable_tickets");
+      const ticketPromise = ticketCacheData
+          ? Promise.resolve(ticketCacheData)
+          : fetch('/TimeTable/TimeTable/getAllTickets', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              }
+          })
+              .then(response => response.json())
+              .then(data => {
+                  const tickets = data.result;
 
-          childrenForTicketGroup.push(option);
-        });
+                  const ticketGroup = {
+                      id: "task",
+                      text: "Todos",
+                      children: [],
+                      index: 2,
+                  };
 
-        // Sort, so the done tasks appear in the bottom of the search.
-        ticketGroup.children = [...childrenForTicketGroup].sort(
-          (a, b) => Number(a.isDone) - Number(b.isDone),
-        );
-        this.writeToCache("timetable_tickets", {
-          data: ticketGroup,
-          expiration: Date.now(),
-        });
-        return ticketGroup;
-      });
-    }
+                  let childrenForTicketGroup = [];
+                  tickets.forEach(ticket => {
+                      let option = {
+                          id: ticket.id,
+                          text: ticket.headline,
+                          type: ticket.type,
+                          tags: ticket.tags,
+                          sprintName: ticket.sprintName,
+                          projectId: ticket.projectId,
+                          projectName: ticket.projectName,
+                          editorId: ticket.editorId,
+                          hoursLeft: ticket.hourRemaining,
+                          createdDate: ticket.date,
+                      };
 
-    const promises = [projectPromise, ticketPromise];
-    const results = await Promise.allSettled(promises);
-    return results
-      .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value)
-      .sort(function (a, b) {
-        // Sort by index.
-        return a.index - b.index;
-      });
+                      childrenForTicketGroup.push(option);
+                  });
+
+                  // Sort so the done tasks appear at the bottom of the search
+                  ticketGroup.children = [...childrenForTicketGroup].sort(
+                      (a, b) => Number(a.isDone) - Number(b.isDone),
+                  );
+
+                  this.writeToCache("timetable_tickets", {
+                      data: ticketGroup,
+                      expiration: Date.now(),
+                  });
+                  return ticketGroup;
+              })
+              .catch(error => console.error('Error fetching tickets:', error));
+
+      // Wait for all promises to settle
+      const promises = [projectPromise, ticketPromise];
+      const results = await Promise.allSettled(promises);
+
+      return results
+          .map(result => result.value)
+          .sort((a, b) => a.index - b.index); // Sort by index
   }
 
   /**
