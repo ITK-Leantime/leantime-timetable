@@ -8,7 +8,6 @@ import TimeTableApiHandler from "./timeTableApiHandler";
 jQuery(document).ready(function ($) {
   const pluginSettings = {
     userId: $("select[name='manageAsUserId'] > option:selected").val(),
-    allStateLabels: $("#all-state-labels").val(),
   };
 
   class TimeTable {
@@ -84,18 +83,7 @@ jQuery(document).ready(function ($) {
         ".timetable-ticket-input",
       );
 
-      // Register event handlers
-      this.registerEventHandlers();
 
-      this.toggleVisualLoaders();
-      this.isFetching = true;
-      TimeTableApiHandler.fetchTicketData(pluginSettings.allStateLabels).then(
-        () => {
-          this.isFetching = false;
-          this.populateLastUpdated();
-          this.initTicketSearch();
-        },
-      );
 
       flatpickr("#dateRange", {
         mode: "range",
@@ -154,6 +142,19 @@ jQuery(document).ready(function ($) {
             $wrapper.addClass("open");
           }
         });
+
+        // Register event handlers
+        this.registerEventHandlers();
+
+        this.toggleVisualLoaders();
+        this.isFetching = true;
+        TimeTableApiHandler.fetchTicketData().then(
+            () => {
+                this.isFetching = false;
+                this.populateLastUpdated();
+                this.initTicketSearch();
+            },
+        );
     }
 
     /**
