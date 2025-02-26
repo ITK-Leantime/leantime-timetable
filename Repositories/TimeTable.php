@@ -5,6 +5,7 @@ namespace Leantime\Plugins\TimeTable\Repositories;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Leantime\Core\Db\Db as DbCore;
+use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use PDO;
 
 /**
@@ -17,15 +18,18 @@ class TimeTable
      */
     private null|DbCore $db = null;
 
+    private TicketRepository $ticketRepo;
+
     /**
      * __construct - get db connection
      *
      * @access public
      * @return void
      */
-    public function __construct(DbCore $db)
+    public function __construct(DbCore $db, TicketRepository $ticketRepo)
     {
         $this->db = $db;
+        $this->ticketRepo = $ticketRepo;
     }
 
     /**
@@ -249,8 +253,9 @@ class TimeTable
      * @param array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
-    public function getAllStateLabels(array $statusListSeed): array
+    private function getAllStateLabels(array $statusListSeed): array
     {
+        $statusListSeed = $this->ticketRepo->statusListSeed;
         $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':keyPattern', 'projectsettings.%.ticketlabels', PDO::PARAM_STR);
@@ -345,5 +350,65 @@ class TimeTable
                 'role' => $user['role'],
             ];
         }, $users);
+    }
+
+    public function getAllTickets(): array
+    {
+        $statusListSeed = $this->ticketRepo->statusListSeed;
+        $allStateLabels = $this->getAllStateLabels($statusListSeed);
+        $sql = 'SELECT
+                    id,
+                    headline,
+                    LOWER(type) as type,
+                    tags,
+                    projectId,
+                    editorId,
+                    hourRemaining,
+                    date
+                FROM zp_tickets
+                WHERE type != :story AND type != :milestone';
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
+        $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
+        $stmn->execute();
+        $tickets = $stmn->fetchAll(PDO::FETCH_ASSOC);
+        $stmn->closeCursor();
+
+        // Pre-compute status label mappings for faster lookups
+        $stateLabelMappings = [];
+        foreach ($allStateLabels as $projectId => $labels) {
+            foreach ($labels as $status => $info) {
+                $stateLabelMappings[$projectId][$status] = $info['statusType'] ?? '';
+            }
+        }
+
+        // Filter tickets based on pre-computed mappings
+        $filteredTickets = array_filter($tickets, function ($ticket) use ($stateLabelMappings) {
+            $projectId = $ticket['projectId'] ?? null;
+            $status = $ticket['status'] ?? null;
+            if (isset($stateLabelMappings[$projectId][$status])) {
+                return $stateLabelMappings[$projectId][$status] !== 'DONE';
+            }
+            return true;
+        });
+
+        return array_values($filteredTickets);
+    }
+
+    public function getAllProjects(): array
+    {
+        $sql = 'SELECT id, name FROM zp_projects';
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->execute();
+        $projects = $stmn->fetchAll(PDO::FETCH_ASSOC);
+        $stmn->closeCursor();
+
+        return array_map(function ($project) {
+            return [
+                'id' => $project['id'],
+                'name' => $project['name'],
+                'type' => 'project',
+            ];
+        }, $projects);
     }
 }
