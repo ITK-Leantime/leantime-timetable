@@ -4,6 +4,7 @@ namespace Leantime\Plugins\TimeTable\Repositories;
 
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use PDO;
@@ -352,47 +353,60 @@ class TimeTable
         }, $users);
     }
 
+    /**
+     * getAllTickets - Retrieves all tickets for the authenticated user, filters them based on their status,
+     * and includes additional information such as project details and the last work date.
+     *
+     * @access public
+     * @return array An array of filtered tickets with their associated details.
+     */
     public function getAllTickets(): array
     {
+        $userId = session('userdata.id');
         $statusListSeed = $this->ticketRepo->statusListSeed;
         $allStateLabels = $this->getAllStateLabels($statusListSeed);
+
         $sql = 'SELECT
-                    id,
-                    headline,
-                    LOWER(type) as type,
-                    tags,
-                    projectId,
-                    editorId,
-                    hourRemaining,
-                    date
-                FROM zp_tickets
-                WHERE type != :story AND type != :milestone';
+                t.id,
+                t.headline,
+                LOWER(t.type) as type,
+                t.tags,
+                t.projectId,
+                p.name as projectName, -- Fetch project name via JOIN
+                t.editorId,
+                t.hourRemaining,
+                t.date,
+                MAX(ts.modified) as lastModified
+            FROM zp_tickets t
+            LEFT JOIN zp_projects p ON t.projectId = p.id
+            LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
+            WHERE t.type NOT IN (:story, :milestone)
+            GROUP BY t.id
+            ORDER BY (t.editorId = :userId) DESC, lastModified DESC';
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
         $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
+        $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
         $stmn->execute();
         $tickets = $stmn->fetchAll(PDO::FETCH_ASSOC);
         $stmn->closeCursor();
 
-        // Pre-compute status label mappings for faster lookups
-        $stateLabelMappings = [];
-        foreach ($allStateLabels as $projectId => $labels) {
-            foreach ($labels as $status => $info) {
-                $stateLabelMappings[$projectId][$status] = $info['statusType'] ?? '';
+        // Pre-compute status label mappings
+        $stateLabelMappings = array_map(function ($labels) {
+            return array_column($labels, 'statusType');
+        }, $allStateLabels);
+
+        // Filter tickets using pre-computed mappings
+        $filteredTickets = [];
+        foreach ($tickets as $ticket) {
+            $projectId = $ticket['projectId'] ?? null;
+            $status = $ticket['status'] ?? null;
+            if (!isset($stateLabelMappings[$projectId][$status]) || $stateLabelMappings[$projectId][$status] !== 'DONE') {
+                $filteredTickets[] = $ticket;
             }
         }
 
-        // Filter tickets based on pre-computed mappings
-        $filteredTickets = array_filter($tickets, function ($ticket) use ($stateLabelMappings) {
-            $projectId = $ticket['projectId'] ?? null;
-            $status = $ticket['status'] ?? null;
-            if (isset($stateLabelMappings[$projectId][$status])) {
-                return $stateLabelMappings[$projectId][$status] !== 'DONE';
-            }
-            return true;
-        });
-
-        return array_values($filteredTickets);
+        return $filteredTickets;
     }
 
     public function getAllProjects(): array
