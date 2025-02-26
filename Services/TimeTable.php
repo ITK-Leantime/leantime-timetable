@@ -122,11 +122,46 @@ class TimeTable
 
     public function getAllTickets(): array
     {
-        return $this->timeTableRepo->getAllTickets();
+        $tickets = $this->timeTableRepo->getAllTickets();
+
+        $formattedTickets = [
+            'children' => array_map(function ($ticket) {
+                return [
+                    'id' => $ticket['id'],
+                    'text' => $ticket['headline'],
+                    'type' => $ticket['type'],
+                    'tags' => $ticket['tags'],
+                    'projectName' => $ticket['projectName'] ?? 'Removed project',
+                    'projectId' => $ticket['projectId'],
+                    'editorId' => $ticket['editorId'],
+                    'hoursLeft' => $ticket['hourRemaining'],
+                    'createdDate' => $ticket['date'],
+                ];
+            }, $tickets),
+        ];
+
+        return $formattedTickets;
     }
 
     public function getAllProjects(): array
     {
-        return $this->timeTableRepo->getAllProjects();
+        $projects = $this->timeTableRepo->getAllProjects();
+        $projectGroup = [
+            'id' => 'project',
+            'text' => 'Projects',
+            'children' => [],
+            'index' => 1,
+        ];
+
+        foreach ($projects as $project) {
+            $projectGroup['children'][] = [
+                'id' => $project['id'],
+                'text' => $project['name'],
+                'type' => 'project',
+                'client' => $project['clientName'] ?? null,
+            ];
+        }
+
+        return $projectGroup;
     }
 }
