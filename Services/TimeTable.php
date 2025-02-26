@@ -5,7 +5,7 @@ namespace Leantime\Plugins\TimeTable\Services;
 use Carbon\CarbonInterface;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
-use Carbon\CarbonImmutable;
+
 
 /**
  * Time table services file.
@@ -13,7 +13,6 @@ use Carbon\CarbonImmutable;
 class TimeTable
 {
     private TimeTableRepository $timeTableRepo;
-    private TicketRepository $ticketRepo;
 
     /**
      * @var array<string, string>
@@ -28,13 +27,11 @@ class TimeTable
      * constructor
      *
      * @param  TimeTableRepository $timeTableRepo
-     * @param TicketRepository    $ticketRepo
      * @return void
      */
-    public function __construct(TimeTableRepository $timeTableRepo, TicketRepository $ticketRepo)
+    public function __construct(TimeTableRepository $timeTableRepo)
     {
         $this->timeTableRepo = $timeTableRepo;
-        $this->ticketRepo = $ticketRepo;
     }
 
     /**
@@ -114,17 +111,6 @@ class TimeTable
     }
 
     /**
-     * Retrieves all state labels for all projects.
-     *
-     * @return array<string, array<int|string, mixed>> The state labels grouped by project IDs.
-     */
-    public function getAllStateLabels(): array
-    {
-        $statusListSeed = $this->ticketRepo->statusListSeed;
-        return $this->timeTableRepo->getAllStateLabels($statusListSeed);
-    }
-
-    /**
      * Retrieves all users from the repository.
      *
      * @return array<string, string> List of users.
@@ -132,5 +118,15 @@ class TimeTable
     public function getAllUsers(): array
     {
         return $this->timeTableRepo->getAllUsers();
+    }
+
+    public function getAllTickets(): array
+    {
+        return $this->timeTableRepo->getAllTickets();
+    }
+
+    public function getAllProjects(): array
+    {
+        return $this->timeTableRepo->getAllProjects();
     }
 }
