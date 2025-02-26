@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Log;
 use Leantime\Core\Controller\Controller;
 use Leantime\Core\Controller\Frontcontroller;
 use Leantime\Domain\Auth\Services\Auth;
-use Leantime\Domain\Users\Services\Users;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Symfony\Component\HttpFoundation\Response;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
@@ -18,12 +17,14 @@ use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
 use Leantime\Core\UI\Template;
+use \Illuminate\Http\JsonResponse as JsonResponse;
 
 /**
  * TimeTable controller.
  */
 class TimeTable extends Controller
 {
+
     private TimeTableService $timeTableService;
     protected LanguageCore $language;
     private SettingRepository $settings;
@@ -47,6 +48,18 @@ class TimeTable extends Controller
         $this->settings = $settings;
         $this->template = $template;
         $this->timesheetRepository = $timesheetRepository;
+    }
+
+    public function getAllTickets(): JsonResponse
+    {
+        $allTickets = $this->timeTableService->getAllTickets() ?? [];
+        return response()->json(['result' => $allTickets]);
+    }
+
+    public function getAllProjects(): JsonResponse
+    {
+        $allProjects = $this->timeTableService->getAllProjects() ?? [];
+        return response()->json(['result' => $allProjects]);
     }
 
     /**
@@ -91,7 +104,6 @@ class TimeTable extends Controller
         $ticketCacheExpiration = $this->settings->getSetting('itk-leantime-timetable.ticketCacheExpiration') ?? 1200;
         $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
         $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
-        $allStateLabels = $this->timeTableService->getAllStateLabels();
         $allUsers = $this->timeTableService->getAllUsers();
         $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
         $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
@@ -201,7 +213,6 @@ class TimeTable extends Controller
         $this->template->assign('ticketCacheExpiration', $ticketCacheExpiration);
         $this->template->assign('fromDate', $fromDate);
         $this->template->assign('toDate', $toDate);
-        $this->template->assign('allStateLabels', json_encode($allStateLabels));
         $this->template->assign('requireTimeRegistrationComment', $this->settings->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?? 0);
         $this->template->assign('allUsers', $allUsers);
         $this->template->assign('userId', $userId);
