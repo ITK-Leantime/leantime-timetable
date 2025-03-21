@@ -184,12 +184,10 @@ class TimeTable extends Controller
         $relevantTicketIds = $this->timeTableService->getUniqueTicketIds($weekStartDateDb, $weekEndDateDb, $userId);
 
         $timesheetsByTicket = [];
-        $ticketIds = [];
         foreach ($relevantTicketIds as $ticket) {
             if (!$ticket['ticketId']) {
                 continue;
             }
-            $ticketIds[] = intval($ticket['ticketId']);
             $timesheetsSortedByWeekdate = [];
             foreach ($weekDates as $weekDate) {
                 $timesheetsByTicketAndDate = $this->timeTableService->getTimesheetByTicketIdAndWorkDate($ticket['ticketId'], $weekDate->setToDbTimezone(), $userId, $searchTermForFilter);
@@ -206,7 +204,6 @@ class TimeTable extends Controller
             $timesheetsByTicket[$ticket['ticketId']] = $timesheetsSortedByWeekdate;
         }
         // All tickets assigned to the template
-        $this->template->assign('ticketIds', implode(',', $ticketIds));
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
         $this->template->assign('weekDays', $days);
         $this->template->assign('weekDates', $weekDates);
