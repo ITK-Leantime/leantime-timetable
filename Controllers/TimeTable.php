@@ -101,7 +101,6 @@ class TimeTable extends Controller
     public function get(): Response
     {
         $searchTermForFilter = null;
-        $ticketCacheExpiration = $this->settings->getSetting('itk-leantime-timetable.ticketCacheExpiration') ?? 1200;
         $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
         $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         $allUsers = $this->timeTableService->getAllUsers();
@@ -207,7 +206,6 @@ class TimeTable extends Controller
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
         $this->template->assign('weekDays', $days);
         $this->template->assign('weekDates', $weekDates);
-        $this->template->assign('ticketCacheExpiration', $ticketCacheExpiration);
         $this->template->assign('fromDate', $fromDate);
         $this->template->assign('toDate', $toDate);
         $this->template->assign('requireTimeRegistrationComment', $this->settings->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?? 0);

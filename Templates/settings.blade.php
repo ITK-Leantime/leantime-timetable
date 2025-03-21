@@ -21,10 +21,6 @@
                     <div class="col-md-2">
                         <label>Tickets (minutes)</label>
                     </div>
-                    <div class="col-md-8">
-                        <input type="number" min="0" value="{{ (int) $ticketCacheExpiration }}"
-                            name="ticketCacheExpiration" />
-                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-2">
