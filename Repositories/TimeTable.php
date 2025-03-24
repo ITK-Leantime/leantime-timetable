@@ -358,7 +358,7 @@ class TimeTable
      * and includes additional information such as project details and the last work date.
      *
      * @access public
-     * @return array An array of filtered tickets with their associated details.
+     * @return array<int<0, max>,mixed> An array of filtered tickets with their associated details.
      */
     public function getAllTickets(): array
     {
@@ -413,7 +413,7 @@ class TimeTable
      * getAllProjects - Retrieves all projects for the authenticated user
      *
      * @access public
-     * @return array An array of projects with their associated details.
+     * @return array<array<string, mixed>> An array of projects with their associated details.
      */
     public function getAllProjects(): array
     {

@@ -122,7 +122,7 @@ class TimeTable
     /**
      * Retrieves all tickets from the timetable service and returns them as a JSON response.
      *
-     * @return JsonResponse The JSON response containing the list of tickets or an empty array.
+     * @return array<string,mixed> the list of tickets or an empty array.
      */
     public function getAllTickets(): array
     {
@@ -148,9 +148,9 @@ class TimeTable
     }
 
     /**
-     * Retrieves all projects from the timetable service and returns them as a JSON response.
+     * Retrieves all projects from the timetable repository.
      *
-     * @return JsonResponse The JSON response containing the list of projects or an empty array.
+     * @return string[]  the list of pronjects or an empty array.
      */
     public function getAllProjects(): array
     {

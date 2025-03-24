@@ -59,14 +59,14 @@ class TimeTable extends Controller
      */
     public function getAllTickets(): JsonResponse
     {
-        $allTickets = $this->timeTableService->getAllTickets() ?? [];
+        $allTickets = $this->timeTableService->getAllTickets();
         return response()->json(['result' => $allTickets]);
     }
 
     /**
      * Creates a new ticket with the provided input values and saves it.
      *
-     * @param array $input The input data for creating the new ticket, which should contain:
+     * @param string[] $input The input data for creating the new ticket, which should contain:
      *                     - 'headline' (string): The title of the ticket.
      *                     - 'projectId' (int): The project to which the ticket belongs.
      *
@@ -107,7 +107,7 @@ class TimeTable extends Controller
      */
     public function getAllProjects(): JsonResponse
     {
-        $allProjects = $this->timeTableService->getAllProjects() ?? [];
+        $allProjects = $this->timeTableService->getAllProjects();
         return response()->json(['result' => $allProjects]);
     }
 
@@ -162,12 +162,7 @@ class TimeTable extends Controller
                     $fromDate = CarbonImmutable::now()->startOfDay()->modify($_GET['fromDate']);
                 } else {
                     $fromDate = CarbonImmutable::createFromFormat('Y-m-d', $_GET['fromDate']);
-                    if ($fromDate !== false) {
-                        $fromDate = $fromDate->startOfDay();
-                    } else {
-                        $fromDate = CarbonImmutable::createFromFormat('d/m/Y', $_GET['fromDate']);
-                        $fromDate = $fromDate !== false ? $fromDate->startOfDay() : CarbonImmutable::now()->startOfWeek()->startOfDay();
-                    }
+                    $fromDate = $fromDate->startOfDay();
                 }
             }
 
@@ -176,12 +171,7 @@ class TimeTable extends Controller
                     $toDate = CarbonImmutable::now()->startOfDay()->modify($_GET['toDate']);
                 } else {
                     $toDate = CarbonImmutable::createFromFormat('Y-m-d', $_GET['toDate']);
-                    if ($toDate !== false) {
-                        $toDate = $toDate->startOfDay();
-                    } else {
-                        $toDate = CarbonImmutable::createFromFormat('d/m/Y', $_GET['toDate']);
-                        $toDate = $toDate !== false ? $toDate->startOfDay() : CarbonImmutable::now()->endOfWeek()->startOfDay();
-                    }
+                    $toDate = $toDate->startOfDay();
                 }
             }
         } catch (\Exception $e) {
@@ -190,19 +180,9 @@ class TimeTable extends Controller
             $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         }
 
-        if ($fromDate instanceof CarbonImmutable) {
-            $weekStartDateDb = $fromDate->setToDbTimezone();
-        } else {
-            // Handle invalid $fromDate gracefully
-            $weekStartDateDb = null; // Or define your fallback behavior
-        }
+        $weekStartDateDb = $fromDate->setToDbTimezone();
 
-        if ($toDate instanceof CarbonImmutable) {
-            $weekEndDateDb = $toDate->setToDbTimezone();
-        } else {
-            // Handle invalid $toDate gracefully
-            $weekEndDateDb = null; // Or define your fallback behavior
-        }
+        $weekEndDateDb = $toDate->setToDbTimezone();
 
         $this->template->assign('currentSearchTerm', $searchTermForFilter);
 
@@ -210,12 +190,7 @@ class TimeTable extends Controller
         $days[] = array_shift($days);
 
         $weekDates = [];
-        if ($fromDate instanceof CarbonImmutable) {
-            $dateIterator = $fromDate->setToUserTimezone()->copy();
-        } else {
-            // Handle invalid $fromDate gracefully
-            $dateIterator = null; // Or define fallback behavior
-        }
+        $dateIterator = $fromDate->setToUserTimezone()->copy();
 
         while ($dateIterator <= $toDate) {
             $dayOfWeek = strtolower($dateIterator->locale(session('usersettings.language'))->dayName);

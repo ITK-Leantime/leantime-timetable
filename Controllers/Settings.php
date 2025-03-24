@@ -20,8 +20,6 @@ class Settings extends Controller
     private SettingRepository $settingsRepo;
     protected Template $template;
 
-    private const DEFAULT_TICKET_EXPIRATION = 60;
-
     /**
      * constructor
      * @access public
