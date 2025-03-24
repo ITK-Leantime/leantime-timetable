@@ -23,63 +23,63 @@ jQuery(document).ready(function ($) {
       this.entryCopyModal = $("#entry-copy-modal");
       this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
       this.entryCopyButtonClose = this.entryCopyModal.find(
-        ".entry-copy-modal-cancel"
+        ".entry-copy-modal-cancel",
       );
       this.entryCopyButtonApply = this.entryCopyModal.find(
-        ".entry-copy-modal-apply"
+        ".entry-copy-modal-apply",
       );
       this.entryCopyCheckboxOverwrite = this.entryCopyModal.find(
-        "#entry-copy-overwrite"
+        "#entry-copy-overwrite",
       );
       this.entryCopyCheckboxWeekend = this.entryCopyModal.find(
-        "#entry-copy-weekend"
+        "#entry-copy-weekend",
       );
       this.timeEditForm = this.timeEditModal.find(".edit-time-log-form");
       this.timeEditSyncModal = $("#edit-time-sync-modal");
       this.modalInputTimesheetId = this.timeEditModal.find(
-        'input[name="timesheet-id"]'
+        'input[name="timesheet-id"]',
       );
       this.modalInputTicketId = this.timeEditModal.find(
-        'input[name="timesheet-ticket-id"]'
+        'input[name="timesheet-ticket-id"]',
       );
       this.modalInputTicketName = this.timeEditModal.find(
-        "input.timetable-ticket-input"
+        "input.timetable-ticket-input",
       );
       this.modalInputHours = this.timeEditModal.find(
-        'input[name="timesheet-hours"]'
+        'input[name="timesheet-hours"]',
       );
       this.modalInputHoursLeft = this.timeEditModal.find(
-        'input[name="timesheet-hours-left"]'
+        'input[name="timesheet-hours-left"]',
       );
       this.modalTextareaDescription = this.timeEditModal.find(
-        'textarea[name="timesheet-description"]'
+        'textarea[name="timesheet-description"]',
       );
       this.modalInputDate = this.timeEditModal.find(
-        'input[name="timesheet-date"]'
+        'input[name="timesheet-date"]',
       );
       this.modalInputDateMove = this.timeEditModal.find(
-        'input[name="timesheet-date-move"]'
+        'input[name="timesheet-date-move"]',
       );
       this.modalInputDateMoveNotifier = this.timeEditModal.find(
-        ".timesheet-date-move-notifier"
+        ".timesheet-date-move-notifier",
       );
       this.modalTicketIdInput = this.timeEditModal.find(
-        'input[name="timesheet-ticket-id"]'
+        'input[name="timesheet-ticket-id"]',
       );
       this.modalDeleteButton = this.timeEditModal.find(
-        ".timetable-modal-delete"
+        ".timetable-modal-delete",
       );
       this.modalCancelButton = this.timeEditModal.find(
-        ".timetable-modal-cancel"
+        ".timetable-modal-cancel",
       );
       this.modalSubmitButton = this.timeEditModal.find(
-        ".timetable-modal-submit"
+        ".timetable-modal-submit",
       );
       this.modalInputDate = this.timeEditModal.find(
-        'input[name="timesheet-date"]'
+        'input[name="timesheet-date"]',
       );
       this.modalTicketInput = this.timeEditModal.find(
-        ".timetable-ticket-input"
+        ".timetable-ticket-input",
       );
 
       flatpickr("#dateRange", {
@@ -105,7 +105,7 @@ jQuery(document).ready(function ($) {
         },
         onChange: (selectedDates, dateStr, instance) => {
           const $wrapper = $(instance.element).closest(
-            ".timesheet-date-wrapper"
+            ".timesheet-date-wrapper",
           );
           $wrapper.removeClass("open");
           if (selectedDates && selectedDates.length > 0) {
@@ -114,7 +114,7 @@ jQuery(document).ready(function ($) {
 
           const originalDate = flatpickr.formatDate(
             new Date($wrapper.attr("data-original")),
-            "d-m-Y"
+            "d-m-Y",
           );
           // Add/remove a class if the current value differs from the original one
           if (dateStr !== originalDate) {
@@ -182,7 +182,7 @@ jQuery(document).ready(function ($) {
           ) {
             this.closeEntryCopyModal();
           }
-        }.bind(this)
+        }.bind(this),
       );
 
       // Edit entry
@@ -205,7 +205,7 @@ jQuery(document).ready(function ($) {
             hours,
             hoursLeft,
             description,
-            date
+            date,
           );
 
           const rect = target.getBoundingClientRect();
@@ -218,7 +218,7 @@ jQuery(document).ready(function ($) {
             .addClass("shown")
             .find('input[name="timesheet-hours"]')
             .focus();
-        }.bind(this)
+        }.bind(this),
       );
 
       // Close modal
@@ -235,14 +235,13 @@ jQuery(document).ready(function ($) {
 
       $(this.timeEditForm).on("submit", () => {
         this.modalSubmitButton.html(
-          '<i class="fa-solid fa-arrows-rotate fa-spin"></i>'
+          '<i class="fa-solid fa-arrows-rotate fa-spin"></i>',
         );
         this.modalSubmitButton.attr("disabled", "disabled");
       });
 
       // Delete timeentry
       this.modalDeleteButton.click(() => this.deleteTimeEntry());
-
 
       const weekNumbers = document.querySelectorAll("th.new-week");
 
@@ -258,11 +257,11 @@ jQuery(document).ready(function ($) {
         },
         {
           root: document.querySelector(
-            ".timetable-scroll-container.overflowing"
+            ".timetable-scroll-container.overflowing",
           ),
           threshold: 1,
           rootMargin: "0% 0% 0% -595px",
-        }
+        },
       );
 
       weekNumbers.forEach((weekNumber) => observer.observe(weekNumber));
@@ -298,7 +297,7 @@ jQuery(document).ready(function ($) {
         const hours = parent.data("hours");
         const description = parent.data("description");
         const copyToDate = $(
-          'input[name="timetable-current-week-last-day"]'
+          'input[name="timetable-current-week-last-day"]',
         ).val();
 
         const formattedCopyToDate = new Date(copyToDate)
@@ -335,7 +334,7 @@ jQuery(document).ready(function ($) {
           const targets = this.getEntryCopyTargets(
             eventTarget,
             overwrite,
-            includeWeekends
+            includeWeekends,
           );
           const targetCount = targets.length;
 
@@ -355,7 +354,7 @@ jQuery(document).ready(function ($) {
           const targets = this.getEntryCopyTargets(
             eventTarget,
             overwrite,
-            includeWeekends
+            includeWeekends,
           );
           const targetCount = targets.length;
 
@@ -375,7 +374,7 @@ jQuery(document).ready(function ($) {
 
       $(this.entryCopyForm).on("submit", () => {
         this.entryCopyButtonApply.html(
-          '<i class="fa-solid fa-arrows-rotate fa-spin"></i>'
+          '<i class="fa-solid fa-arrows-rotate fa-spin"></i>',
         );
         this.entryCopyButtonApply.attr("disabled", "disabled");
       });
@@ -389,7 +388,7 @@ jQuery(document).ready(function ($) {
       const targets = this.getEntryCopyTargets(
         element,
         overwrite,
-        includeWeekends
+        includeWeekends,
       );
       parentElement.addClass("highlighting");
 
@@ -426,7 +425,7 @@ jQuery(document).ready(function ($) {
       this.entryCopyForm
         .find(".entry-copy-text")
         .html(
-          `Fra d. ${formattedCopyFromDate} til og med d. ${formattedCopyToDate}<br>${targetCount} ${targetCount === 1 ? "dag bliver ændret" : "dage bliver ændret"}`
+          `Fra d. ${formattedCopyFromDate} til og med d. ${formattedCopyToDate}<br>${targetCount} ${targetCount === 1 ? "dag bliver ændret" : "dage bliver ændret"}`,
         );
     }
 
@@ -656,7 +655,7 @@ jQuery(document).ready(function ($) {
             (e) =>
               (e.text && e.text.toUpperCase().includes(term)) ||
               (typeof e.value === "string" && e.value.toUpperCase() === term) ||
-              (e.projectName && e.projectName.toUpperCase().includes(term))
+              (e.projectName && e.projectName.toUpperCase().includes(term)),
           );
           callback(results.slice(0, pageSize));
         },
@@ -704,14 +703,14 @@ jQuery(document).ready(function ($) {
 
                   TimeTableApiHandler.createNewTicket(
                     ticketName,
-                    projectId
+                    projectId,
                   ).then((data) => {
                     const ticketId = data[0].value.result[0];
                     if (ticketId && ticketName && projectName) {
                       timeTable.addRowToTimetable(
                         ticketId,
                         ticketName,
-                        projectName
+                        projectName,
                       );
                       this.enable();
                       this.destroy();
@@ -726,7 +725,7 @@ jQuery(document).ready(function ($) {
           timeTable.addRowToTimetable(
             value,
             selectedOption.text,
-            selectedOption.projectName
+            selectedOption.projectName,
           );
           this.clear();
         },
@@ -740,10 +739,10 @@ jQuery(document).ready(function ($) {
 
     addRowToTimetable(ticketId, ticketText, projectName) {
       const firstDateOfWeek = new Date(
-        $("input[name='timetable-current-week-first-day']").val()
+        $("input[name='timetable-current-week-first-day']").val(),
       );
       const daysRendered = parseInt(
-        $('input[name="timetable-days-loaded"]').val()
+        $('input[name="timetable-days-loaded"]').val(),
       );
 
       // Create a new date object to ensure the original date is preserved

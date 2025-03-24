@@ -50,5 +50,4 @@ export default class TimeTableApiHandler {
     const results = await Promise.allSettled([createTicketPromise]);
     return results;
   }
-
 }
