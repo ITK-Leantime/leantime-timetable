@@ -99,12 +99,13 @@
                                             $weekDateAccessor = isset($weekDate) ? $weekDate->format('Y-m-d') : null;
                                             $timesheetDate = isset($timesheet) ? $timesheet[$weekDateAccessor] : null;
                                             $id = $timesheetDate[0]['id'] ?? null;
+                                            $headline = $timesheetDate[0]['headline'] ?? null;
                                             $hours = $timesheetDate[0]['hours'] ?? null;
                                             $hoursLeft = $timesheetDate[0]['hourRemaining'] ?? null;
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-
+                                            
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -114,7 +115,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-
+                                            
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
@@ -125,6 +126,7 @@
                                                 data-hours="{{ $hours }}" data-hoursleft="{{ $hoursLeft }}"
                                                 data-description="{{ $description }}"
                                                 data-date="{{ $weekDate->format('Y-m-d') }}"
+                                                data-headline="{{ $headline }}"
                                                 title="{{ $isMissingDescription ? __('timeTable.description_missing') : '' }}">
                                                 <span>{{ $hours }}</span>
                                                 @if (!is_null($hours))
@@ -148,12 +150,12 @@
                                 <!-- A little something for when the week has no logs -->
                                 <tr class="empty-row">
                                     <td class="empty-row" colspan="{{ count($weekDates) + 2 }}">
-                                        {{ __("It seems the 'WORK-IT' fairy forgot to sprinkle her magic dust here! 🧚‍🪄✨") }}
+                                        {{ __('timeTable.fairy-message') }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="add-new"><input class="timetable-tomselect form-control-lg"
-                                            placeholder="Syncing data" /></td>
+                                            placeholder="{{ __('timeTable.getting-data-for-you') }}" /></td>
                                     @foreach ($weekDates as $date)
                                         <td>—</td>
                                     @endforeach
@@ -162,7 +164,7 @@
                             @endif
                             <!-- add total hours row here -->
                             <tr class="tr-total">
-                                <td scope="row">Total</td>
+                                <td scope="row">{{__('timeTable.total')}}</td>
                                 @foreach ($weekDates as $weekDate)
                                     <td class="{{ $weekDate->isMonday() ? 'new-week' : '' }}">
                                         {{ $totalHours[$weekDate->format('Y-m-d')] ?? 0 }}
@@ -174,13 +176,6 @@
                     </table>
                 </div>
 
-            </div>
-            <div class="timetable-sync-panel">
-                <div>
-                    <button class="timetable-sync-tickets"><span><i class="fa-solid fa-arrows-rotate"></i>Sync data</span>
-                    </button>
-                </div>
-                <div><span></span></div>
             </div>
         </div>
     </div>
@@ -270,8 +265,5 @@
         </form>
     </div>
     <div id="edit-time-sync-modal" class="nyroModalBg edit-time-sync-modal">
-        <div><span><i
-                    class="fa-solid fa-spinner fa-2xl fa-spin"></i></span><span>{{ __('timeTable.synchronizing') }}</span>
-        </div>
     </div>
 @endsection

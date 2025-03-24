@@ -18,7 +18,7 @@ use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
 use Leantime\Core\UI\Template;
 use \Illuminate\Http\JsonResponse as JsonResponse;
-
+use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 /**
  * TimeTable controller.
  */
@@ -30,6 +30,7 @@ class TimeTable extends Controller
     private SettingRepository $settings;
     protected Template $template;
     private TimesheetRepository $timesheetRepository;
+    private TicketRepository $ticketRepository;
 
     /**
      * constructor
@@ -41,19 +42,47 @@ class TimeTable extends Controller
      * @param TimesheetRepository $timesheetRepository
      * @return void
      */
-    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository): void
+    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository): void
     {
         $this->timeTableService = $timeTableService;
         $this->language = $language;
         $this->settings = $settings;
         $this->template = $template;
         $this->timesheetRepository = $timesheetRepository;
+        $this->ticketRepository = $ticketRepository;
     }
 
     public function getAllTickets(): JsonResponse
     {
         $allTickets = $this->timeTableService->getAllTickets() ?? [];
         return response()->json(['result' => $allTickets]);
+    }
+    public function createNewTicket($input): JsonResponse
+    {
+        $ticketValues = [
+            'headline' => $input['headline'],
+            'type' => "task",
+            'projectId' => $input['projectId'],
+            'editorId' => session('userdata.id'),
+            'userId' => session('userdata.id'),
+            'description' => "",
+            'date' => date('Y-m-d H:i:s'),
+            'dateToFinish' => "",
+            'status' => "",
+            'storypoints' => "",
+            'hourRemaining' => "",
+            'planHours' => "",
+            'priority' => "",
+            'sprint' => '',
+            'acceptanceCriteria' => "",
+            'tags' => "",
+            'editFrom' => "",
+            'editTo' => "",
+            'dependingTicketId' => '',
+            'milestoneid' => '',
+        ];
+            $result = $this->ticketRepository->addTicket($ticketValues);
+        return response()->json(['result' => [$result]]);
     }
 
     public function getAllProjects(): JsonResponse
