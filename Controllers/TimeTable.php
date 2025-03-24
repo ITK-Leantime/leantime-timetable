@@ -17,14 +17,14 @@ use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
 use Leantime\Core\UI\Template;
-use \Illuminate\Http\JsonResponse as JsonResponse;
+use Illuminate\Http\JsonResponse as JsonResponse;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
+
 /**
  * TimeTable controller.
  */
 class TimeTable extends Controller
 {
-
     private TimeTableService $timeTableService;
     protected LanguageCore $language;
     private SettingRepository $settings;
@@ -61,23 +61,23 @@ class TimeTable extends Controller
     {
         $ticketValues = [
             'headline' => $input['headline'],
-            'type' => "task",
+            'type' => 'task',
             'projectId' => $input['projectId'],
             'editorId' => session('userdata.id'),
             'userId' => session('userdata.id'),
-            'description' => "",
+            'description' => '',
             'date' => date('Y-m-d H:i:s'),
-            'dateToFinish' => "",
-            'status' => "",
-            'storypoints' => "",
-            'hourRemaining' => "",
-            'planHours' => "",
-            'priority' => "",
+            'dateToFinish' => '',
+            'status' => '',
+            'storypoints' => '',
+            'hourRemaining' => '',
+            'planHours' => '',
+            'priority' => '',
             'sprint' => '',
-            'acceptanceCriteria' => "",
-            'tags' => "",
-            'editFrom' => "",
-            'editTo' => "",
+            'acceptanceCriteria' => '',
+            'tags' => '',
+            'editFrom' => '',
+            'editTo' => '',
             'dependingTicketId' => '',
             'milestoneid' => '',
         ];

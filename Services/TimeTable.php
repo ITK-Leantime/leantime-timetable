@@ -6,7 +6,6 @@ use Carbon\CarbonInterface;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 
-
 /**
  * Time table services file.
  */
