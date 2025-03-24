@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-44](https://github.com/ITK-Leantime/leantime-timetable/pull/44)
+  Feature/upgrade time table plugin leantime 3 4 3
+
 ## [3.5.0] - 2025-02-17
 
 * [PR-41](https://github.com/ITK-Leantime/leantime-timetable/pull/41)
