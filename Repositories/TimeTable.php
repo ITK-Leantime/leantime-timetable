@@ -409,6 +409,12 @@ class TimeTable
         return $filteredTickets;
     }
 
+    /**
+     * getAllProjects - Retrieves all projects for the authenticated user
+     *
+     * @access public
+     * @return array An array of projects with their associated details.
+     */
     public function getAllProjects(): array
     {
         $sql = 'SELECT id, name FROM zp_projects';

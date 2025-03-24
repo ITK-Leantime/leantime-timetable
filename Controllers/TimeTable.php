@@ -52,12 +52,27 @@ class TimeTable extends Controller
         $this->ticketRepository = $ticketRepository;
     }
 
+    /**
+     * Retrieves all tickets from the timetable service and returns them as a JSON response.
+     *
+     * @return JsonResponse The JSON response containing the list of tickets or an empty array.
+     */
     public function getAllTickets(): JsonResponse
     {
         $allTickets = $this->timeTableService->getAllTickets() ?? [];
         return response()->json(['result' => $allTickets]);
     }
-    public function createNewTicket($input): JsonResponse
+
+    /**
+     * Creates a new ticket with the provided input values and saves it.
+     *
+     * @param array $input The input data for creating the new ticket, which should contain:
+     *                     - 'headline' (string): The title of the ticket.
+     *                     - 'projectId' (int): The project to which the ticket belongs.
+     *
+     * @return JsonResponse Returns a JSON response containing the result of the ticket creation.
+     */
+    public function createNewTicket(array $input): JsonResponse
     {
         $ticketValues = [
             'headline' => $input['headline'],
@@ -85,6 +100,11 @@ class TimeTable extends Controller
         return response()->json(['result' => [$result]]);
     }
 
+    /**
+     * Retrieves all projects from the timetable service and returns them as a JSON response.
+     *
+     * @return JsonResponse The JSON response containing the list of projects or an empty array.
+     */
     public function getAllProjects(): JsonResponse
     {
         $allProjects = $this->timeTableService->getAllProjects() ?? [];

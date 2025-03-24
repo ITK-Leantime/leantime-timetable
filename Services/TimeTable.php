@@ -119,6 +119,11 @@ class TimeTable
         return $this->timeTableRepo->getAllUsers();
     }
 
+    /**
+     * Retrieves all tickets from the timetable service and returns them as a JSON response.
+     *
+     * @return JsonResponse The JSON response containing the list of tickets or an empty array.
+     */
     public function getAllTickets(): array
     {
         $tickets = $this->timeTableRepo->getAllTickets();
@@ -142,6 +147,11 @@ class TimeTable
         return $formattedTickets;
     }
 
+    /**
+     * Retrieves all projects from the timetable service and returns them as a JSON response.
+     *
+     * @return JsonResponse The JSON response containing the list of projects or an empty array.
+     */
     public function getAllProjects(): array
     {
         $projects = $this->timeTableRepo->getAllProjects();
