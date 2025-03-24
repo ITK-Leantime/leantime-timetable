@@ -3,8 +3,8 @@
 ## [Unreleased]
 
 * [PR-44](https://github.com/ITK-Leantime/leantime-timetable/pull/44)
-  - Update changelog
-  - Update leantime to 3.4.3
+  * Update changelog
+  * Update leantime to 3.4.3
 
 ## [3.5.0] - 2025-02-17
 
