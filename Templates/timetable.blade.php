@@ -164,7 +164,7 @@
                             @endif
                             <!-- add total hours row here -->
                             <tr class="tr-total">
-                                <td scope="row">{{__('timeTable.total')}}</td>
+                                <td scope="row">{{ __('timeTable.total') }}</td>
                                 @foreach ($weekDates as $weekDate)
                                     <td class="{{ $weekDate->isMonday() ? 'new-week' : '' }}">
                                         {{ $totalHours[$weekDate->format('Y-m-d')] ?? 0 }}
