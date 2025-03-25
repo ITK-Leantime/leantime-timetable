@@ -4,7 +4,9 @@ namespace Leantime\Plugins\TimeTable\Repositories;
 
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Leantime\Core\Db\Db as DbCore;
+use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use PDO;
 
 /**
@@ -17,15 +19,18 @@ class TimeTable
      */
     private null|DbCore $db = null;
 
+    private TicketRepository $ticketRepo;
+
     /**
      * __construct - get db connection
      *
      * @access public
      * @return void
      */
-    public function __construct(DbCore $db)
+    public function __construct(DbCore $db, TicketRepository $ticketRepo)
     {
         $this->db = $db;
+        $this->ticketRepo = $ticketRepo;
     }
 
     /**
@@ -249,8 +254,9 @@ class TimeTable
      * @param array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
-    public function getAllStateLabels(array $statusListSeed): array
+    private function getAllStateLabels(array $statusListSeed): array
     {
+        $statusListSeed = $this->ticketRepo->statusListSeed;
         $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':keyPattern', 'projectsettings.%.ticketlabels', PDO::PARAM_STR);
@@ -345,5 +351,84 @@ class TimeTable
                 'role' => $user['role'],
             ];
         }, $users);
+    }
+
+    /**
+     * getAllTickets - Retrieves all tickets for the authenticated user, filters them based on their status,
+     * and includes additional information such as project details and the last work date.
+     *
+     * @access public
+     * @return array<int<0, max>,mixed> An array of filtered tickets with their associated details.
+     */
+    public function getAllTickets(): array
+    {
+        $userId = session('userdata.id');
+        $statusListSeed = $this->ticketRepo->statusListSeed;
+        $allStateLabels = $this->getAllStateLabels($statusListSeed);
+
+        $sql = 'SELECT
+                t.id,
+                t.headline,
+                LOWER(t.type) as type,
+                t.tags,
+                t.projectId,
+                p.name as projectName, -- Fetch project name via JOIN
+                t.editorId,
+                t.hourRemaining,
+                t.date,
+                MAX(ts.modified) as lastModified
+            FROM zp_tickets t
+            LEFT JOIN zp_projects p ON t.projectId = p.id
+            LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
+            WHERE t.type NOT IN (:story, :milestone)
+            GROUP BY t.id
+            ORDER BY (t.editorId = :userId) DESC, lastModified DESC';
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
+        $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
+        $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
+        $stmn->execute();
+        $tickets = $stmn->fetchAll(PDO::FETCH_ASSOC);
+        $stmn->closeCursor();
+
+        // Pre-compute status label mappings
+        $stateLabelMappings = array_map(function ($labels) {
+            return array_column($labels, 'statusType');
+        }, $allStateLabels);
+
+        // Filter tickets using pre-computed mappings
+        $filteredTickets = [];
+        foreach ($tickets as $ticket) {
+            $projectId = $ticket['projectId'] ?? null;
+            $status = $ticket['status'] ?? null;
+            if (!isset($stateLabelMappings[$projectId][$status]) || $stateLabelMappings[$projectId][$status] !== 'DONE') {
+                $filteredTickets[] = $ticket;
+            }
+        }
+
+        return $filteredTickets;
+    }
+
+    /**
+     * getAllProjects - Retrieves all projects for the authenticated user
+     *
+     * @access public
+     * @return array<array<string, mixed>> An array of projects with their associated details.
+     */
+    public function getAllProjects(): array
+    {
+        $sql = 'SELECT id, name FROM zp_projects';
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->execute();
+        $projects = $stmn->fetchAll(PDO::FETCH_ASSOC);
+        $stmn->closeCursor();
+
+        return array_map(function ($project) {
+            return [
+                'id' => $project['id'],
+                'name' => $project['name'],
+                'type' => 'project',
+            ];
+        }, $projects);
     }
 }

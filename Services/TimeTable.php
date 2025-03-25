@@ -5,7 +5,6 @@ namespace Leantime\Plugins\TimeTable\Services;
 use Carbon\CarbonInterface;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
-use Carbon\CarbonImmutable;
 
 /**
  * Time table services file.
@@ -13,7 +12,6 @@ use Carbon\CarbonImmutable;
 class TimeTable
 {
     private TimeTableRepository $timeTableRepo;
-    private TicketRepository $ticketRepo;
 
     /**
      * @var array<string, string>
@@ -28,13 +26,11 @@ class TimeTable
      * constructor
      *
      * @param  TimeTableRepository $timeTableRepo
-     * @param TicketRepository    $ticketRepo
      * @return void
      */
-    public function __construct(TimeTableRepository $timeTableRepo, TicketRepository $ticketRepo)
+    public function __construct(TimeTableRepository $timeTableRepo)
     {
         $this->timeTableRepo = $timeTableRepo;
-        $this->ticketRepo = $ticketRepo;
     }
 
     /**
@@ -114,17 +110,6 @@ class TimeTable
     }
 
     /**
-     * Retrieves all state labels for all projects.
-     *
-     * @return array<string, array<int|string, mixed>> The state labels grouped by project IDs.
-     */
-    public function getAllStateLabels(): array
-    {
-        $statusListSeed = $this->ticketRepo->statusListSeed;
-        return $this->timeTableRepo->getAllStateLabels($statusListSeed);
-    }
-
-    /**
      * Retrieves all users from the repository.
      *
      * @return array<string, string> List of users.
@@ -132,5 +117,60 @@ class TimeTable
     public function getAllUsers(): array
     {
         return $this->timeTableRepo->getAllUsers();
+    }
+
+    /**
+     * Retrieves all tickets from the timetable service and returns them as a JSON response.
+     *
+     * @return array<string,mixed> the list of tickets or an empty array.
+     */
+    public function getAllTickets(): array
+    {
+        $tickets = $this->timeTableRepo->getAllTickets();
+
+        $formattedTickets = [
+            'children' => array_map(function ($ticket) {
+                return [
+                    'id' => $ticket['id'],
+                    'text' => $ticket['headline'],
+                    'type' => $ticket['type'],
+                    'tags' => $ticket['tags'],
+                    'projectName' => $ticket['projectName'] ?? 'Removed project',
+                    'projectId' => $ticket['projectId'],
+                    'editorId' => $ticket['editorId'],
+                    'hoursLeft' => $ticket['hourRemaining'],
+                    'createdDate' => $ticket['date'],
+                ];
+            }, $tickets),
+        ];
+
+        return $formattedTickets;
+    }
+
+    /**
+     * Retrieves all projects from the timetable repository.
+     *
+     * @return string[]  the list of pronjects or an empty array.
+     */
+    public function getAllProjects(): array
+    {
+        $projects = $this->timeTableRepo->getAllProjects();
+        $projectGroup = [
+            'id' => 'project',
+            'text' => 'Projects',
+            'children' => [],
+            'index' => 1,
+        ];
+
+        foreach ($projects as $project) {
+            $projectGroup['children'][] = [
+                'id' => $project['id'],
+                'text' => $project['name'],
+                'type' => 'project',
+                'client' => $project['clientName'] ?? null,
+            ];
+        }
+
+        return $projectGroup;
     }
 }

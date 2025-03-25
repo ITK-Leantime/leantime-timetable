@@ -20,8 +20,6 @@ class Settings extends Controller
     private SettingRepository $settingsRepo;
     protected Template $template;
 
-    private const DEFAULT_TICKET_EXPIRATION = 60;
-
     /**
      * constructor
      * @access public
@@ -43,9 +41,7 @@ class Settings extends Controller
     public function get(): Response
     {
         try {
-            $ticketCacheExpiration = (int) ($this->settingsRepo->getSetting('itk-leantime-timetable.ticketCacheExpiration') ?: self::DEFAULT_TICKET_EXPIRATION);
             $requireTimeRegistrationComment = ($this->settingsRepo->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?: '0');
-            $this->template->assign('ticketCacheExpiration', $ticketCacheExpiration);
             $this->template->assign('requireTimeRegistrationComment', $requireTimeRegistrationComment);
         } catch (\Exception $e) {
             $this->template->setNotification('An error occurred while saving the settings. ' . $e, 'error');
@@ -64,7 +60,6 @@ class Settings extends Controller
     public function post(array $params): RedirectResponse
     {
         try {
-            $this->settingsRepo->saveSetting('itk-leantime-timetable.ticketCacheExpiration', (int)($params['ticketCacheExpiration'] ?? self::DEFAULT_TICKET_EXPIRATION));
             // For requireTimeRegistrationComment:  0 is false, 1 is true.
             $this->settingsRepo->saveSetting('itk-leantime-timetable.requireTimeRegistrationComment', ($params['requireTimeRegistrationComment'] ?? '0'));
             $this->template->setNotification('The settings were successfully saved.', 'success');

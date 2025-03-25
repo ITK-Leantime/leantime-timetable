@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Log;
 use Leantime\Core\Controller\Controller;
 use Leantime\Core\Controller\Frontcontroller;
 use Leantime\Domain\Auth\Services\Auth;
-use Leantime\Domain\Users\Services\Users;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Symfony\Component\HttpFoundation\Response;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
@@ -18,6 +17,8 @@ use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
 use Leantime\Core\UI\Template;
+use Illuminate\Http\JsonResponse as JsonResponse;
+use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 
 /**
  * TimeTable controller.
@@ -29,6 +30,7 @@ class TimeTable extends Controller
     private SettingRepository $settings;
     protected Template $template;
     private TimesheetRepository $timesheetRepository;
+    private TicketRepository $ticketRepository;
 
     /**
      * constructor
@@ -40,13 +42,73 @@ class TimeTable extends Controller
      * @param TimesheetRepository $timesheetRepository
      * @return void
      */
-    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository): void
+    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository): void
     {
         $this->timeTableService = $timeTableService;
         $this->language = $language;
         $this->settings = $settings;
         $this->template = $template;
         $this->timesheetRepository = $timesheetRepository;
+        $this->ticketRepository = $ticketRepository;
+    }
+
+    /**
+     * Retrieves all tickets from the timetable service and returns them as a JSON response.
+     *
+     * @return JsonResponse The JSON response containing the list of tickets or an empty array.
+     */
+    public function getAllTickets(): JsonResponse
+    {
+        $allTickets = $this->timeTableService->getAllTickets();
+        return response()->json(['result' => $allTickets]);
+    }
+
+    /**
+     * Creates a new ticket with the provided input values and saves it.
+     *
+     * @param string[] $input The input data for creating the new ticket, which should contain:
+     *                     - 'headline' (string): The title of the ticket.
+     *                     - 'projectId' (int): The project to which the ticket belongs.
+     *
+     * @return JsonResponse Returns a JSON response containing the result of the ticket creation.
+     */
+    public function createNewTicket(array $input): JsonResponse
+    {
+        $ticketValues = [
+            'headline' => $input['headline'],
+            'type' => 'task',
+            'projectId' => $input['projectId'],
+            'editorId' => session('userdata.id'),
+            'userId' => session('userdata.id'),
+            'description' => '',
+            'date' => date('Y-m-d H:i:s'),
+            'dateToFinish' => '',
+            'status' => '',
+            'storypoints' => '',
+            'hourRemaining' => '',
+            'planHours' => '',
+            'priority' => '',
+            'sprint' => '',
+            'acceptanceCriteria' => '',
+            'tags' => '',
+            'editFrom' => '',
+            'editTo' => '',
+            'dependingTicketId' => '',
+            'milestoneid' => '',
+        ];
+            $result = $this->ticketRepository->addTicket($ticketValues);
+        return response()->json(['result' => [$result]]);
+    }
+
+    /**
+     * Retrieves all projects from the timetable service and returns them as a JSON response.
+     *
+     * @return JsonResponse The JSON response containing the list of projects or an empty array.
+     */
+    public function getAllProjects(): JsonResponse
+    {
+        $allProjects = $this->timeTableService->getAllProjects();
+        return response()->json(['result' => $allProjects]);
     }
 
     /**
@@ -88,10 +150,8 @@ class TimeTable extends Controller
     public function get(): Response
     {
         $searchTermForFilter = null;
-        $ticketCacheExpiration = $this->settings->getSetting('itk-leantime-timetable.ticketCacheExpiration') ?? 1200;
         $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
         $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
-        $allStateLabels = $this->timeTableService->getAllStateLabels();
         $allUsers = $this->timeTableService->getAllUsers();
         $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
         $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
@@ -102,12 +162,7 @@ class TimeTable extends Controller
                     $fromDate = CarbonImmutable::now()->startOfDay()->modify($_GET['fromDate']);
                 } else {
                     $fromDate = CarbonImmutable::createFromFormat('Y-m-d', $_GET['fromDate']);
-                    if ($fromDate !== false) {
-                        $fromDate = $fromDate->startOfDay();
-                    } else {
-                        $fromDate = CarbonImmutable::createFromFormat('d/m/Y', $_GET['fromDate']);
-                        $fromDate = $fromDate !== false ? $fromDate->startOfDay() : CarbonImmutable::now()->startOfWeek()->startOfDay();
-                    }
+                    $fromDate = $fromDate->startOfDay();
                 }
             }
 
@@ -116,12 +171,7 @@ class TimeTable extends Controller
                     $toDate = CarbonImmutable::now()->startOfDay()->modify($_GET['toDate']);
                 } else {
                     $toDate = CarbonImmutable::createFromFormat('Y-m-d', $_GET['toDate']);
-                    if ($toDate !== false) {
-                        $toDate = $toDate->startOfDay();
-                    } else {
-                        $toDate = CarbonImmutable::createFromFormat('d/m/Y', $_GET['toDate']);
-                        $toDate = $toDate !== false ? $toDate->startOfDay() : CarbonImmutable::now()->endOfWeek()->startOfDay();
-                    }
+                    $toDate = $toDate->startOfDay();
                 }
             }
         } catch (\Exception $e) {
@@ -130,19 +180,9 @@ class TimeTable extends Controller
             $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         }
 
-        if ($fromDate instanceof CarbonImmutable) {
-            $weekStartDateDb = $fromDate->setToDbTimezone();
-        } else {
-            // Handle invalid $fromDate gracefully
-            $weekStartDateDb = null; // Or define your fallback behavior
-        }
+        $weekStartDateDb = $fromDate->setToDbTimezone();
 
-        if ($toDate instanceof CarbonImmutable) {
-            $weekEndDateDb = $toDate->setToDbTimezone();
-        } else {
-            // Handle invalid $toDate gracefully
-            $weekEndDateDb = null; // Or define your fallback behavior
-        }
+        $weekEndDateDb = $toDate->setToDbTimezone();
 
         $this->template->assign('currentSearchTerm', $searchTermForFilter);
 
@@ -150,12 +190,7 @@ class TimeTable extends Controller
         $days[] = array_shift($days);
 
         $weekDates = [];
-        if ($fromDate instanceof CarbonImmutable) {
-            $dateIterator = $fromDate->setToUserTimezone()->copy();
-        } else {
-            // Handle invalid $fromDate gracefully
-            $dateIterator = null; // Or define fallback behavior
-        }
+        $dateIterator = $fromDate->setToUserTimezone()->copy();
 
         while ($dateIterator <= $toDate) {
             $dayOfWeek = strtolower($dateIterator->locale(session('usersettings.language'))->dayName);
@@ -172,12 +207,10 @@ class TimeTable extends Controller
         $relevantTicketIds = $this->timeTableService->getUniqueTicketIds($weekStartDateDb, $weekEndDateDb, $userId);
 
         $timesheetsByTicket = [];
-        $ticketIds = [];
         foreach ($relevantTicketIds as $ticket) {
             if (!$ticket['ticketId']) {
                 continue;
             }
-            $ticketIds[] = intval($ticket['ticketId']);
             $timesheetsSortedByWeekdate = [];
             foreach ($weekDates as $weekDate) {
                 $timesheetsByTicketAndDate = $this->timeTableService->getTimesheetByTicketIdAndWorkDate($ticket['ticketId'], $weekDate->setToDbTimezone(), $userId, $searchTermForFilter);
@@ -194,14 +227,11 @@ class TimeTable extends Controller
             $timesheetsByTicket[$ticket['ticketId']] = $timesheetsSortedByWeekdate;
         }
         // All tickets assigned to the template
-        $this->template->assign('ticketIds', implode(',', $ticketIds));
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
         $this->template->assign('weekDays', $days);
         $this->template->assign('weekDates', $weekDates);
-        $this->template->assign('ticketCacheExpiration', $ticketCacheExpiration);
         $this->template->assign('fromDate', $fromDate);
         $this->template->assign('toDate', $toDate);
-        $this->template->assign('allStateLabels', json_encode($allStateLabels));
         $this->template->assign('requireTimeRegistrationComment', $this->settings->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?? 0);
         $this->template->assign('allUsers', $allUsers);
         $this->template->assign('userId', $userId);
