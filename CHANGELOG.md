@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-45](https://github.com/ITK-Leantime/leantime-timetable/pull/45)
+  * Add fallback to unsupported languages
+
 * [PR-44](https://github.com/ITK-Leantime/leantime-timetable/pull/44)
   * Update changelog
   * Add new markdown lint
