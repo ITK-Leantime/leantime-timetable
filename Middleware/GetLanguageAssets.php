@@ -43,7 +43,6 @@ readonly class GetLanguageAssets
             $languageArray += parse_ini_file(__DIR__ . '/../Language/en-US.ini', true);
         }
 
-        // @phpstan-ignore-next-line
         if (($language = $this->config->language ?? session('usersettings.language')) !== 'en-US') {
             if (!Cache::store('installation')->has('timeTable.language.' . $language)) {
                 $languageIniPath = __DIR__ . '/../Language/' . $language . '.ini';
