@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-03-27
+
 * [PR-44](https://github.com/ITK-Leantime/leantime-timetable/pull/44)
   * Update changelog
   * Add new markdown lint
@@ -157,7 +159,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.5.0...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.0.0...HEAD
+[3.0.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.5.0...3.0.0
 [3.5.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.4.0...3.5.0
 [3.4.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.3.0...3.4.0
 [3.3.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.2.0...3.3.0
