@@ -7,26 +7,29 @@ use Closure;
 use Illuminate\Support\Facades\Cache;
 use Leantime\Core\Configuration\Environment as Configuration;
 use Leantime\Core\Http\IncomingRequest;
+use Psr\SimpleCache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Leantime\Core\Language;
 
 /**
  * https://github.com/Leantime/plugin-template/blob/main/Middleware/GetLanguageAssets.php
  */
-class GetLanguageAssets
+readonly class GetLanguageAssets
 {
     /**
      * Constructor.
      */
     public function __construct(
-        private Language $language,
+        private Language      $language,
         private Configuration $config,
     ) {
     }
 
     /**
      * @param \Closure(IncomingRequest): Response $next
-     **/
+     *
+     * @throws InvalidArgumentException
+     */
     public function handle(IncomingRequest $request, Closure $next): Response
     {
 
@@ -41,11 +44,15 @@ class GetLanguageAssets
         }
 
         // @phpstan-ignore-next-line
-        if (($language = session('usersettings.language') ?? $this->config->language) !== 'en-US') {
-            if (! Cache::store('installation')->has('timeTable.language.' . $language)) {
+        if (($language = $this->config->language ?? session('usersettings.language')) !== 'en-US') {
+            if (!Cache::store('installation')->has('timeTable.language.' . $language)) {
+                $languageIniPath = __DIR__ . '/../Language/' . $language . '.ini';
+                if (!file_exists($languageIniPath)) {
+                    $languageIniPath = __DIR__ . '/../Language/en-US.ini';
+                }
                 Cache::store('installation')->put(
                     'timeTable.language.' . $language,
-                    parse_ini_file(__DIR__ . '/../Language/' . $language . '.ini', true)
+                    parse_ini_file($languageIniPath, true)
                 );
             }
 
