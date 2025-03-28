@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-48](https://github.com/ITK-Leantime/leantime-timetable/pull/48)
+  remove dist in gitignore
+
 ## [3.0.0] - 2025-03-27
 
 * [PR-44](https://github.com/ITK-Leantime/leantime-timetable/pull/44)

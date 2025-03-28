@@ -5,7 +5,6 @@ vendor
 node_modules
 package-lock.json
 .idea/
-dist/*
 
 # Release artifacts
 release/
