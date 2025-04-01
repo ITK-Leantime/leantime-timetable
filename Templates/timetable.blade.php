@@ -105,7 +105,7 @@
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-                                            
+
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -115,7 +115,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-                                            
+
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
@@ -242,6 +242,7 @@
             <input type="hidden" name="entryCopyDescription" class="entry-copy-description">
             <input type="hidden" name="entryCopyFromDate" />
             <input type="hidden" name="entryCopyToDate" />
+            <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
             <p class="entry-copy-headline"></p>
             <p class="entry-copy-text"></p>
             <div class="entry-copy-checkboxes">
