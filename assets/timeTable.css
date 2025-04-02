@@ -1311,3 +1311,34 @@ i.your-task {
     }
   }
 }
+
+div#edit-time-log-modal.modal-syncing-loader::after,
+div#entry-copy-modal.modal-syncing-loader::after {
+    content: '\f110';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 24px;
+    color: var(--itk-color-gray-700);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 15px;
+    height: 15px;
+    animation: spin 2s linear infinite;
+    z-index: 999999999999 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+div#edit-time-log-modal.modal-syncing-loader::before,
+div#entry-copy-modal.modal-syncing-loader::before {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    background-color: #fff;
+    z-index: 99999999 !important;
+    position: absolute;
+    border: 1px solid var(--itk-border-color);
+}

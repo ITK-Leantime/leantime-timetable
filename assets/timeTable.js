@@ -35,7 +35,6 @@ jQuery(document).ready(function ($) {
         "#entry-copy-weekend",
       );
       this.timeEditForm = this.timeEditModal.find(".edit-time-log-form");
-      this.timeEditSyncModal = $("#edit-time-sync-modal");
       this.modalInputTimesheetId = this.timeEditModal.find(
         'input[name="timesheet-id"]',
       );
@@ -143,9 +142,8 @@ jQuery(document).ready(function ($) {
       // Register event handlers
       this.registerEventHandlers();
 
-      this.isFetching = true;
       TimeTableApiHandler.fetchTicketData().then((data) => {
-        this.isFetching = false;
+          this.removeLoadingClasses();
         let {
           value: { children: projects },
         } = data[0];
@@ -157,6 +155,11 @@ jQuery(document).ready(function ($) {
       });
     }
 
+
+    removeLoadingClasses() {
+        this.timeEditModal.removeClass("modal-syncing-loader");
+        this.entryCopyModal.removeClass("modal-syncing-loader");
+    }
     /**
      * Registers event handlers for the timetable module.
      *
@@ -552,14 +555,6 @@ jQuery(document).ready(function ($) {
       this.entryCopyCheckboxOverwrite.prop("checked", false);
       this.entryCopyCheckboxWeekend.prop("checked", false);
       this.clearHighlighting();
-    }
-
-    openEditTimeSyncModal() {
-      $(this.timeEditSyncModal).show().css("display", "flex");
-    }
-
-    closeEditTimeSyncModal() {
-      $(this.timeEditSyncModal).hide();
     }
 
     /**
