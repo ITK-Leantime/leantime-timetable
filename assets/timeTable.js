@@ -143,7 +143,7 @@ jQuery(document).ready(function ($) {
       this.registerEventHandlers();
 
       TimeTableApiHandler.fetchTicketData().then((data) => {
-          this.removeLoadingClasses();
+        this.removeLoadingClasses();
         let {
           value: { children: projects },
         } = data[0];
@@ -155,10 +155,9 @@ jQuery(document).ready(function ($) {
       });
     }
 
-
     removeLoadingClasses() {
-        this.timeEditModal.removeClass("modal-syncing-loader");
-        this.entryCopyModal.removeClass("modal-syncing-loader");
+      this.timeEditModal.removeClass("modal-syncing-loader");
+      this.entryCopyModal.removeClass("modal-syncing-loader");
     }
     /**
      * Registers event handlers for the timetable module.
