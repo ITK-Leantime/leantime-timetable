@@ -182,7 +182,7 @@
 
     {{-- Modal for editing work logs --}}
 
-    <div id="edit-time-log-modal" class="timetable edit-time-log-modal">
+    <div id="edit-time-log-modal" class="timetable edit-time-log-modal modal-syncing-loader">
         <form method="POST" class="edit-time-log-form">
             <input type="hidden" name="action" value="saveTicket">
             {{-- Hidden properties for post --}}
@@ -234,7 +234,7 @@
 
         </form>
     </div>
-    <div id="entry-copy-modal">
+    <div id="entry-copy-modal" class="modal-syncing-loader">
         <form method="POST" class="entry-copy-form">
             <input type="hidden" name="action" value="copyEntryForward">
             <input type="hidden" name="entryCopyTicketId" class="entry-copy-ticketId">
@@ -242,6 +242,7 @@
             <input type="hidden" name="entryCopyDescription" class="entry-copy-description">
             <input type="hidden" name="entryCopyFromDate" />
             <input type="hidden" name="entryCopyToDate" />
+            <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
             <p class="entry-copy-headline"></p>
             <p class="entry-copy-text"></p>
             <div class="entry-copy-checkboxes">
@@ -263,7 +264,5 @@
             </div>
 
         </form>
-    </div>
-    <div id="edit-time-sync-modal" class="nyroModalBg edit-time-sync-modal">
     </div>
 @endsection

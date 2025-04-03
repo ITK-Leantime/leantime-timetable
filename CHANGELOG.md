@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+* [PR-50](https://github.com/ITK-Leantime/leantime-timetable/pull/50)
+  Added missing manageAsUserId value for copyEntryForward form
+  Added loader blocker for popups when system is fetching tickets
+
 ## [4.0.0] - 2025-03-28
 
 * [PR-48](https://github.com/ITK-Leantime/leantime-timetable/pull/48)
