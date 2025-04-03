@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.1] - 2025-04-03
+
 * [PR-50](https://github.com/ITK-Leantime/leantime-timetable/pull/50)
   Added missing manageAsUserId value for copyEntryForward form
   Added loader blocker for popups when system is fetching tickets
@@ -166,7 +168,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.0...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.1...HEAD
+[4.0.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.0...4.0.1
 [4.0.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.5.0...4.0.0
 [3.5.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.4.0...3.5.0
 [3.4.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.3.0...3.4.0
