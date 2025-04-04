@@ -88,6 +88,8 @@ class TimeTable
         zp_tickets.id as ticketId,
         zp_tickets.type as ticketType,
         zp_tickets.hourRemaining,
+        zp_tickets.tags,
+        zp_tickets.dateToFinish,
         zp_projects.name
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
