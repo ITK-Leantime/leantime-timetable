@@ -21,6 +21,8 @@ jQuery(document).ready(function ($) {
       // Modal selectors
       this.timeEditModal = $("#edit-time-log-modal");
       this.entryCopyModal = $("#entry-copy-modal");
+      this.ticketContextMenuModal = $("#ticket-context-menu-modal");
+      this.ticketContextDateToFinish = this.ticketContextMenuModal.find(".date-to-finish");
       this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
       this.entryCopyButtonClose = this.entryCopyModal.find(
         ".entry-copy-modal-cancel",
@@ -93,6 +95,12 @@ jQuery(document).ready(function ($) {
             instance.element.form.submit();
           }
         },
+      });
+
+      this.ticketContextDateToFinish = flatpickr(this.ticketContextMenuModal, {
+          dateFormat: "d-m-Y",
+          weekNumbers: true,
+          locale: Danish,
       });
 
       this.timelogDateChanger = flatpickr(this.modalInputDateMove, {
@@ -184,6 +192,13 @@ jQuery(document).ready(function ($) {
           ) {
             this.closeEntryCopyModal();
           }
+
+          if (
+              $(this.ticketContextMenuModal).is(":visible") &&
+              !this.ticketContextMenuModal[0].contains(event.target)
+          ) {
+              this.closeTicketContextMenuModal();
+          }
         }.bind(this),
       );
 
@@ -222,6 +237,21 @@ jQuery(document).ready(function ($) {
             .focus();
         }.bind(this),
       );
+
+      $(document).on(
+          'click',
+          'div.ticket-context-menu',
+          function ({ target }) {
+              const rect = target.getBoundingClientRect();
+
+              this.ticketContextMenuModal
+                  .css({
+                      left: `${rect.left + window.scrollX - 215}px`, // Adjust horizontal position
+                      top: `${rect.top + window.scrollY + rect.height - 50}px`, // Adjust vertical position
+                  })
+                  .addClass("shown");
+          }.bind(this),
+      )
 
       // Close modal
       this.modalCancelButton.click(() => this.closeEditTimeLogModal());
@@ -555,6 +585,11 @@ jQuery(document).ready(function ($) {
       this.entryCopyCheckboxWeekend.prop("checked", false);
       this.clearHighlighting();
     }
+
+      closeTicketContextMenuModal() {
+        this.ticketContextMenuModal.removeClass("shown");
+
+      }
 
     /**
      * Handles the click outside the modal.

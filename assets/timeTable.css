@@ -1,995 +1,703 @@
 /* Todo scope css better so it doesnt "ruin" leantime again */
 /* Todo streamline kebab case / camelcase stuff */
 .maincontentinner {
-  padding-bottom: 50px;
+    padding-bottom: 50px;
 }
 
 :root {
-  --itk-color-primary: hsla(200, 98%, 39%, 1);
-  --itk-color-primary-50: hsla(204, 100%, 97%, 1);
-  --itk-color-primary-100: hsla(204, 94%, 94%, 1);
-  --itk-color-primary-800: hsla(201, 90%, 27%, 1);
-  --itk-color-secondary: hsla(241, 73%, 59%, 1);
-  --itk-color-secondary-50: hsla(241, 100%, 97%, 1);
-  --itk-color-secondary-100: hsla(241, 91%, 93%, 1);
-  --itk-color-secondary-200: hsla(241, 87%, 86%, 1);
-  --itk-color-secondary-800: hsla(241, 74%, 40%, 1);
-  --itk-color-success: hsla(142, 76%, 36%, 1);
-  --itk-color-success-100: hsla(141, 84%, 93%, 1);
-  --itk-color-danger: hsla(0, 72%, 51%, 1);
-  --itk-color-danger-800: hsla(0, 70%, 35%, 1);
-  --itk-color-warning: hsla(38, 92%, 50%, 1);
-  --itk-color-white: white;
-  --itk-color-gray-50: hsla(210, 40%, 98%, 1);
-  --itk-color-gray-100: hsla(214, 32%, 91%, 1);
-  --itk-color-gray-200: hsla(213, 27%, 84%, 1);
-  --itk-color-gray-500: hsla(215, 16%, 47%, 1);
-  --itk-color-gray-700: hsla(215, 25%, 27%, 1);
-  --itk-color-black: black;
+    --itk-color-primary: hsla(200, 98%, 39%, 1);
+    --itk-color-primary-50: hsla(204, 100%, 97%, 1);
+    --itk-color-primary-100: hsla(204, 94%, 94%, 1);
+    --itk-color-primary-800: hsla(201, 90%, 27%, 1);
+    --itk-color-secondary: hsla(241, 73%, 59%, 1);
+    --itk-color-secondary-50: hsla(241, 100%, 97%, 1);
+    --itk-color-secondary-100: hsla(241, 91%, 93%, 1);
+    --itk-color-secondary-200: hsla(241, 87%, 86%, 1);
+    --itk-color-secondary-800: hsla(241, 74%, 40%, 1);
+    --itk-color-success: hsla(142, 76%, 36%, 1);
+    --itk-color-success-100: hsla(141, 84%, 93%, 1);
+    --itk-color-danger: hsla(0, 72%, 51%, 1);
+    --itk-color-danger-800: hsla(0, 70%, 35%, 1);
+    --itk-color-warning: hsla(38, 92%, 50%, 1);
+    --itk-color-white: white;
+    --itk-color-gray-50: hsla(210, 40%, 98%, 1);
+    --itk-color-gray-100: hsla(214, 32%, 91%, 1);
+    --itk-color-gray-200: hsla(213, 27%, 84%, 1);
+    --itk-color-gray-500: hsla(215, 16%, 47%, 1);
+    --itk-color-gray-700: hsla(215, 25%, 27%, 1);
+    --itk-color-black: black;
+    --itk-color-red: oklch(50.5% 0.213 27.518);
 
-  --itk-border-color: var(--itk-color-gray-200);
+    --itk-border-color: var(--itk-color-gray-200);
 
-  --itk-border-radius: 4px;
-  --itk-button-padding: 0 10px;
-  --itk-popup-width: 250px;
+    --itk-border-radius: 4px;
+    --itk-button-padding: 0 10px;
+    --itk-popup-width: 250px;
 
-  --itk-spacing: 8px;
-  --itk-spacing-xs: calc(var(--itk-spacing) * 0.25);
-  --itk-spacing-sm: calc(var(--itk-spacing) * 0.5);
-  --itk-spacing-md: var(--itk-spacing);
-  --itk-spacing-lg: calc(var(--itk-spacing) * 1.5);
-  --itk-spacing-xl: calc(var(--itk-spacing) * 2);
-  --itk-transition-time: 0.3s;
-  --itk-transition-easing: ease-in-out;
+    --itk-spacing: 8px;
+    --itk-spacing-xs: calc(var(--itk-spacing) * 0.25);
+    --itk-spacing-sm: calc(var(--itk-spacing) * 0.5);
+    --itk-spacing-md: var(--itk-spacing);
+    --itk-spacing-lg: calc(var(--itk-spacing) * 1.5);
+    --itk-spacing-xl: calc(var(--itk-spacing) * 2);
+    --itk-transition-time: 0.3s;
+    --itk-transition-easing: ease-in-out;
 }
 
 .timetable {
-  .recently-deleted-timelog-info {
-    display: flex;
-    margin-left: auto;
-    p {
-      margin: auto;
-      i {
-        color: var(--itk-color-primary);
-      }
-    }
-  }
-  .timetable-scroll-container {
-    overflow-x: auto;
+    .recently-deleted-timelog-info {
+        display: flex;
+        margin-left: auto;
 
-    &.overflowing tbody td:first-child {
-      width: 500px !important;
-      max-width: 350px !important;
+        p {
+            margin: auto;
 
-      &.ticket-title a {
-        max-width: 325px;
-      }
-    }
-  }
-
-  #timetable {
-    background-color: var(--itk-color-white);
-
-    .new-week {
-      border-left: 2px solid var(--itk-border-color) !important;
-      position: relative;
-    }
-
-    .new-week.sticky:before {
-      display: none;
-    }
-
-    .new-week.sticky:after {
-      display: none;
-    }
-
-    td.timetable-edit-entry:has(+ .new-week) {
-      border-right: none;
-    }
-
-    th.new-week::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 20px;
-      height: 20px;
-      background-color: var(--itk-border-color);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1;
-    }
-
-    th.new-week::after {
-      content: attr(data-week);
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 20px;
-      height: 20px;
-      font-size: 11px;
-      color: #000;
-      text-align: center;
-      transform: translate(-50%, -45%);
-      z-index: 2;
-      font-family: sans-serif;
-    }
-
-    th:first-child {
-      position: sticky;
-      left: 0;
-      z-index: 1;
-      width: 600px;
-      max-width: 600px;
-      background-color: white;
-    }
-
-    th:last-child {
-      position: sticky;
-      right: 0;
-      z-index: 1;
-      background-color: white;
-      border-left: 1px solid var(--itk-border-color);
-    }
-
-    th:first-child::after,
-    td:first-child::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 1px;
-      height: 100%;
-      background-color: var(--itk-border-color);
-      z-index: 2;
-    }
-
-    th:last-child::after,
-    td:last-child::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 1px;
-      height: 100%;
-      background-color: var(--itk-border-color);
-      z-index: 2;
-    }
-
-    tbody {
-      td:first-child {
-        position: sticky;
-        left: 0;
-        z-index: 1;
-        width: 600px;
-        max-width: 600px;
-        background-color: white;
-      }
-
-      td:last-child {
-        position: sticky;
-        right: 0;
-        z-index: 1;
-        background-color: white;
-      }
-
-      tr.newly-added-tr {
-        td:not(:last-child) {
-          background-color: var(--itk-color-primary-100);
-          animation: pulseBackground 0.85s ease-in-out 2;
+            i {
+                color: var(--itk-color-primary);
+            }
         }
-        td.ticket-title:after {
-          content: "";
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 2px;
-          height: 100%;
-          background-color: var(--itk-border-color);
-          z-index: 2;
+    }
+
+    .timetable-scroll-container {
+        overflow-x: auto;
+
+        &.overflowing tbody td:first-child {
+            width: 500px !important;
+            max-width: 350px !important;
+
+            &.ticket-title a {
+                max-width: 325px;
+            }
         }
-      }
-    }
-  }
-
-  .timetable-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  > h1 {
-    margin-bottom: var(--itk-spacing-xl);
-  }
-
-  .flex-container {
-    display: flex;
-  }
-
-  .justify-between {
-    justify-content: space-between;
-  }
-
-  .ml-auto {
-    margin-left: auto;
-  }
-
-  .gap-3 {
-    gap: var(--itk-spacing-md);
-  }
-
-  .tools {
-    width: 100%;
-    margin-bottom: var(--itk-spacing-md);
-
-    #dateRange {
-      margin: auto 0;
-      border-radius: 0;
-      opacity: 1;
-      border: 1px solid var(--main-border-color);
-      text-align: center;
-    }
-  }
-
-  .btn {
-    border-radius: var(--itk-border-radius) !important;
-    background: none;
-    padding: var(--itk-spacing-xs) var(--itk-spacing-sm);
-    width: auto;
-    transition:
-      border calc(var(--itk-transition-time) * 0.5) var(--itk-transition-easing),
-      background-color calc(var(--itk-transition-time) * 0.5)
-        var(--itk-transition-easing);
-
-    i {
-      color: inherit;
-      pointer-events: none;
     }
 
-    &:hover {
-      transition:
-        border var(--itk-transition-time) var(--itk-transition-easing),
-        background-color var(--itk-transition-time) var(--itk-transition-easing);
+    #timetable {
+        background-color: var(--itk-color-white);
+
+        .new-week {
+            border-left: 2px solid var(--itk-border-color) !important;
+            position: relative;
+        }
+
+        .new-week.sticky:before {
+            display: none;
+        }
+
+        .new-week.sticky:after {
+            display: none;
+        }
+
+        td.timetable-edit-entry:has(+ .new-week) {
+            border-right: none;
+        }
+
+        th.new-week::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: var(--itk-border-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        th.new-week::after {
+            content: attr(data-week);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            color: #000;
+            text-align: center;
+            transform: translate(-50%, -45%);
+            z-index: 2;
+            font-family: sans-serif;
+        }
+
+        th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            width: 600px;
+            max-width: 600px;
+            background-color: white;
+        }
+
+        th:last-child {
+            position: sticky;
+            right: 0;
+            z-index: 1;
+            background-color: white;
+            border-left: 1px solid var(--itk-border-color);
+        }
+
+        th:first-child::after,
+        td:first-child::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background-color: var(--itk-border-color);
+            z-index: 2;
+        }
+
+        th:last-child::after,
+        td:last-child::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 100%;
+            background-color: var(--itk-border-color);
+            z-index: 2;
+        }
+
+        tbody {
+            td:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 1;
+                width: 600px;
+                max-width: 600px;
+                background-color: white;
+                display: flex;
+                flex-direction: row;
+
+                &:hover {
+                    div.ticket-context-menu > span.context-menu-trigger {
+                        opacity: 1 !important;
+                    }
+                }
+
+                div.ticket-context-menu {
+                    margin-left: auto;
+                    display: flex;
+                    width: 75px;
+                    cursor: pointer;
+                    user-select: none;
+                    transition: opacity var(--itk-transition-time) var(--itk-transition-easing);
+
+                    span {
+                        margin: auto;
+                        pointer-events: none;
+
+                        &.context-menu-trigger {
+                            opacity: 0;
+                            padding-left: var(--itk-spacing-sm);
+
+                            i {
+                                font-size: 16px;
+                                color: var(--itk-color-gray-700)
+                            }
+                        }
+
+                        i {
+                            font-size: 13px;
+                            color: var(--itk-color-red);
+                        }
+                    }
+                }
+            }
+
+            td:last-child {
+                position: sticky;
+                right: 0;
+                z-index: 1;
+                background-color: white;
+            }
+
+            tr.newly-added-tr {
+                td:not(:last-child) {
+                    background-color: var(--itk-color-primary-100);
+                    animation: pulseBackground 0.85s ease-in-out 2;
+                }
+
+                td.ticket-title:after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 2px;
+                    height: 100%;
+                    background-color: var(--itk-border-color);
+                    z-index: 2;
+                }
+            }
+        }
     }
 
-    &:focus {
-      outline: 1px solid var(--itk-color-black);
-    }
-  }
-
-  .btn-default {
-    background: var(--itk-color-gray-50);
-    border: 1px solid var(--itk-border-color);
-    color: var(--itk-color-gray-700);
-    padding: var(--itk-spacing-xs) var(--itk-spacing);
-
-    &:hover {
-      color: var(--itk-color-black);
-      background-color: var(--itk-color-white);
-      border-color: var(--itk-color-gray-500);
-    }
-  }
-
-  .btn-primary {
-    background: var(--itk-color-primary);
-    border: 1px solid var(--itk-color-primary);
-    color: var(--itk-color-white);
-
-    &:hover {
-      background-color: var(--itk-color-primary-800);
-      border-color: var(--itk-color-primary-800);
-    }
-  }
-
-  .btn-danger {
-    background: var(--itk-color-danger);
-    border: 1px solid var(--itk-color-danger);
-    color: var(--itk-color-white);
-    padding: 0 var(--itk-spacing-md);
-
-    &:hover {
-      background-color: var(--itk-color-danger-800);
-      border-color: var(--itk-color-danger-800);
-    }
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* Firefox */
-
-  input[type="number"] {
-    -moz-appearance: textfield;
-  }
-
-  .table {
-    table-layout: auto;
-  }
-  .table td {
-    position: relative;
-  }
-
-  .table td.weekend {
-    background: var(--itk-color-gray-50);
-  }
-
-  .table td.today {
-    background: var(--itk-color-primary-50);
-  }
-
-  .table .th-ticket-title {
-    width: 60%;
-  }
-
-  .table td:first-child {
-    text-align: left;
-  }
-
-  .table th {
-    border: 1px solid var(--itk-border-color) !important;
-    background-color: var(--itk-color-gray-50);
-    padding: var(--itk-spacing-sm) var(--itk-spacing-md);
-
-    &:last-child {
-      color: var(--itk-color-gray-500);
-      background-color: var(--itk-color-gray-100);
-    }
-  }
-
-  .table th.weekend {
-    color: var(--itk-color-gray-500);
-    background: var(--itk-color-gray-50);
-  }
-
-  .table th.today {
-    background: var(--itk-color-primary-100);
-  }
-
-  .table td {
-    border: 1px solid var(--itk-border-color);
-    padding: 6px 12px;
-  }
-
-  .table td.empty-row {
-    background-color: var(--itk-color-white);
-  }
-
-  .table tr.empty-row:has(+ tr.newly-added-tr) {
-    display: none;
-  }
-
-  .table .tr-total {
-    color: var(--itk-color-gray-500);
-    background-color: var(--itk-color-gray-100);
-    font-weight: bold;
-    cursor: default;
-  }
-
-  .table .timetable-edit-entry {
-    min-width: 50px;
-    --itk-transition-time: 0.2s;
-    --itk-transition-easing: ease-in-out;
-    cursor: pointer;
-    position: relative;
-    transition: background-color calc(var(--itk-transition-time) * 0.5)
-      var(--itk-transition-easing);
-
-    &.highlight {
-      background-color: var(--itk-color-secondary-100);
+    .timetable-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-    &.highlighting {
-      .entry-copy-button {
-        opacity: 1;
-        background-color: var(--itk-color-secondary-100);
-      }
+    > h1 {
+        margin-bottom: var(--itk-spacing-xl);
     }
 
-    span {
-      pointer-events: none;
-      user-select: none;
+    .flex-container {
+        display: flex;
     }
 
-    div.entry-copy-button {
-      display: flex;
-      position: absolute;
-      height: 100%;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background-color: var(--itk-color-secondary-50);
-      width: 25%;
-      aspect-ratio: 1 / 1.2;
-      opacity: 0;
-      border-left: 1px solid var(--itk-color-secondary-100);
-      transition:
-        background-color var(--itk-transition-time),
-        opacity var(--itk-transition-time) var(--itk-transition-easing);
-
-      i {
-        margin: auto;
-        opacity: 0.8;
-        pointer-events: none;
-      }
-      &:hover {
-        background-color: var(--itk-color-secondary-100);
-      }
-      &.ready {
-        pointer-events: all;
-        opacity: 1;
-        transition: opacity 0.3s ease;
-      }
+    .justify-between {
+        justify-content: space-between;
     }
 
-    &.description-missing:after {
-      content: "";
-      width: 0;
-      height: 0;
-      position: absolute;
-      top: 0;
-      right: 0;
-      border-left: 10px solid transparent;
-      border-bottom: 10px solid transparent;
-      border-top: 10px solid var(--itk-color-danger);
+    .ml-auto {
+        margin-left: auto;
     }
 
-    &:before {
-      opacity: 0;
+    .gap-3 {
+        gap: var(--itk-spacing-md);
     }
 
-    &:hover {
-      position: relative;
-      background-color: var(--itk-color-success-100);
+    .tools {
+        width: 100%;
+        margin-bottom: var(--itk-spacing-md);
 
-      transition: background-color var(--itk-transition-time)
-        var(--itk-transition-easing);
+        #dateRange {
+            margin: auto 0;
+            border-radius: 0;
+            opacity: 1;
+            border: 1px solid var(--main-border-color);
+            text-align: center;
+        }
+    }
 
-      div.entry-copy-button {
-        opacity: 1;
-        pointer-events: all;
-      }
-      &:before {
-        content: "+";
+    .btn {
+        border-radius: var(--itk-border-radius) !important;
+        background: none;
+        padding: var(--itk-spacing-xs) var(--itk-spacing-sm);
+        width: auto;
+        transition: border calc(var(--itk-transition-time) * 0.5) var(--itk-transition-easing),
+        background-color calc(var(--itk-transition-time) * 0.5) var(--itk-transition-easing);
+
+        i {
+            color: inherit;
+            pointer-events: none;
+        }
+
+        &:hover {
+            transition: border var(--itk-transition-time) var(--itk-transition-easing),
+            background-color var(--itk-transition-time) var(--itk-transition-easing);
+        }
+
+        &:focus {
+            outline: 1px solid var(--itk-color-black);
+        }
+    }
+
+    .btn-default {
+        background: var(--itk-color-gray-50);
+        border: 1px solid var(--itk-border-color);
+        color: var(--itk-color-gray-700);
+        padding: var(--itk-spacing-xs) var(--itk-spacing);
+
+        &:hover {
+            color: var(--itk-color-black);
+            background-color: var(--itk-color-white);
+            border-color: var(--itk-color-gray-500);
+        }
+    }
+
+    .btn-primary {
+        background: var(--itk-color-primary);
+        border: 1px solid var(--itk-color-primary);
+        color: var(--itk-color-white);
+
+        &:hover {
+            background-color: var(--itk-color-primary-800);
+            border-color: var(--itk-color-primary-800);
+        }
+    }
+
+    .btn-danger {
+        background: var(--itk-color-danger);
+        border: 1px solid var(--itk-color-danger);
+        color: var(--itk-color-white);
+        padding: 0 var(--itk-spacing-md);
+
+        &:hover {
+            background-color: var(--itk-color-danger-800);
+            border-color: var(--itk-color-danger-800);
+        }
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Firefox */
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+    .table {
+        table-layout: auto;
+    }
+
+    .table td {
+        position: relative;
+    }
+
+    .table td.weekend {
+        background: var(--itk-color-gray-50);
+    }
+
+    .table td.today {
+        background: var(--itk-color-primary-50);
+    }
+
+    .table .th-ticket-title {
+        width: 60%;
+    }
+
+    .table td:first-child {
+        text-align: left;
+    }
+
+    .table th {
+        border: 1px solid var(--itk-border-color) !important;
+        background-color: var(--itk-color-gray-50);
+        padding: var(--itk-spacing-sm) var(--itk-spacing-md);
+
+        &:last-child {
+            color: var(--itk-color-gray-500);
+            background-color: var(--itk-color-gray-100);
+        }
+    }
+
+    .table th.weekend {
+        color: var(--itk-color-gray-500);
+        background: var(--itk-color-gray-50);
+    }
+
+    .table th.today {
+        background: var(--itk-color-primary-100);
+    }
+
+    .table td {
+        border: 1px solid var(--itk-border-color);
+        padding: 6px 12px;
+    }
+
+    .table td.empty-row {
+        background-color: var(--itk-color-white);
+    }
+
+    .table tr.empty-row:has(+ tr.newly-added-tr) {
+        display: none;
+    }
+
+    .table .tr-total {
+        color: var(--itk-color-gray-500);
+        background-color: var(--itk-color-gray-100);
+        font-weight: bold;
+        cursor: default;
+    }
+
+    .table .timetable-edit-entry {
+        min-width: 50px;
+        --itk-transition-time: 0.2s;
+        --itk-transition-easing: ease-in-out;
+        cursor: pointer;
+        position: relative;
+        transition: background-color calc(var(--itk-transition-time) * 0.5) var(--itk-transition-easing);
+
+        &.highlight {
+            background-color: var(--itk-color-secondary-100);
+        }
+
+        &.highlighting {
+            .entry-copy-button {
+                opacity: 1;
+                background-color: var(--itk-color-secondary-100);
+            }
+        }
+
+        span {
+            pointer-events: none;
+            user-select: none;
+        }
+
+        div.entry-copy-button {
+            display: flex;
+            position: absolute;
+            height: 100%;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background-color: var(--itk-color-secondary-50);
+            width: 25%;
+            aspect-ratio: 1 / 1.2;
+            opacity: 0;
+            border-left: 1px solid var(--itk-color-secondary-100);
+            transition: background-color var(--itk-transition-time),
+            opacity var(--itk-transition-time) var(--itk-transition-easing);
+
+            i {
+                margin: auto;
+                opacity: 0.8;
+                pointer-events: none;
+            }
+
+            &:hover {
+                background-color: var(--itk-color-secondary-100);
+            }
+
+            &.ready {
+                pointer-events: all;
+                opacity: 1;
+                transition: opacity 0.3s ease;
+            }
+        }
+
+        &.description-missing:after {
+            content: "";
+            width: 0;
+            height: 0;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-left: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-top: 10px solid var(--itk-color-danger);
+        }
+
+        &:before {
+            opacity: 0;
+        }
+
+        &:hover {
+            position: relative;
+            background-color: var(--itk-color-success-100);
+
+            transition: background-color var(--itk-transition-time) var(--itk-transition-easing);
+
+            div.entry-copy-button {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            &:before {
+                content: "+";
+                position: absolute;
+                display: block;
+                width: 10px;
+                height: 18px;
+                top: calc(50% - 9px);
+                left: calc(50% - 5px);
+                color: var(--itk-color-success);
+                opacity: 0.8;
+                transition: left 0.3s ease,
+                opacity var(--itk-transition-time) var(--itk-transition-easing);
+            }
+
+            &:not([data-hours=""]) {
+                &:before {
+                    content: "✎";
+                    left: calc(40% - 5px);
+                }
+            }
+        }
+    }
+
+    td.timetable-edit-entry[data-preview]::after {
+        content: attr(data-preview);
+        opacity: 0.6;
+    }
+
+    td.timetable-edit-entry[data-preview] span {
+        display: none;
+    }
+
+    .table td select {
+        all: unset;
         position: absolute;
         display: block;
-        width: 10px;
-        height: 18px;
-        top: calc(50% - 9px);
-        left: calc(50% - 5px);
-        color: var(--itk-color-success);
-        opacity: 0.8;
-        transition:
-          left 0.3s ease,
-          opacity var(--itk-transition-time) var(--itk-transition-easing);
-      }
-
-      &:not([data-hours=""]) {
-        &:before {
-          content: "✎";
-          left: calc(40% - 5px);
-        }
-      }
-    }
-  }
-
-  td.timetable-edit-entry[data-preview]::after {
-    content: attr(data-preview);
-    opacity: 0.6;
-  }
-
-  td.timetable-edit-entry[data-preview] span {
-    display: none;
-  }
-
-  .table td select {
-    all: unset;
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    margin: 0;
-    height: 100%;
-    width: 100%;
-    border: none;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-
-  .table td input:not(#tomselect-1-ts-control) {
-    all: unset;
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    margin: 0;
-    height: 100%;
-    width: 100%;
-    border: none;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-
-  > input {
-    border-radius: 3px !important;
-  }
-
-  /* The Modal (background) */
-
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.4);
-  }
-
-  .timetable-scroll-container:not(.overflowing) .ts-dropdown {
-    position: fixed !important;
-    top: calc(100% - 108px) !important;
-    left: 14px !important;
-    width: 600px !important;
-    height: 400px !important;
-  }
-
-  .ts-dropdown-content {
-    max-height: 100% !important;
-  }
-
-  .timetable-scroll-container.overflowing .ts-dropdown {
-    position: fixed !important;
-    top: calc(100% - 117px) !important;
-    left: 15px !important;
-    width: 500px !important;
-    height: 350px !important;
-  }
-
-  .timetable-scroll-container.overflowing .table .ticket-title {
-    background-color: blue;
-
-    span {
-      font-size: 12px;
-    }
-  }
-
-  &.edit-time-log-modal {
-    display: none;
-  }
-
-  .edit-time-log-form .timetable-modal-delete.deleting > i {
-    animation: spin 1.2s linear infinite;
-    font-size: 13px;
-  }
-
-  .edit-time-log-form input {
-    border-radius: 0;
-    margin-bottom: 4px;
-    box-shadow: none;
-    border: none;
-
-    &[name="timesheet-hours"] {
-      border: 1px solid #cbd5e1;
-      padding-right: 0;
-
-      &:focus {
-        box-shadow: none;
-      }
-    }
-
-    &[name="timesheet-hours-left"] {
-      background-color: transparent;
-      width: 30px;
-      cursor: help;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      height: 100%;
-    }
-  }
-
-  .edit-time-log-form .fa-clock {
-    position: absolute;
-    top: 28px;
-    right: 28px;
-  }
-
-  .edit-time-log-form .buttons {
-    display: flex;
-    justify-content: end;
-    margin-top: auto;
-  }
-
-  .edit-time-log-form .buttons button:hover {
-    filter: brightness(0.95);
-  }
-
-  /* Modal Content/Box */
-
-  .edit-time-log-form {
-    display: flex;
-    flex-direction: column;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 8px;
-    border: 1px solid #cbd5e1;
-    width: var(--itk-popup-width);
-    min-width: var(--itk-popup-width);
-    position: relative;
-  }
-
-  .edit-time-log-form .timetable-modal-delete {
-    margin-right: auto;
-    border: 1px solid #cbd5e1;
-    padding: var(--itk-button-padding);
-    background-color: red;
-    color: #fff;
-    font-size: 12px;
-    width: 45px;
-  }
-
-  .edit-time-log-form .timetable-modal-delete.deleting > i {
-    animation: spin 1.2s linear infinite;
-    font-size: 13px;
-  }
-
-  .edit-time-log-form .buttons {
-    display: flex;
-    justify-content: end;
-  }
-
-  .edit-time-log-form button,
-  input,
-  textarea {
-    border-radius: 3px !important;
-  }
-
-  .edit-time-log-form .buttons button:hover {
-    filter: brightness(0.95);
-  }
-
-  .edit-time-log-form .timetable-modal-submit {
-    color: white;
-    border: 1px solid #cbd5e1;
-    padding: var(--itk-button-padding);
-    margin: 0;
-    font-weight: 400;
-    font-size: 12px;
-    background-color: var(--itk-color-secondary);
-    border-radius: 0;
-  }
-
-  .edit-time-log-form .timetable-modal-cancel {
-    background: white;
-    border: 1px solid #cbd5e1;
-    color: #334155;
-    margin-right: 5px;
-    padding: var(--itk-button-padding);
-    font-size: 12px;
-    border-radius: 0;
-  }
-
-  .edit-time-log-form .fa-clock {
-    position: absolute;
-    top: 28px;
-    right: 28px;
-  }
-
-  .edit-time-log-form {
-    .timesheet-date-move-notifier {
-      padding: var(--itk-spacing-sm) 0;
-
-      small {
-        i {
-          color: var(--itk-color-warning);
-        }
-      }
-
-      &.hidden + .buttons {
-        padding-top: var(--itk-spacing-sm);
-      }
-    }
-    .description-wrapper {
-      position: relative;
-      flex: 1;
-
-      &:after {
-        content: "";
-        width: 0;
-        height: 0;
-        position: absolute;
         top: 0;
-        right: 0;
-        border-left: 10px solid transparent;
-        border-bottom: 10px solid transparent;
-        border-top: 10px solid var(--itk-border-color);
-      }
+        left: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        border: none;
+        padding: 10px;
+        box-sizing: border-box;
+    }
 
-      &:focus-within {
-        &:after {
-          border-top: 10px solid var(--itk-color-black);
+    .table td input:not(#tomselect-1-ts-control) {
+        all: unset;
+        position: absolute;
+        display: block;
+        top: 0;
+        left: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        border: none;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    > input {
+        border-radius: 3px !important;
+    }
+
+    /* The Modal (background) */
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .timetable-scroll-container:not(.overflowing) .ts-dropdown {
+        position: fixed !important;
+        top: calc(100% - 108px) !important;
+        left: 14px !important;
+        width: 600px !important;
+        height: 400px !important;
+    }
+
+    .ts-dropdown-content {
+        max-height: 100% !important;
+    }
+
+    .timetable-scroll-container.overflowing .ts-dropdown {
+        position: fixed !important;
+        top: calc(100% - 117px) !important;
+        left: 15px !important;
+        width: 500px !important;
+        height: 350px !important;
+    }
+
+    .timetable-scroll-container.overflowing .table .ticket-title {
+        background-color: blue;
+
+        span {
+            font-size: 12px;
         }
-      }
+    }
 
-      &:has(textarea:invalid) {
-        &:after {
-          border-top: 10px solid var(--itk-color-danger);
+    &.edit-time-log-modal {
+        display: none;
+    }
+
+    .edit-time-log-form .timetable-modal-delete.deleting > i {
+        animation: spin 1.2s linear infinite;
+        font-size: 13px;
+    }
+
+    .edit-time-log-form input {
+        border-radius: 0;
+        margin-bottom: 4px;
+        box-shadow: none;
+        border: none;
+
+        &[name="timesheet-hours"] {
+            border: 1px solid #cbd5e1;
+            padding-right: 0;
+
+            &:focus {
+                box-shadow: none;
+            }
         }
-      }
-    }
-  }
 
-  .edit-time-log-form #modal-description {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    resize: none;
-    border-radius: 0;
-    overflow-x: hidden;
-    margin-bottom: 0;
-    box-shadow: none;
-  }
-
-  .edit-time-log-form input:disabled {
-    opacity: 0.6;
-  }
-
-  /* The Close Button */
-
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-  }
-
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  /* copy paste from https://www.w3schools.com/howto/howto_js_filter_dropdown.asp - also entries in timeTable.js and timetable.blade.php */
-  /* Dropdown Button */
-
-  .dropbtn {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    background-color: transparent;
-    border: none;
-    height: 31px;
-  }
-
-  /* The container <div> - needed to position the dropdown content */
-
-  .timetable-ticket-search {
-    position: relative;
-    display: inline-block;
-  }
-
-  /* Dropdown Content (Hidden by Default) */
-
-  .timetable-ticket-search .timetable-ticket-results {
-    position: absolute;
-    background-color: #f6f6f6;
-    min-width: 230px;
-    width: 100%;
-    border: 1px solid var(--itk-border-color);
-    z-index: 1;
-    top: calc(100% - 11px);
-    max-height: 175px;
-    overflow-y: auto;
-  }
-
-  .timetable-ticket-search .timetable-ticket-result-item:before {
-    content: attr(data-project);
-    position: absolute;
-    top: 3px;
-    left: 15px;
-    font-size: 10px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    width: calc(100% - 20px);
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .timetable-ticket-search .timetable-ticket-result-item > span {
-    white-space: nowrap;
-    position: absolute;
-    bottom: 3px;
-    left: 15px;
-    text-overflow: ellipsis;
-    width: calc(100% - 15px);
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  /* Links inside the dropdown */
-
-  .timetable-ticket-search .timetable-ticket-result-item,
-  .timetable-ticket-search .timetable-ticket-result-item-no-results {
-    color: black;
-    padding: 5px 15px;
-    text-decoration: none;
-    display: block;
-    cursor: pointer;
-    position: relative;
-    font-size: 12px;
-    height: 40px;
-    border-top: 1px solid var(--itk-border-color);
-  }
-
-  /* Change color of dropdown links on hover */
-
-  .timetable-ticket-search .timetable-ticket-result-item:hover {
-    background-color: #f1f1f1;
-  }
-
-  .timetable-ticket-search
-    .timetable-ticket-input
-    + .timetable-ticket-results:empty,
-  .timetable-ticket-search
-    .timetable-ticket-input:disabled
-    + .timetable-ticket-results {
-    display: none;
-  }
-
-  .timetable-ticket-input:disabled {
-    border: 1px solid var(--itk-color-gray-100);
-  }
-  .ticket-title a {
-    display: inline-block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 575px;
-  }
-  .ticket-title span {
-    color: #666;
-    cursor: default;
-    display: block;
-    font-size: 12px;
-  }
-  .ticket-title::before,
-  td.add-new::before,
-  tr.tr-total > td:first-child::before,
-  th.th-ticket-title::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -1px;
-    height: 100% !important;
-    width: 1px;
-    background-color: var(--itk-border-color);
-    z-index: 1;
-  }
-  .table > thead > tr > th:last-child::before,
-  .table > tbody > tr > td:last-child::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: -1px;
-    height: 100% !important;
-    width: 1px;
-    background-color: var(--itk-border-color);
-    z-index: 1;
-  }
-  .timetable-ticket-search.ticket-loading {
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .timetable-ticket-search.ticket-loading::after {
-    content: "";
-    border-radius: 50%;
-    border: 1px solid #000;
-    position: absolute;
-    animation: spin 1s infinite;
-    right: 15px;
-    top: 10px;
-    width: 15px;
-    height: 10px;
-  }
-
-  @keyframes spin {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-}
-
-#edit-time-log-modal,
-#entry-copy-modal {
-  position: absolute;
-  z-index: 99999;
-  display: none !important;
-
-  &.shown {
-    display: flex !important;
-  }
-}
-
-#entry-copy-modal {
-  .entry-copy-form {
-    display: flex;
-    flex-direction: column;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 8px;
-    border: 1px solid #cbd5e1;
-    width: var(--itk-popup-width);
-    min-width: var(--itk-popup-width);
-    position: relative;
-
-    .entry-copy-note {
-      flex: 1;
-      margin-top: 2px;
-    }
-    .entry-copy-headline {
-      margin-bottom: var(--itk-spacing-xs);
+        &[name="timesheet-hours-left"] {
+            background-color: transparent;
+            width: 30px;
+            cursor: help;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            height: 100%;
+        }
     }
 
-    .entry-copy-checkboxes {
-      display: flex;
-      flex-direction: column;
-      margin: var(--itk-spacing-xs) 0 var(--itk-spacing) 0;
-    }
-    .entry-copy-overwrite-checkbox,
-    .entry-copy-weekend-checkbox {
-      display: flex;
-      align-items: center;
+    .edit-time-log-form .fa-clock {
+        position: absolute;
+        top: 28px;
+        right: 28px;
     }
 
-    .entry-copy-overwrite-checkbox label,
-    .entry-copy-weekend-checkbox label {
-      margin-left: 8px;
-      font-size: 0.875rem;
-      color: #333;
-      font-weight: normal;
-      margin-bottom: 0;
-      opacity: 1;
-      padding-bottom: 0;
-      padding-top: 0;
-      user-select: none;
+    .edit-time-log-form .buttons {
+        display: flex;
+        justify-content: end;
+        margin-top: auto;
     }
 
-    .entry-copy-overwrite-checkbox input[type="checkbox"],
-    .entry-copy-weekend-checkbox input[type="checkbox"] {
-      cursor: pointer;
-      margin: 0;
+    .edit-time-log-form .buttons button:hover {
+        filter: brightness(0.95);
     }
 
-    .buttons {
-      display: flex;
-      justify-content: end;
-      margin-top: auto;
+    /* Modal Content/Box */
 
-      .entry-copy-modal-cancel {
-        background: white;
+    .edit-time-log-form {
+        display: flex;
+        flex-direction: column;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 8px;
         border: 1px solid #cbd5e1;
-        color: #334155;
-        margin-right: 5px;
-        padding: var(--itk-button-padding);
-        font-size: 12px;
-        border-radius: 0 !important;
-      }
+        width: var(--itk-popup-width);
+        min-width: var(--itk-popup-width);
+        position: relative;
+    }
 
-      .entry-copy-modal-apply {
+    .edit-time-log-form .timetable-modal-delete {
+        margin-right: auto;
+        border: 1px solid #cbd5e1;
+        padding: var(--itk-button-padding);
+        background-color: red;
+        color: #fff;
+        font-size: 12px;
+        width: 45px;
+    }
+
+    .edit-time-log-form .timetable-modal-delete.deleting > i {
+        animation: spin 1.2s linear infinite;
+        font-size: 13px;
+    }
+
+    .edit-time-log-form .buttons {
+        display: flex;
+        justify-content: end;
+    }
+
+    .edit-time-log-form button,
+    input,
+    textarea {
+        border-radius: 3px !important;
+    }
+
+    .edit-time-log-form .buttons button:hover {
+        filter: brightness(0.95);
+    }
+
+    .edit-time-log-form .timetable-modal-submit {
         color: white;
         border: 1px solid #cbd5e1;
         padding: var(--itk-button-padding);
@@ -997,348 +705,746 @@
         font-weight: 400;
         font-size: 12px;
         background-color: var(--itk-color-secondary);
-        border-radius: 0 !important;
-      }
+        border-radius: 0;
     }
-  }
+
+    .edit-time-log-form .timetable-modal-cancel {
+        background: white;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        margin-right: 5px;
+        padding: var(--itk-button-padding);
+        font-size: 12px;
+        border-radius: 0;
+    }
+
+    .edit-time-log-form .fa-clock {
+        position: absolute;
+        top: 28px;
+        right: 28px;
+    }
+
+    .edit-time-log-form {
+        .timesheet-date-move-notifier {
+            padding: var(--itk-spacing-sm) 0;
+
+            small {
+                i {
+                    color: var(--itk-color-warning);
+                }
+            }
+
+            &.hidden + .buttons {
+                padding-top: var(--itk-spacing-sm);
+            }
+        }
+
+        .description-wrapper {
+            position: relative;
+            flex: 1;
+
+            &:after {
+                content: "";
+                width: 0;
+                height: 0;
+                position: absolute;
+                top: 0;
+                right: 0;
+                border-left: 10px solid transparent;
+                border-bottom: 10px solid transparent;
+                border-top: 10px solid var(--itk-border-color);
+            }
+
+            &:focus-within {
+                &:after {
+                    border-top: 10px solid var(--itk-color-black);
+                }
+            }
+
+            &:has(textarea:invalid) {
+                &:after {
+                    border-top: 10px solid var(--itk-color-danger);
+                }
+            }
+        }
+    }
+
+    .edit-time-log-form #modal-description {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        resize: none;
+        border-radius: 0;
+        overflow-x: hidden;
+        margin-bottom: 0;
+        box-shadow: none;
+    }
+
+    .edit-time-log-form input:disabled {
+        opacity: 0.6;
+    }
+
+    /* The Close Button */
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* copy paste from https://www.w3schools.com/howto/howto_js_filter_dropdown.asp - also entries in timeTable.js and timetable.blade.php */
+    /* Dropdown Button */
+
+    .dropbtn {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background-color: transparent;
+        border: none;
+        height: 31px;
+    }
+
+    /* The container <div> - needed to position the dropdown content */
+
+    .timetable-ticket-search {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* Dropdown Content (Hidden by Default) */
+
+    .timetable-ticket-search .timetable-ticket-results {
+        position: absolute;
+        background-color: #f6f6f6;
+        min-width: 230px;
+        width: 100%;
+        border: 1px solid var(--itk-border-color);
+        z-index: 1;
+        top: calc(100% - 11px);
+        max-height: 175px;
+        overflow-y: auto;
+    }
+
+    .timetable-ticket-search .timetable-ticket-result-item:before {
+        content: attr(data-project);
+        position: absolute;
+        top: 3px;
+        left: 15px;
+        font-size: 10px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: calc(100% - 20px);
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .timetable-ticket-search .timetable-ticket-result-item > span {
+        white-space: nowrap;
+        position: absolute;
+        bottom: 3px;
+        left: 15px;
+        text-overflow: ellipsis;
+        width: calc(100% - 15px);
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    /* Links inside the dropdown */
+
+    .timetable-ticket-search .timetable-ticket-result-item,
+    .timetable-ticket-search .timetable-ticket-result-item-no-results {
+        color: black;
+        padding: 5px 15px;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+        position: relative;
+        font-size: 12px;
+        height: 40px;
+        border-top: 1px solid var(--itk-border-color);
+    }
+
+    /* Change color of dropdown links on hover */
+
+    .timetable-ticket-search .timetable-ticket-result-item:hover {
+        background-color: #f1f1f1;
+    }
+
+    .timetable-ticket-search
+    .timetable-ticket-input
+    + .timetable-ticket-results:empty,
+    .timetable-ticket-search
+    .timetable-ticket-input:disabled
+    + .timetable-ticket-results {
+        display: none;
+    }
+
+    .timetable-ticket-input:disabled {
+        border: 1px solid var(--itk-color-gray-100);
+    }
+
+    .ticket-title a {
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 575px;
+    }
+
+    .ticket-title span {
+        color: #666;
+        cursor: default;
+        display: block;
+        font-size: 12px;
+    }
+
+    .ticket-title::before,
+    td.add-new::before,
+    tr.tr-total > td:first-child::before,
+    th.th-ticket-title::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -1px;
+        height: 100% !important;
+        width: 1px;
+        background-color: var(--itk-border-color);
+        z-index: 1;
+    }
+
+    .table > thead > tr > th:last-child::before,
+    .table > tbody > tr > td:last-child::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -1px;
+        height: 100% !important;
+        width: 1px;
+        background-color: var(--itk-border-color);
+        z-index: 1;
+    }
+
+    .timetable-ticket-search.ticket-loading {
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .timetable-ticket-search.ticket-loading::after {
+        content: "";
+        border-radius: 50%;
+        border: 1px solid #000;
+        position: absolute;
+        animation: spin 1s infinite;
+        right: 15px;
+        top: 10px;
+        width: 15px;
+        height: 10px;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}
+
+#edit-time-log-modal,
+#entry-copy-modal,
+#ticket-context-menu-modal {
+    position: absolute;
+    z-index: 99999;
+    display: none !important;
+
+    &.shown {
+        display: flex !important;
+    }
+}
+
+#entry-copy-modal {
+    .entry-copy-form {
+        display: flex;
+        flex-direction: column;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 8px;
+        border: 1px solid #cbd5e1;
+        width: var(--itk-popup-width);
+        min-width: var(--itk-popup-width);
+        position: relative;
+
+        .entry-copy-note {
+            flex: 1;
+            margin-top: 2px;
+        }
+
+        .entry-copy-headline {
+            margin-bottom: var(--itk-spacing-xs);
+        }
+
+        .entry-copy-checkboxes {
+            display: flex;
+            flex-direction: column;
+            margin: var(--itk-spacing-xs) 0 var(--itk-spacing) 0;
+        }
+
+        .entry-copy-overwrite-checkbox,
+        .entry-copy-weekend-checkbox {
+            display: flex;
+            align-items: center;
+        }
+
+        .entry-copy-overwrite-checkbox label,
+        .entry-copy-weekend-checkbox label {
+            margin-left: 8px;
+            font-size: 0.875rem;
+            color: #333;
+            font-weight: normal;
+            margin-bottom: 0;
+            opacity: 1;
+            padding-bottom: 0;
+            padding-top: 0;
+            user-select: none;
+        }
+
+        .entry-copy-overwrite-checkbox input[type="checkbox"],
+        .entry-copy-weekend-checkbox input[type="checkbox"] {
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: end;
+            margin-top: auto;
+
+            .entry-copy-modal-cancel {
+                background: white;
+                border: 1px solid #cbd5e1;
+                color: #334155;
+                margin-right: 5px;
+                padding: var(--itk-button-padding);
+                font-size: 12px;
+                border-radius: 0 !important;
+            }
+
+            .entry-copy-modal-apply {
+                color: white;
+                border: 1px solid #cbd5e1;
+                padding: var(--itk-button-padding);
+                margin: 0;
+                font-weight: 400;
+                font-size: 12px;
+                background-color: var(--itk-color-secondary);
+                border-radius: 0 !important;
+            }
+        }
+    }
+}
+
+#ticket-context-menu-modal {
+        .ticket-context-menu-form {
+            display: flex;
+            flex-direction: column;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            width: var(--itk-popup-width);
+            min-width: var(--itk-popup-width);
+            position: relative;
+
+            input {
+                border: var(--itk-border-color) 1px solid;
+                width: 100%;
+                margin-bottom: var(--itk-spacing-xs);
+            }
+        }
+
+    .buttons {
+        display: flex;
+        justify-content: end;
+        margin-top: auto;
+
+        .ticket-context-menu-cancel {
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            margin-right: 5px;
+            padding: var(--itk-button-padding);
+            font-size: 12px;
+            border-radius: 0 !important;
+        }
+
+        .ticket-context-menu-apply {
+            color: white;
+            border: 1px solid #cbd5e1;
+            padding: var(--itk-button-padding);
+            margin: 0;
+            font-weight: 400;
+            font-size: 12px;
+            background-color: var(--itk-color-secondary);
+            border-radius: 0 !important;
+        }
+    }
 }
 
 .edit-time-sync-modal {
-  display: none;
+    display: none;
 
-  div {
-    margin: auto;
-    display: flex;
-    flex-direction: column;
+    div {
+        margin: auto;
+        display: flex;
+        flex-direction: column;
 
-    span {
-      margin: auto;
-      color: #fff;
-      font-size: 18px;
+        span {
+            margin: auto;
+            color: #fff;
+            font-size: 18px;
 
-      &:last-child {
-        margin-top: 10px;
-      }
+            &:last-child {
+                margin-top: 10px;
+            }
+        }
     }
-  }
 }
 
 .timetable-hours {
-  position: relative;
-  width: 100%;
-  max-width: 300px; /* Adjust as needed */
+    position: relative;
+    width: 100%;
+    max-width: 300px; /* Adjust as needed */
 }
 
 .timesheet-input-wrapper {
-  position: relative;
-  display: flex;
-  width: 100%;
+    position: relative;
+    display: flex;
+    width: 100%;
 }
 
 .timesheet-input-wrapper input[name="timesheet-hours"] {
-  width: 100%;
-  box-sizing: border-box;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .timesheet-date-wrapper {
-  position: relative;
-  width: 50px;
-  overflow: hidden;
-  border: 1px solid #cbd5e1;
-  margin-bottom: 5px;
-  border-radius: 3px;
-  margin-left: 3px;
-  cursor: pointer;
-  transition: all var(--itk-transition-time) var(--itk-transition-easing);
-
-  input {
-    opacity: 0 !important;
-    width: 100%;
-    pointer-events: none;
-  }
-
-  &.modified {
-    background-color: var(--itk-color-warning);
-
-    &:after {
-      color: #fff;
-    }
-  }
-  &:after {
-    content: "\f783";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #64748b;
-    pointer-events: none;
-  }
-}
-.timetable-hours-left {
-  position: absolute;
-  right: 50px;
-  display: flex;
-  align-items: center;
-  height: calc(100% - 5px);
-
-  div {
-    display: flex;
-    flex-direction: row;
-    height: 30px;
-    pointer-events: none;
-
-    span {
-      white-space: nowrap;
-      margin: auto 0px auto 5px;
-    }
+    position: relative;
+    width: 50px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    margin-left: 3px;
+    cursor: pointer;
+    transition: all var(--itk-transition-time) var(--itk-transition-easing);
 
     input {
-      width: 50px; /* Adjust as needed */
-      font-size: 12px;
-      text-align: center;
-      margin: auto 5px;
-      width: 23px !important;
-      padding: 0;
-      color: var(--primary-font-color);
-      opacity: 1 !important;
-      text-align: center;
-
-      &[data-value="0"] {
         opacity: 0 !important;
-        user-select: none;
-      }
+        width: 100%;
+        pointer-events: none;
     }
-  }
+
+    &.modified {
+        background-color: var(--itk-color-warning);
+
+        &:after {
+            color: #fff;
+        }
+    }
+
+    &:after {
+        content: "\f783";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #64748b;
+        pointer-events: none;
+    }
+}
+
+.timetable-hours-left {
+    position: absolute;
+    right: 50px;
+    display: flex;
+    align-items: center;
+    height: calc(100% - 5px);
+
+    div {
+        display: flex;
+        flex-direction: row;
+        height: 30px;
+        pointer-events: none;
+
+        span {
+            white-space: nowrap;
+            margin: auto 0px auto 5px;
+        }
+
+        input {
+            width: 50px; /* Adjust as needed */
+            font-size: 12px;
+            text-align: center;
+            margin: auto 5px;
+            width: 23px !important;
+            padding: 0;
+            color: var(--primary-font-color);
+            opacity: 1 !important;
+            text-align: center;
+
+            &[data-value="0"] {
+                opacity: 0 !important;
+                user-select: none;
+            }
+        }
+    }
 }
 
 #timetable td.add-new {
-  padding: 0px;
-  font-family: inherit !important;
-  z-index: 2 !important;
+    padding: 0px;
+    font-family: inherit !important;
+    z-index: 2 !important;
 
-  ~ td {
-    text-align: center;
-  }
-
-  .timetable-tomselect {
-    *:not(.fa) {
-      font-size: var(--base-font-size);
+    ~ td {
+        text-align: center;
     }
 
-    div.ts-control {
-      border: none !important;
-      height: 44px;
-      box-shadow: none;
-
-      div.item {
-        background-color: #fff !important;
-        background-image: none;
-        color: #000;
-        border: none;
-        margin: auto 0;
-        box-shadow: none;
-        padding: 0 0 0 10px;
-        text-shadow: none;
-
-        &::after {
-          content: "/";
-          padding-left: 8px;
-        }
-      }
-
-      input#tomselect-1-ts-control {
-        font-size: 14px;
-        padding: 0 0 0 10px !important;
-
-        &::placeholder {
-          font-weight: bold;
-          color: var(--primary-color) !important;
-
-          opacity: 0.9;
+    .timetable-tomselect {
+        *:not(.fa) {
+            font-size: var(--base-font-size);
         }
 
-        &:focus::placeholder {
-          opacity: 0;
+        div.ts-control {
+            border: none !important;
+            height: 44px;
+            box-shadow: none;
+
+            div.item {
+                background-color: #fff !important;
+                background-image: none;
+                color: #000;
+                border: none;
+                margin: auto 0;
+                box-shadow: none;
+                padding: 0 0 0 10px;
+                text-shadow: none;
+
+                &::after {
+                    content: "/";
+                    padding-left: 8px;
+                }
+            }
+
+            input#tomselect-1-ts-control {
+                font-size: 14px;
+                padding: 0 0 0 10px !important;
+
+                &::placeholder {
+                    font-weight: bold;
+                    color: var(--primary-color) !important;
+
+                    opacity: 0.9;
+                }
+
+                &:focus::placeholder {
+                    opacity: 0;
+                }
+            }
         }
-      }
     }
-  }
 }
 
 div.ts-dropdown-content {
-  margin: 0px !important;
+    margin: 0px !important;
 
-  option {
-    font-weight: bold;
-  }
-
-  div.option {
-    padding: 7px 12px;
-
-    &[data-value="add-new-ticket"] {
-      cursor: pointer;
-      color: #495c68;
-      font-weight: bold;
-      opacity: 1;
+    option {
+        font-weight: bold;
     }
 
-    &[aria-disabled="true"] {
-      cursor: default;
-      color: #495c68;
-      font-weight: bold;
-      opacity: 1;
-    }
+    div.option {
+        padding: 7px 12px;
 
-    &.active {
-      color: #303030;
-    }
+        &[data-value="add-new-ticket"] {
+            cursor: pointer;
+            color: #495c68;
+            font-weight: bold;
+            opacity: 1;
+        }
 
-    span {
-      i {
-        vertical-align: 0.05em;
-      }
+        &[aria-disabled="true"] {
+            cursor: default;
+            color: #495c68;
+            font-weight: bold;
+            opacity: 1;
+        }
 
-      span {
-        color: #64748b;
-      }
+        &.active {
+            color: #303030;
+        }
+
+        span {
+            i {
+                vertical-align: 0.05em;
+            }
+
+            span {
+                color: #64748b;
+            }
+        }
     }
-  }
 }
 
 .timetable-sync-panel:empty {
-  display: none;
+    display: none;
 }
 
 .timetable-sync-panel {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  background-color: #fff;
-  right: -1px;
-  bottom: 0;
-  width: 125px;
-  height: 50px;
-  border-bottom-right-radius: 15px;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    background-color: #fff;
+    right: -1px;
+    bottom: 0;
+    width: 125px;
+    height: 50px;
+    border-bottom-right-radius: 15px;
 }
 
 .timetable-sync-panel > div:first-child {
-  flex: 2;
-  cursor: pointer;
+    flex: 2;
+    cursor: pointer;
 }
 
 .timetable-sync-panel > div:first-child > button {
-  width: 100%;
-  border: none;
-  border-bottom: 1px solid #999;
-  background-color: #111;
-  color: #fff !important;
-  font-size: 13px;
-  cursor: pointer;
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #999;
+    background-color: #111;
+    color: #fff !important;
+    font-size: 13px;
+    cursor: pointer;
 }
 
 .timetable-sync-panel > div:first-child > button > span {
-  border-bottom: 1px solid #000;
-  pointer-events: none;
+    border-bottom: 1px solid #000;
+    pointer-events: none;
 }
 
 .timetable-sync-panel > div:first-child > button > span > i {
-  margin-right: 5px;
-  pointer-events: none;
+    margin-right: 5px;
+    pointer-events: none;
 }
 
 .timetable-sync-panel > div {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
 }
 
 .timetable-sync-panel > div > span {
-  font-size: 11px;
-  margin: auto 0;
-  color: #000;
+    font-size: 11px;
+    margin: auto 0;
+    color: #000;
 }
 
 @keyframes pulseBackground {
-  0%,
-  100% {
-    background-color: var(--itk-color-primary-100);
-  }
-  50% {
-    background-color: white;
-  }
+    0%,
+    100% {
+        background-color: var(--itk-color-primary-100);
+    }
+    50% {
+        background-color: white;
+    }
 }
 
 i.your-task {
-  font-size: 11px;
-  margin-right: 5px;
+    font-size: 11px;
+    margin-right: 5px;
 }
 
 .flatpickr-calendar.flatpickr-move-timelog .flatpickr-day.today {
-  border-color: transparent;
+    border-color: transparent;
 }
 
 .flatpickr-calendar.flatpickr-move-timelog .flatpickr-day.today:hover,
 .flatpickr-calendar.flatpickr-move-timelog .flatpickr-day.today:focus {
-  background: #e6e6e6;
-  border-color: #e6e6e6;
+    background: #e6e6e6;
+    border-color: #e6e6e6;
 }
 
 .pageheader {
-  display: flex;
-  .timetable-manage-as {
     display: flex;
-    margin: 15px 0 auto auto;
-    form {
-      position: relative;
-      display: flex;
-      gap: 10px;
-      label {
-        color: #fff;
-        margin-bottom: 0;
-        padding: 0;
-        align-self: end;
-        font-weight: 400;
-        font-size: 15px;
-      }
-      select {
-        margin: auto;
-        width: 250px;
-      }
+
+    .timetable-manage-as {
+        display: flex;
+        margin: 15px 0 auto auto;
+
+        form {
+            position: relative;
+            display: flex;
+            gap: 10px;
+
+            label {
+                color: #fff;
+                margin-bottom: 0;
+                padding: 0;
+                align-self: end;
+                font-weight: 400;
+                font-size: 15px;
+            }
+
+            select {
+                margin: auto;
+                width: 250px;
+            }
+        }
     }
-  }
 }
 
 div#edit-time-log-modal.modal-syncing-loader::after,
 div#entry-copy-modal.modal-syncing-loader::after {
-  content: "\f110";
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-size: 24px;
-  color: var(--itk-color-gray-700);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 15px;
-  height: 15px;
-  animation: spin 2s linear infinite;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    content: "\f110";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 24px;
+    color: var(--itk-color-gray-700);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 15px;
+    height: 15px;
+    animation: spin 2s linear infinite;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 div#edit-time-log-modal.modal-syncing-loader::before,
 div#entry-copy-modal.modal-syncing-loader::before {
-  content: "";
-  display: block;
-  height: 100%;
-  width: 100%;
-  background-color: #fff;
-  z-index: 2;
-  position: absolute;
-  border: 1px solid var(--itk-border-color);
+    content: "";
+    display: block;
+    height: 100%;
+    width: 100%;
+    background-color: #fff;
+    z-index: 2;
+    position: absolute;
+    border: 1px solid var(--itk-border-color);
+}
+
+div#edit-time-log-modal.modal-syncing-loader button,
+div#entry-copy-modal.modal-syncing-loader button {
+    pointer-events: none;
 }
