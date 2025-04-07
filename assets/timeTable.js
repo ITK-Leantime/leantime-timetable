@@ -23,6 +23,7 @@ jQuery(document).ready(function ($) {
       this.entryCopyModal = $("#entry-copy-modal");
       this.ticketContextMenuModal = $("#ticket-context-menu-modal");
       this.ticketContextDateToFinish = this.ticketContextMenuModal.find(".date-to-finish");
+      this.ticketContextStatus = this.ticketContextMenuModal.find(".ticket-status");
       this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
       this.entryCopyButtonClose = this.entryCopyModal.find(
         ".entry-copy-modal-cancel",
@@ -97,11 +98,22 @@ jQuery(document).ready(function ($) {
         },
       });
 
-      this.ticketContextDateToFinish = flatpickr(this.ticketContextMenuModal, {
+      flatpickr(this.ticketContextDateToFinish, {
           dateFormat: "d-m-Y",
           weekNumbers: true,
           locale: Danish,
+          allowInput: false,
+          readonly: false,
       });
+
+
+        this.ticketContextStatus = new TomSelect(this.ticketContextStatus, {
+            closeAfterSelect: true,
+            onSelect: () => {
+                this.ticketContextStatus.blur();
+            },
+        });
+
 
       this.timelogDateChanger = flatpickr(this.modalInputDateMove, {
         dateFormat: "d-m-Y",
@@ -195,7 +207,8 @@ jQuery(document).ready(function ($) {
 
           if (
               $(this.ticketContextMenuModal).is(":visible") &&
-              !this.ticketContextMenuModal[0].contains(event.target)
+              !this.ticketContextMenuModal[0].contains(event.target) &&
+              !event.target.closest(".flatpickr-calendar")
           ) {
               this.closeTicketContextMenuModal();
           }
@@ -780,8 +793,11 @@ jQuery(document).ready(function ($) {
       const newRow = `
     <tr class="newly-added-tr">
         <td class="ticket-title">
+        <div>
             <a href="?showTicketModal=${ticketId}#/tickets/showTicket/${ticketId}">${ticketText}</a>
             <span>${projectName}</span>
+            </div>
+            <div></div>
         </td>
         ${Array.from({ length: daysRendered })
           .map((_, i) => {

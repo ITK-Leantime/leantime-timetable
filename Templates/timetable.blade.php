@@ -282,8 +282,14 @@
         <form method="POST" class="ticket-context-menu-form">
             <input type="hidden" name="action" value="ticketContextMenu">
             <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
-            <input class="date-to-finish" placeholder="dateToFinish" name="dateToFinish" />
-
+            <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish" name="dateToFinish"/>
+            <select class="ticket-status" name="status" autocomplete="off" placeholder="Select a person..">
+                <option value="">Select a person...</option>
+                <option value="4">Thomas Edison</option>
+                <option value="1">Nikola</option>
+                <option value="3">Nikola Tesla</option>
+                <option value="5">Arnold Schwarzenegger</option>
+            </select>
             <div class="buttons flex-container gap-1">
                 <button type="button"
                         class="ticket-context-menu-cancel btn btn-default ml-auto">{{ __('timeTable.ticket_context_discard_changes') }}</button>
