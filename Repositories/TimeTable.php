@@ -19,7 +19,10 @@ class TimeTable
      */
     private null|DbCore $db = null;
 
+
     private TicketRepository $ticketRepo;
+
+    public array $statusListSeed;
 
     /**
      * __construct - get db connection
@@ -31,6 +34,7 @@ class TimeTable
     {
         $this->db = $db;
         $this->ticketRepo = $ticketRepo;
+        $this->statusListSeed = $ticketRepo->statusListSeed;
     }
 
     /**
@@ -90,6 +94,7 @@ class TimeTable
         zp_tickets.hourRemaining,
         zp_tickets.tags,
         zp_tickets.dateToFinish,
+        zp_projects.id as projectId,
         zp_projects.name
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
@@ -256,7 +261,7 @@ class TimeTable
      * @param array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
-    private function getAllStateLabels(array $statusListSeed): array
+    public function getAllStateLabels(array $statusListSeed): array
     {
         $statusListSeed = $this->ticketRepo->statusListSeed;
         $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
@@ -365,8 +370,8 @@ class TimeTable
     public function getAllTickets(): array
     {
         $userId = session('userdata.id');
-        $statusListSeed = $this->ticketRepo->statusListSeed;
-        $allStateLabels = $this->getAllStateLabels($statusListSeed);
+
+        $allStateLabels = $this->getAllStateLabels($this->statusListSeed);
 
         $sql = 'SELECT
                 t.id,
