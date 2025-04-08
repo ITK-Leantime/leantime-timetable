@@ -3,6 +3,7 @@
 use Leantime\Domain\Setting\Services\Setting;
 use Leantime\Plugins\TimeTable\Middleware\GetLanguageAssets;
 use Leantime\Core\Events\EventDispatcher;
+use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 
 /**
  * Adds a menu point for adding fixture data.
@@ -59,12 +60,13 @@ if (class_exists(EventDispatcher::class)) {
                 echo '<link rel="stylesheet" href="' . htmlspecialchars($timeTableStyle) . '"></link>';
                 $userId = htmlspecialchars(session('userdata.id'), ENT_QUOTES, 'UTF-8');
                 $requireTimeRegistrationComment = app()->make(Setting::class)->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?: '0';
-
+                $allStateLabels = app()->make(TimeTableService::class)->getAllStateLabels();
                 echo '<script>';
                 echo 'const timetableSettings = ' . json_encode([
                         'settings' => [
                             'userId' => $userId,
                             'requireTimeRegistrationComment' => $requireTimeRegistrationComment,
+                            'allStateLabels' => json_encode($allStateLabels),
                         ],
                     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
                 echo '</script>';
