@@ -10,6 +10,8 @@ jQuery(document).ready(function ($) {
     userId: $("select[name='manageAsUserId'] > option:selected").val(),
   };
 
+  const allStateLabels = JSON.parse(timetableSettings.settings.allStateLabels);
+
   class TimeTable {
     constructor() {
       this.tomselect = null;
@@ -109,7 +111,8 @@ jQuery(document).ready(function ($) {
 
         this.ticketContextStatus = new TomSelect(this.ticketContextStatus, {
             closeAfterSelect: true,
-            onSelect: () => {
+            controlInput: null,
+            onChange: () => {
                 this.ticketContextStatus.blur();
             },
         });
@@ -263,6 +266,11 @@ jQuery(document).ready(function ($) {
                       top: `${rect.top + window.scrollY + rect.height - 50}px`, // Adjust vertical position
                   })
                   .addClass("shown");
+
+              const projectId = $(target).data('projectid');
+              let stateLabels = allStateLabels[projectId];
+
+              console.log(stateLabels);
           }.bind(this),
       )
 
