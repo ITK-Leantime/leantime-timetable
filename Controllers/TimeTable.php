@@ -203,7 +203,6 @@ class TimeTable extends Controller
             // Move on to the next day
             $dateIterator = $dateIterator->addDay();
         }
-        $allStateLabels = $this->timeTableService->getAllStateLabels();
         $relevantTicketIds = $this->timeTableService->getUniqueTicketIds($weekStartDateDb, $weekEndDateDb, $userId);
 
         $timesheetsByTicket = [];
@@ -239,7 +238,6 @@ class TimeTable extends Controller
         $this->template->assign('allUsers', $allUsers);
         $this->template->assign('userId', $userId);
         $this->template->assign('canCrossManage', $canCrossManage);
-        $this->template->assign('allStateLabels', $allStateLabels);
         return $this->template->display('TimeTable.timetable');
     }
 }
