@@ -95,7 +95,7 @@
                                                 data-tippy-placement="top">{{ $timesheet['ticketTitle'] }}</a>
                                             <span>{{ $timesheet['projectName'] }}</span>
                                         </div>
-                                            <div class="ticket-context-menu">
+                                            <div class="ticket-context-menu" data-projectId="{{ $timesheet['projectId'] }}">
                                                 <span
                                                     style="opacity: {{ !$timesheet['dateToFinishIsSet'] ? '1' : '0' }};"><i
                                                         class="fa-solid fa-calendar"></i></span>
@@ -283,12 +283,8 @@
             <input type="hidden" name="action" value="ticketContextMenu">
             <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
             <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish" name="dateToFinish"/>
-            <select class="ticket-status" name="status" autocomplete="off" placeholder="Select a person..">
-                <option value="">Select a person...</option>
-                <option value="4">Thomas Edison</option>
-                <option value="1">Nikola</option>
-                <option value="3">Nikola Tesla</option>
-                <option value="5">Arnold Schwarzenegger</option>
+            <select class="ticket-status" name="status" autocomplete="off" readonly="readonly">
+
             </select>
             <div class="buttons flex-container gap-1">
                 <button type="button"
