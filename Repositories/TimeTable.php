@@ -128,9 +128,9 @@ class TimeTable
         $sql = 'SELECT * FROM zp_timesheets WHERE ticketId = :ticketId AND workDate = :date AND userId = :userId';
 
         $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':ticketId', $worklog->getTicketId());
-        $stmn->bindValue(':date', $worklog->getWorkDate());
-        $stmn->bindValue(':userId', $worklog->getUserId(), PDO::PARAM_INT);
+        $stmn->bindValue(':ticketId', $worklog->ticketId);
+        $stmn->bindValue(':date', $worklog->workDate);
+        $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
         $stmn->execute();
 
         $timesheet = $stmn->fetch(PDO::FETCH_ASSOC);
@@ -145,9 +145,9 @@ class TimeTable
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $timesheet['id'], PDO::PARAM_INT);
-            $stmn->bindValue(':hours', $worklog->getHours());
-            $stmn->bindValue(':userId', $worklog->getUserId(), PDO::PARAM_INT);
-            $stmn->bindValue(':description', $worklog->getDescription());
+            $stmn->bindValue(':hours', $worklog->hours);
+            $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
+            $stmn->bindValue(':description', $worklog->description);
         } else {
             // else, insert new record
             $sql = 'INSERT INTO zp_timesheets (
@@ -167,22 +167,22 @@ class TimeTable
 )';
 
             $stmn = $this->db->database->prepare($sql);
-            $stmn->bindValue(':userId', $worklog->getUserId(), PDO::PARAM_INT);
-            $stmn->bindValue(':ticket', $worklog->getTicketId());
-            $stmn->bindValue(':date', $worklog->getWorkDate());
-            $stmn->bindValue(':kind', $worklog->getKind());
-            $stmn->bindValue(':description', $worklog->getDescription());
-            $stmn->bindValue(':hours', $worklog->getHours());
+            $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
+            $stmn->bindValue(':ticket', $worklog->ticketId);;
+            $stmn->bindValue(':date', $worklog->workDate);
+            $stmn->bindValue(':kind', $worklog->kind);
+            $stmn->bindValue(':description', $worklog->description);
+            $stmn->bindValue(':hours', $worklog->hours);
         }
 
         $stmn->execute();
         $stmn->closeCursor();
 
-        if ($originalId && (empty($timesheet) || $worklog->getWorkDate() == $timesheet['workDate'] && $worklog->getTimesheetId() != $timesheet['id'])) {
+        if ($originalId && (empty($timesheet) || $worklog->workDate == $timesheet['workDate'] && $worklog->timesheetId != $timesheet['id'])) {
             $sql = 'DELETE FROM zp_timesheets WHERE id = :id AND userId = :userId';
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $originalId, PDO::PARAM_INT);
-            $stmn->bindValue(':userId', $worklog->getUserId(), PDO::PARAM_INT);
+            $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->execute();
             $stmn->closeCursor();
         }
