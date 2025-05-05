@@ -150,8 +150,9 @@ class TimeTable extends Controller
     public function get(): Response
     {
         $searchTermForFilter = null;
-        $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
-        $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
+        // Explicitly define first and last day of week to avoid timezone issues across environments.
+        $fromDate = CarbonImmutable::now()->startOfWeek(CarbonImmutable::MONDAY)->startOfDay();
+        $toDate = CarbonImmutable::now()->endOfWeek(CarbonImmutable::SUNDAY)->startOfDay();
         $allUsers = $this->timeTableService->getAllUsers();
         $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
         $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
