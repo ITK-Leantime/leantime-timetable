@@ -539,7 +539,9 @@ jQuery(document).ready(function ($) {
      */
     closeEditTimeLogModal() {
       this.timeEditModal.removeClass("shown").removeAttr("data-value");
-      this.timeEditModal.find("input:not([name='action'], [name='manageAsUserId']), textarea").val("");
+      this.timeEditModal
+        .find("input:not([name='action'], [name='manageAsUserId']), textarea")
+        .val("");
       this.modalInputDateMove.parent().removeAttr("data-original");
       this.modalInputDateMoveNotifier.addClass("hidden");
       $(".timesheet-date-wrapper").removeClass("modified open");

@@ -44,29 +44,29 @@
 }
 
 .timetable {
-    .recently-deleted-timelog-info,
-    .error-message {
-        cursor: help;
-        display: flex;
-        margin-left: auto;
-        &.hidden {
-            display: none;
-        }
-        p {
-            margin: auto;
-            .error-message & {
-                margin: auto 0 15px 0;
-            }
-            i {
-                .recently-deleted-timelog-info & {
-                    color: var(--itk-color-primary);
-                }
-                .error-message & {
-                    color: var(--itk-color-danger);
-                }
-            }
-        }
+  .recently-deleted-timelog-info,
+  .error-message {
+    cursor: help;
+    display: flex;
+    margin-left: auto;
+    &.hidden {
+      display: none;
     }
+    p {
+      margin: auto;
+      .error-message & {
+        margin: auto 0 15px 0;
+      }
+      i {
+        .recently-deleted-timelog-info & {
+          color: var(--itk-color-primary);
+        }
+        .error-message & {
+          color: var(--itk-color-danger);
+        }
+      }
+    }
+  }
   .timetable-scroll-container {
     overflow-x: auto;
 

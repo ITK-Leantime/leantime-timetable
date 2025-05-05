@@ -5,13 +5,13 @@ namespace Leantime\Plugins\TimeTable\DTO;
 class WorklogDTO
 {
     public function __construct(
-        private ?int $timesheetId = null,
         private int $userId,
         private int $ticketId,
         private string $workDate,
         private float $hours,
         private string $description,
         private string $kind = 'GENERAL_BILLABLE',
+        private ?int $timesheetId = null,
         private int $invoicedEmpl = 0,
         private int $invoicedComp = 0,
         private string $invoicedEmplDate = '0000-00-00 00:00:00',

@@ -112,7 +112,7 @@ class TimeTableActionHandler
             );
 
             $this->timeTableService->updateOrAddTimelogOnTicket($worklog, $timesheetId);
-        } catch (\Error|\Exception $e) {
+        } catch (\Error | \Exception $e) {
             $postData['errorMessage'] = urlencode($e->getMessage());
             $this->logger->error($e->getMessage(), [
                 'postData' => $postData,
@@ -167,7 +167,7 @@ class TimeTableActionHandler
         $queryParams['fromDate'] = $postData['fromDate'] ?? $_GET['fromDate'] ?? null;
         $queryParams['toDate'] = $postData['toDate'] ?? $_GET['toDate'] ?? null;
         $queryParams['manageAsUserId'] = $postData['manageAsUserId'] ?? $_GET['manageAsUserId'] ?? null;
-        $queryParams['errorMessage'] = $postData['errorMessage'] ?? $GET['errorMessage'] ?? null;
+        $queryParams['errorMessage'] = $postData['errorMessage'] ?? null;
 
         // Remove null values
         $queryParams = array_filter($queryParams);

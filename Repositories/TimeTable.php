@@ -117,8 +117,8 @@ class TimeTable
     /**
      * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param WorklogDTO $worklog Worklog DTO
-     * @param int|null $originalId (Optional) The original timelog id to check for updates or deletion
+     * @param WorklogDTO $worklog    Worklog DTO
+     * @param int|null   $originalId (Optional) The original timelog id to check for updates or deletion
      *
      * @return void
      * @access public
