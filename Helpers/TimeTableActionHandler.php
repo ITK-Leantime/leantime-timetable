@@ -3,7 +3,9 @@
 namespace Leantime\Plugins\TimeTable\Helpers;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Log\Logger;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
+use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 use Carbon\CarbonImmutable;
 
@@ -13,6 +15,11 @@ use Carbon\CarbonImmutable;
 class TimeTableActionHandler
 {
     /**
+     * @var \Illuminate\Foundation\Application|Logger|mixed|object
+     */
+    private mixed $logger;
+
+    /**
      * Initialize the TimeTableService and TimesheetRepository dependencies.
      *
      * @param TimeTableService    $timeTableService    The TimeTableService instance to set
@@ -21,6 +28,7 @@ class TimeTableActionHandler
      */
     public function __construct(private readonly TimeTableService $timeTableService, private readonly TimesheetRepository $timesheetRepository)
     {
+        $this->logger = app(Logger::class);
     }
     /**
      * Adjusts the period based on the provided POST data.
@@ -90,17 +98,30 @@ class TimeTableActionHandler
             $workDate = CarbonImmutable::createFromFormat('Y-m-d', $postData['timesheet-date'])->startOfDay();
         }
         $workDate = $workDate->setToDbTimezone();
+        $modifiedDate = CarbonImmutable::now()->format('Y-m-d H:i:s');
 
-        $values = [
-            'timesheetId' => $postData['timesheet-id'],
-            'userId' => $postData['manageAsUserId'],
-            'hours' => $postData['timesheet-hours'],
-            'workDate' => $workDate,
-            'ticketId' => $postData['timesheet-ticket-id'],
-            'description' => $postData['timesheet-description'],
-            'kind' => 'GENERAL_BILLABLE',
-        ];
-        $this->timeTableService->updateOrAddTimelogOnTicket($values, $timesheetId);
+        try {
+            $worklog = new WorklogDTO(
+                timesheetId: $postData['timesheet-id'],
+                userId: null,//$postData['manageAsUserId'],
+                ticketId: $postData['timesheet-ticket-id'],
+                workDate: $workDate,
+                hours: $postData['timesheet-hours'],
+                description: $postData['timesheet-description'],
+                modified: $modifiedDate
+            );
+
+            $this->timeTableService->updateOrAddTimelogOnTicket($worklog, $timesheetId);
+        } catch (\Error|\Exception $e) {
+            $postData['errorMessage'] = urlencode($e->getMessage());
+            $this->logger->error($e->getMessage(), [
+                'postData' => $postData,
+                'errorMessage' => $e->getMessage(),
+                'error' => $e,
+            ]);
+            return $this->appendQueryParams($postData, $redirectUrl);
+        }
+
 
         // Delegate query parameter addition to appendQueryParams
         return $this->appendQueryParams($postData, $redirectUrl);
@@ -146,6 +167,7 @@ class TimeTableActionHandler
         $queryParams['fromDate'] = $postData['fromDate'] ?? $_GET['fromDate'] ?? null;
         $queryParams['toDate'] = $postData['toDate'] ?? $_GET['toDate'] ?? null;
         $queryParams['manageAsUserId'] = $postData['manageAsUserId'] ?? $_GET['manageAsUserId'] ?? null;
+        $queryParams['errorMessage'] = $postData['errorMessage'] ?? $GET['errorMessage'] ?? null;
 
         // Remove null values
         $queryParams = array_filter($queryParams);
