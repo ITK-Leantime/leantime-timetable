@@ -155,7 +155,7 @@ class TimeTable extends Controller
         $allUsers = $this->timeTableService->getAllUsers();
         $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
         $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
-
+        $errorMessage = isset($_GET['errorMessage']) ? urldecode($_GET['errorMessage']) : null;
         try {
             if (isset($_GET['fromDate']) && $_GET['fromDate'] !== '') {
                 if ($_GET['fromDate'][0] === '+' || $_GET['fromDate'][0] === '-') {
@@ -227,6 +227,7 @@ class TimeTable extends Controller
             $timesheetsByTicket[$ticket['ticketId']] = $timesheetsSortedByWeekdate;
         }
         // All tickets assigned to the template
+        $this->template->assign('errorMessage', $errorMessage);
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
         $this->template->assign('weekDays', $days);
         $this->template->assign('weekDates', $weekDates);

@@ -27,6 +27,10 @@
     <div class="maincontent">
         <div class="maincontentinner">
             <div class="timetable">
+                <div class="error-message {{ is_null($errorMessage) ? 'hidden' : '' }}" >
+                    <p data-tippy-content="{{ $errorMessage }}"><i class="fas fa-exclamation-circle"></i>
+                        {{ __('timeTable.general-error-message') }}</p>
+                </div>
                 <form method="POST">
                     <input type="hidden" name="action" value="adjustPeriod">
                     <div class="flex-container gap-3 tools">
@@ -105,7 +109,7 @@
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-                                            
+
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -115,7 +119,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-                                            
+
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
