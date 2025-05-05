@@ -523,7 +523,11 @@ jQuery(document).ready(function ($) {
               .end()
               .attr("data-id", "")
               .attr("data-hours", "")
-              .attr("data-description", "");
+              .attr("data-description", "")
+              .attr("data-hoursleft", "")
+              .end()
+              .find("div.entry-copy-button")
+              .remove();
             $(".recently-deleted-timelog-info").removeClass("hidden");
             this.closeEditTimeLogModal();
           } else {
