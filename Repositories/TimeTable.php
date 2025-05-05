@@ -168,7 +168,8 @@ class TimeTable
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
-            $stmn->bindValue(':ticket', $worklog->ticketId);;
+            $stmn->bindValue(':ticket', $worklog->ticketId);
+            ;
             $stmn->bindValue(':date', $worklog->workDate);
             $stmn->bindValue(':kind', $worklog->kind);
             $stmn->bindValue(':description', $worklog->description);

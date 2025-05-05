@@ -40,5 +40,6 @@ readonly class WorklogDTO
         public int $paid = 0,
         public string $paidDate = '0000-00-00 00:00:00',
         public string $modified = '0000-00-00 00:00:00'
-    ) {}
+    ) {
+    }
 }
