@@ -102,12 +102,12 @@ class TimeTableActionHandler
 
         try {
             $worklog = new WorklogDTO(
-                timesheetId: $postData['timesheet-id'],
                 userId: $postData['manageAsUserId'],
                 ticketId: $postData['timesheet-ticket-id'],
                 workDate: $workDate,
                 hours: $postData['timesheet-hours'],
                 description: $postData['timesheet-description'],
+                timesheetId: $postData['timesheet-id'],
                 modified: $modifiedDate
             );
 
