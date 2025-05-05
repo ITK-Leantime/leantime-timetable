@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+* [PR-53](https://github.com/ITK-Leantime/leantime-timetable/pull/53)
+  Added DTO to preserve data integrity for worklogs
+  Improved error handling and visualization hereof
+
 ## [4.0.1] - 2025-04-03
 
 * [PR-50](https://github.com/ITK-Leantime/leantime-timetable/pull/50)
