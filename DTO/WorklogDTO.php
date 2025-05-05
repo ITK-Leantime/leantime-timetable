@@ -8,21 +8,21 @@ namespace Leantime\Plugins\TimeTable\DTO;
 class WorklogDTO
 {
     /**
-     * @param int $userId User ID who logged the work
-     * @param int $ticketId Associated ticket ID
-     * @param string $workDate Date when work was performed
-     * @param float $hours Hours worked
-     * @param string $description Description of work performed
-     * @param string $kind Type of work (default: GENERAL_BILLABLE)
-     * @param int|null $timesheetId Optional timesheet ID
-     * @param int $invoicedEmpl Invoice status for employee (0/1)
-     * @param int $invoicedComp Invoice status for company (0/1)
-     * @param string $invoicedEmplDate Date employee was invoiced
-     * @param string $invoicedCompDate Date company was invoiced
-     * @param string $rate Hourly rate
-     * @param int $paid Payment status (0/1)
-     * @param string $paidDate Date payment was made
-     * @param string $modified Last modified timestamp
+     * @param int      $userId           User ID who logged the work
+     * @param int      $ticketId         Associated ticket ID
+     * @param string   $workDate         Date when work was performed
+     * @param float    $hours            Hours worked
+     * @param string   $description      Description of work performed
+     * @param string   $kind             Type of work (default: GENERAL_BILLABLE)
+     * @param int|null $timesheetId      Optional timesheet ID
+     * @param int      $invoicedEmpl     Invoice status for employee (0/1)
+     * @param int      $invoicedComp     Invoice status for company (0/1)
+     * @param string   $invoicedEmplDate Date employee was invoiced
+     * @param string   $invoicedCompDate Date company was invoiced
+     * @param string   $rate             Hourly rate
+     * @param int      $paid             Payment status (0/1)
+     * @param string   $paidDate         Date payment was made
+     * @param string   $modified         Last modified timestamp
      */
     public function __construct(
         private int $userId,
@@ -55,6 +55,7 @@ class WorklogDTO
     /**
      * Set the user ID
      * @param int|null $userId User ID
+     * @return void
      */
     public function setUserId(?int $userId): void
     {
@@ -73,6 +74,7 @@ class WorklogDTO
     /**
      * Set the timesheet ID
      * @param int|null $timesheetId Timesheet ID
+     * @return void
      */
     public function setTimesheetId(?int $timesheetId): void
     {
@@ -91,6 +93,7 @@ class WorklogDTO
     /**
      * Set the ticket ID
      * @param int|null $ticketId Ticket ID
+     * @return void
      */
     public function setTicketId(?int $ticketId): void
     {
@@ -109,6 +112,7 @@ class WorklogDTO
     /**
      * Set the work date
      * @param string|null $workDate Work date
+     * @return void
      */
     public function setWorkDate(?string $workDate): void
     {
@@ -127,6 +131,7 @@ class WorklogDTO
     /**
      * Set hours worked
      * @param float|null $hours Hours worked
+     * @return void
      */
     public function setHours(?float $hours): void
     {
@@ -145,6 +150,7 @@ class WorklogDTO
     /**
      * Set work description
      * @param string|null $description Work description
+     * @return void
      */
     public function setDescription(?string $description): void
     {
@@ -163,6 +169,7 @@ class WorklogDTO
     /**
      * Set work kind/type
      * @param string|null $kind Work kind
+     * @return void
      */
     public function setKind(?string $kind): void
     {
@@ -181,6 +188,7 @@ class WorklogDTO
     /**
      * Set employee invoice status
      * @param int|null $invoicedEmpl Invoice status (0/1)
+     * @return void
      */
     public function setInvoicedEmpl(?int $invoicedEmpl): void
     {
@@ -199,6 +207,7 @@ class WorklogDTO
     /**
      * Set company invoice status
      * @param int|null $invoicedComp Invoice status (0/1)
+     * @return void
      */
     public function setInvoicedComp(?int $invoicedComp): void
     {
@@ -217,6 +226,7 @@ class WorklogDTO
     /**
      * Set employee invoice date
      * @param string|null $invoicedEmplDate Invoice date
+     * @return void
      */
     public function setInvoicedEmplDate(?string $invoicedEmplDate): void
     {
@@ -235,6 +245,7 @@ class WorklogDTO
     /**
      * Set company invoice date
      * @param string|null $invoicedCompDate Invoice date
+     * @return void
      */
     public function setInvoicedCompDate(?string $invoicedCompDate): void
     {
@@ -253,6 +264,7 @@ class WorklogDTO
     /**
      * Set hourly rate
      * @param string|null $rate Hourly rate
+     * @return void
      */
     public function setRate(?string $rate): void
     {
@@ -271,6 +283,7 @@ class WorklogDTO
     /**
      * Set paid status
      * @param int|null $paid Paid status (0/1)
+     * @return void
      */
     public function setPaid(?int $paid): void
     {
@@ -289,6 +302,7 @@ class WorklogDTO
     /**
      * Set payment date
      * @param string|null $paidDate Payment date
+     * @return void
      */
     public function setPaidDate(?string $paidDate): void
     {
@@ -307,6 +321,7 @@ class WorklogDTO
     /**
      * Set last modified date
      * @param string|null $modified Modified date
+     * @return void
      */
     public function setModified(?string $modified): void
     {
