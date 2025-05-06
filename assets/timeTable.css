@@ -44,13 +44,26 @@
 }
 
 .timetable {
-  .recently-deleted-timelog-info {
+  .recently-deleted-timelog-info,
+  .error-message {
+    cursor: help;
     display: flex;
     margin-left: auto;
+    &.hidden {
+      display: none;
+    }
     p {
       margin: auto;
+      .error-message & {
+        margin: auto 0 15px 0;
+      }
       i {
-        color: var(--itk-color-primary);
+        .recently-deleted-timelog-info & {
+          color: var(--itk-color-primary);
+        }
+        .error-message & {
+          color: var(--itk-color-danger);
+        }
       }
     }
   }

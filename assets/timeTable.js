@@ -523,7 +523,11 @@ jQuery(document).ready(function ($) {
               .end()
               .attr("data-id", "")
               .attr("data-hours", "")
-              .attr("data-description", "");
+              .attr("data-description", "")
+              .attr("data-hoursleft", "")
+              .end()
+              .find("div.entry-copy-button")
+              .remove();
             $(".recently-deleted-timelog-info").removeClass("hidden");
             this.closeEditTimeLogModal();
           } else {
@@ -539,7 +543,9 @@ jQuery(document).ready(function ($) {
      */
     closeEditTimeLogModal() {
       this.timeEditModal.removeClass("shown").removeAttr("data-value");
-      this.timeEditModal.find("input:not([name='action']), textarea").val("");
+      this.timeEditModal
+        .find("input:not([name='action'], [name='manageAsUserId']), textarea")
+        .val("");
       this.modalInputDateMove.parent().removeAttr("data-original");
       this.modalInputDateMoveNotifier.addClass("hidden");
       $(".timesheet-date-wrapper").removeClass("modified open");

@@ -3,6 +3,7 @@
 namespace Leantime\Plugins\TimeTable\Services;
 
 use Carbon\CarbonInterface;
+use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 
@@ -88,14 +89,14 @@ class TimeTable
         return $this->timeTableRepo->getTimesheetByTicketIdAndWorkDate($ticketId, $workDate, $userId, $searchTerm);
     }
 
-     /**
+    /**
      * updateTime - update specific time entry
-     * @param array<string, mixed> $values
+     * @param WorklogDTO $worklog
      * @return void
      */
-    public function updateOrAddTimelogOnTicket(array $values, int $originalId): void
+    public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, int $originalId): void
     {
-        $this->timeTableRepo->updateOrAddTimelogOnTicket($values, $originalId);
+        $this->timeTableRepo->updateOrAddTimelogOnTicket($worklog, $originalId);
     }
 
     /**
