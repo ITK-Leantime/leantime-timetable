@@ -377,8 +377,7 @@ class TimeTable
                 p.name as projectName, -- Fetch project name via JOIN
                 t.editorId,
                 t.hourRemaining,
-                t.date,
-                t.modified
+                t.date
             FROM zp_tickets t
             LEFT JOIN zp_projects p ON t.projectId = p.id
             LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
