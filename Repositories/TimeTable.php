@@ -384,7 +384,7 @@ class TimeTable
             LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
             WHERE t.type NOT IN (:story, :milestone)
             GROUP BY t.id
-            ORDER BY (t.editorId = :userId) DESC, lastModified DESC';
+            ORDER BY (t.editorId = :userId) DESC, created DESC, lastModified DESC';
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
         $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
