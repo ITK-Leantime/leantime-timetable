@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.1.1] - 2025-05-07
+
 * [PR-55](https://github.com/ITK-Leantime/leantime-timetable/pull/55)
   Re-add ticket sorting when opening ticket search
 
@@ -177,7 +179,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.0...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.1...HEAD
+[4.1.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.1...4.1.0
 [4.0.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.0...4.0.1
 [4.0.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.5.0...4.0.0
