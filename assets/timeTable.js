@@ -720,23 +720,23 @@ jQuery(document).ready(function ($) {
             selectedOption.text === selectedOption.value &&
             typeof selectedOption.projectName === "undefined"
           ) {
+              console.log(selectedOption.value);
             const projectOptions = [
               {
-                value: "Select a project:",
-                text: "Select a project:",
+                value: "Vælg projekt til din nye opgave: '" + selectedOption.value +  "'",
+                text: "Vælg projekt til din nye opgave: '" + selectedOption.value +  "'",
                 disabled: "disabled",
               },
-              { value: selectedOption.value, text: selectedOption.value },
               ...projects
                 .filter((project) => project.text.trim() !== "")
                 .map((project) => ({ value: project.id, text: project.text })),
             ];
-
             // Destroy select and populate with projects for the new ticket to be created in
             this.destroy();
             this.tomselect = null;
             this.tomselect = new TomSelect(".timetable-tomselect", {
               options: projectOptions,
+                placeholder: '',
               onItemRemove: function () {
                 // Reactivate the ticket search upon item removal
                 this.destroy();
