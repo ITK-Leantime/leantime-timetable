@@ -165,17 +165,20 @@ jQuery(document).ready(function ($) {
       // Register event handlers
       this.registerEventHandlers();
 
-      TimeTableApiHandler.fetchTicketData().then((data) => {
-        this.removeLoadingClasses();
-        let {
-          value: { children: projects },
-        } = data[0];
-        let {
-          value: { children: tickets },
-        } = data[1];
+        TimeTableApiHandler.fetchTicketData().then((data) => {
+            this.removeLoadingClasses();
+            let {
+                value: {children: projects},
+            } = data[0];
+            let {
+                value: {children: tickets},
+            } = data[1];
 
-        this.initTicketSearch(projects, tickets);
-      });
+            this.projects = projects;
+            this.tickets = tickets;
+
+            this.initTicketSearch(projects, tickets);
+        });
     }
 
     removeLoadingClasses() {
@@ -692,7 +695,7 @@ jQuery(document).ready(function ($) {
           },
           option: function (item, escape) {
             // We only display to-do type if it is not "task", to reduce clutter.
-            return `<div><span>${escape(item.text)} <span><i class="fa fa-angle-right fa-xs"></i> ${escape(item.projectName)} <small>(${escape(item.value)})</small> <small style="float: right;">${item.editorId === pluginSettings.userId ? '<i class="your-task far fa-user" title="To-do is assigned to you"></i>' : ""}${item.type.toLowerCase() !== "task" ? `(${escape(item.type)})` : ""}</small></span></span></div>`;
+            return `<div><span>${escape(item.text)} <span><i class="fa fa-angle-right fa-xs"></i> ${escape(item.projectName)} <small>(${escape(item.value)})</small> <small style="float: right;">${parseInt(item.editorId) === parseInt(pluginSettings.userId) ? '<i class="your-task far fa-user" title="To-do is assigned to you"></i>' : ""}${item.type.toLowerCase() !== "task" ? `(${escape(item.type)})` : ""}</small></span></span></div>`;
           },
           option_create: function (data, escape) {
             return `<option data-value="add-new-ticket" class="create">+ Create new ticket with title: <strong>${escape(data.input)}</strong>&hellip;</option>`;
@@ -764,11 +767,12 @@ jQuery(document).ready(function ($) {
                       );
                       this.enable();
                       this.destroy();
+                        parentContext.tomselect.destroy();
+                        timeTable.initTicketSearch(originalProjects, originalTickets);
                     }
                   });
               },
             });
-// Add the event listener to the TomSelect input element
               this.tomselect.control_input.addEventListener('keydown', function(e) {
                   if (e.key === 'Backspace' && !this.value) {  // Only trigger when input is empty
                       parentContext.tomselect.destroy();
@@ -786,6 +790,7 @@ jQuery(document).ready(function ($) {
             selectedOption.text,
             selectedOption.projectName,
           );
+
         },
       });
 
