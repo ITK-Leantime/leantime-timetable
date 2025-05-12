@@ -782,7 +782,7 @@ jQuery(document).ready(function ($) {
             selectedOption.text,
             selectedOption.projectName,
           );
-
+            this.clear();
         },
       });
 
