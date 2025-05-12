@@ -577,7 +577,11 @@ jQuery(document).ready(function ($) {
               .end()
               .attr("data-id", "")
               .attr("data-hours", "")
-              .attr("data-description", "");
+              .attr("data-description", "")
+              .attr("data-hoursleft", "")
+              .end()
+              .find("div.entry-copy-button")
+              .remove();
             $(".recently-deleted-timelog-info").removeClass("hidden");
             this.closeEditTimeLogModal();
           } else {
@@ -593,7 +597,9 @@ jQuery(document).ready(function ($) {
      */
     closeEditTimeLogModal() {
       this.timeEditModal.removeClass("shown").removeAttr("data-value");
-      this.timeEditModal.find("input:not([name='action']), textarea").val("");
+      this.timeEditModal
+        .find("input:not([name='action'], [name='manageAsUserId']), textarea")
+        .val("");
       this.modalInputDateMove.parent().removeAttr("data-original");
       this.modalInputDateMoveNotifier.addClass("hidden");
       $(".timesheet-date-wrapper").removeClass("modified open");
@@ -632,21 +638,7 @@ jQuery(document).ready(function ($) {
       const pageSize = 50;
       const userId = pluginSettings.userId;
 
-      /*// Sort tickets by editorId and created date.
-      tickets.sort((a, b) => {
-        if (a.editorId === userId && b.editorId !== userId) {
-          return -1;
-        } else if (b.editorId === userId && a.editorId !== userId) {
-          return 1;
-        } else {
-          const dateA = new Date(a.createdDate);
-          const dateB = new Date(b.createdDate);
-          return dateB - dateA;
-        }
-      });*/
-
       // Exclude tickets that are already present in the table.
-
       const activeTicketIds = $("#timetable > tbody > tr[data-ticketid]")
         .map(function () {
           return $(this).data("ticketid");

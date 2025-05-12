@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [4.1.1] - 2025-05-07
+
+* [PR-55](https://github.com/ITK-Leantime/leantime-timetable/pull/55)
+  Re-add ticket sorting when opening ticket search
+
+## [4.1.0] - 2025-05-06
+
+* [PR-53](https://github.com/ITK-Leantime/leantime-timetable/pull/53)
+  Added DTO to preserve data integrity for worklogs
+  Improved error handling and visualization hereof
+
 ## [4.0.1] - 2025-04-03
 
 * [PR-50](https://github.com/ITK-Leantime/leantime-timetable/pull/50)
@@ -168,7 +179,9 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.1...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.1...HEAD
+[4.1.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.0...4.1.1
+[4.1.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.1...4.1.0
 [4.0.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.0...4.0.1
 [4.0.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.5.0...4.0.0
 [3.5.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/3.4.0...3.5.0

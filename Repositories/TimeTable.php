@@ -7,6 +7,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
+use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use PDO;
 
 /**
@@ -123,20 +124,20 @@ class TimeTable
     /**
      * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param array<string, mixed> $values     An array containing the values for the timelog entry
-     * @param int|null             $originalId (Optional) The original timelog id to check for updates or deletion
+     * @param WorklogDTO $worklog    Worklog DTO
+     * @param int|null   $originalId (Optional) The original timelog id to check for updates or deletion
      *
      * @return void
      * @access public
      */
-    public function updateOrAddTimelogOnTicket(array $values, ?int $originalId = null): void
+    public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, ?int $originalId = null): void
     {
         $sql = 'SELECT * FROM zp_timesheets WHERE ticketId = :ticketId AND workDate = :date AND userId = :userId';
 
         $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':ticketId', $values['ticketId']);
-        $stmn->bindValue(':date', $values['workDate']->format('Y-m-d H:i:s'));
-        $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
+        $stmn->bindValue(':ticketId', $worklog->ticketId);
+        $stmn->bindValue(':date', $worklog->workDate);
+        $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
         $stmn->execute();
 
         $timesheet = $stmn->fetch(PDO::FETCH_ASSOC);
@@ -151,9 +152,9 @@ class TimeTable
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $timesheet['id'], PDO::PARAM_INT);
-            $stmn->bindValue(':hours', $values['hours']);
-            $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
-            $stmn->bindValue(':description', $values['description']);
+            $stmn->bindValue(':hours', $worklog->hours);
+            $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
+            $stmn->bindValue(':description', $worklog->description);
         } else {
             // else, insert new record
             $sql = 'INSERT INTO zp_timesheets (
@@ -173,22 +174,23 @@ class TimeTable
 )';
 
             $stmn = $this->db->database->prepare($sql);
-            $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
-            $stmn->bindValue(':ticket', $values['ticketId']);
-            $stmn->bindValue(':date', $values['workDate']->format('Y-m-d H:i:s'));
-            $stmn->bindValue(':kind', $values['kind']);
-            $stmn->bindValue(':description', $values['description']);
-            $stmn->bindValue(':hours', $values['hours']);
+            $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
+            $stmn->bindValue(':ticket', $worklog->ticketId);
+            ;
+            $stmn->bindValue(':date', $worklog->workDate);
+            $stmn->bindValue(':kind', $worklog->kind);
+            $stmn->bindValue(':description', $worklog->description);
+            $stmn->bindValue(':hours', $worklog->hours);
         }
 
         $stmn->execute();
         $stmn->closeCursor();
 
-        if ($originalId && (empty($timesheet) || $values['workDate'] == $timesheet['workDate'] && $values['timesheetId'] != $timesheet['id'])) {
+        if ($originalId && (empty($timesheet) || $worklog->workDate == $timesheet['workDate'] && $worklog->timesheetId != $timesheet['id'])) {
             $sql = 'DELETE FROM zp_timesheets WHERE id = :id AND userId = :userId';
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':id', $originalId, PDO::PARAM_INT);
-            $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
+            $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->execute();
             $stmn->closeCursor();
         }
@@ -382,14 +384,13 @@ class TimeTable
                 p.name as projectName, -- Fetch project name via JOIN
                 t.editorId,
                 t.hourRemaining,
-                t.date,
-                MAX(ts.modified) as lastModified
+                t.date
             FROM zp_tickets t
             LEFT JOIN zp_projects p ON t.projectId = p.id
             LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
             WHERE t.type NOT IN (:story, :milestone)
             GROUP BY t.id
-            ORDER BY (t.editorId = :userId) DESC, lastModified DESC';
+            ORDER BY (t.editorId = :userId) DESC, t.date DESC, id DESC';
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
         $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);

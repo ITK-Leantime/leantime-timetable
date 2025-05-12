@@ -27,6 +27,10 @@
     <div class="maincontent">
         <div class="maincontentinner">
             <div class="timetable">
+                <div class="error-message {{ is_null($errorMessage) ? 'hidden' : '' }}">
+                    <p data-tippy-content="{{ $errorMessage }}"><i class="fas fa-exclamation-circle"></i>
+                        {{ __('timeTable.general-error-message') }}</p>
+                </div>
                 <form method="POST">
                     <input type="hidden" name="action" value="adjustPeriod">
                     <div class="flex-container gap-3 tools">
