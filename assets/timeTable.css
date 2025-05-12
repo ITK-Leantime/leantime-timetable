@@ -1224,6 +1224,27 @@
 
     .timetable-tomselect {
 
+        &:not(.tomselected) {
+            ~ i {
+                position: absolute;
+                top: 15px;
+                z-index: 99;
+                font-size: 17px;
+                color: var(--primary-font-color);
+            }
+
+            ~ span {
+                position: absolute;
+                top: 13px;
+                left: 40px;
+                color: var(--primary-font-color);
+            }
+        }
+
+
+        &.tomselected ~ i {
+            display: none;
+        }
         *:not(.fa) {
             font-size: var(--base-font-size);
         }

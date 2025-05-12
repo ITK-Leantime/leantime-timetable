@@ -152,8 +152,10 @@
                                     </tr>
                                 @endforeach
                                 <tr>
-                                    <td class="add-new"><input class="timetable-tomselect form-control-lg"
-                                            placeholder="Syncing data" /></td>
+                                    <td class="add-new"><input class="timetable-tomselect form-control-lg">
+                                        <i class='fa-regular fa-clock fa-spin'></i>
+                                        <span>{{ __('timeTable.syncing_data') }}</span>
+                                    </td>
                                     @foreach ($weekDates as $date)
                                         <td class="{{ $date->isMonday() ? 'new-week' : '' }}">—</td>
                                     @endforeach

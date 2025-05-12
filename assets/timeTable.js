@@ -671,7 +671,7 @@ jQuery(document).ready(function ($) {
         options: options,
         searchField: ["text", "value", "projectName"],
         loadingClass: "ts-loading",
-        placeholder: "+ New registration",
+        placeholder: "Tilføj ny registrering",
         create: function (input) {
           return { value: input, text: input };
         },
@@ -720,7 +720,6 @@ jQuery(document).ready(function ($) {
             selectedOption.text === selectedOption.value &&
             typeof selectedOption.projectName === "undefined"
           ) {
-              console.log(selectedOption.value);
             const projectOptions = [
               {
                 value: "Vælg projekt til din nye opgave: '" + selectedOption.value +  "'",
@@ -731,7 +730,13 @@ jQuery(document).ready(function ($) {
                 .filter((project) => project.text.trim() !== "")
                 .map((project) => ({ value: project.id, text: project.text })),
             ];
-            // Destroy select and populate with projects for the new ticket to be created in
+            let ticketName = selectedOption.value;
+
+              const originalProjects = projects;
+              const originalTickets = tickets;
+              const parentContext = this;
+
+              // Destroy select and populate with projects for the new ticket to be created in
             this.destroy();
             this.tomselect = null;
             this.tomselect = new TomSelect(".timetable-tomselect", {
@@ -742,13 +747,8 @@ jQuery(document).ready(function ($) {
                 this.destroy();
               },
               onChange: function () {
-                const selectedValues = this.getValue();
-                const resultArray = selectedValues.split(",");
-                if (resultArray.length === 2) {
-                  const ticketName = resultArray[0];
-                  const projectId = resultArray[1];
+                  const projectId = this.getValue();
                   const projectName = this.options[projectId].text;
-
                   this.disable();
 
                   TimeTableApiHandler.createNewTicket(
@@ -766,10 +766,19 @@ jQuery(document).ready(function ($) {
                       this.destroy();
                     }
                   });
-                }
               },
             });
-            this.tomselect.open();
+// Add the event listener to the TomSelect input element
+              this.tomselect.control_input.addEventListener('keydown', function(e) {
+                  if (e.key === 'Backspace' && !this.value) {  // Only trigger when input is empty
+                      parentContext.tomselect.destroy();
+                      // Create new instance using the original method
+                      timeTable.initTicketSearch(originalProjects, originalTickets, true);
+
+                  }
+              });
+
+              this.tomselect.open();
             return;
           }
           timeTable.addRowToTimetable(
@@ -777,7 +786,6 @@ jQuery(document).ready(function ($) {
             selectedOption.text,
             selectedOption.projectName,
           );
-          this.clear();
         },
       });
 
