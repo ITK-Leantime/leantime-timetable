@@ -5,6 +5,7 @@ namespace Leantime\Plugins\TimeTable\Helpers;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Log\Logger;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
+use Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 use Carbon\CarbonImmutable;
@@ -261,6 +262,28 @@ class TimeTableActionHandler
      */
     public function manageAs(array $postData, string $redirectUrl): string
     {
+        return $this->appendQueryParams($postData, $redirectUrl);
+    }
+
+    public function ticketContextMenu(array $postData, string $redirectUrl)
+    {
+        $dateToFinish = $postData['dateToFinish'];
+        if ($dateToFinish) {
+            $dateToFinish = CarbonImmutable::createFromTimestamp(strtotime($dateToFinish))
+                ->setToDbTimezone()
+                ->format('Y-m-d H:i:s');
+        }
+
+        $ticketContextMenuDTO = new TicketContextMenuDTO(
+            ticketId: $postData['ticketId'],
+            status: $postData['status'],
+            manageAsUserId: $postData['manageAsUserId'],
+            dateToFinish: $dateToFinish
+        );
+
+        $this->timeTableService->modifyTicketDetails($ticketContextMenuDTO);
+
+        // Delegate query parameter addition to appendQueryParams
         return $this->appendQueryParams($postData, $redirectUrl);
     }
 }

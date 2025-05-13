@@ -440,4 +440,20 @@ class TimeTable
             ];
         }, $projects);
     }
+
+    public function modifyTicketDetails(\Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO)
+    {
+        $sql = "UPDATE zp_tickets
+            SET status = :status,
+                dateToFinish = :dateToFinish
+            WHERE id = :ticketId";
+
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->bindValue(':status', $ticketContextMenuDTO->status, PDO::PARAM_INT);
+        $stmn->bindValue(':dateToFinish', $ticketContextMenuDTO->dateToFinish, PDO::PARAM_STR);
+        $stmn->bindValue(':ticketId', $ticketContextMenuDTO->ticketId, PDO::PARAM_INT);
+
+        $stmn->execute();
+        $stmn->closeCursor();
+    }
 }

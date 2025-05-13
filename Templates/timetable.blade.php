@@ -93,7 +93,7 @@
                                 @foreach ($timesheetsByTicket as $ticketId => $timesheet)
                                     <tr data-ticketId="{{ $ticketId }}">
                                         <td class="ticket-title" scope="row" data-status="{{ $timesheet['status'] ?? '' }}"
-                                            data-duedate="{{ $timesheet['dateToFinish'] ?? '' }}">
+                                            data-datetofinish="{{ $timesheet['dateToFinish'] ?? '' }}">
                                             <div>
                                             <a href="{{ $timesheet['ticketLink'] }}"
                                                 data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
@@ -289,6 +289,7 @@
         <form method="POST" class="ticket-context-menu-form">
             <input type="hidden" name="action" value="ticketContextMenu">
             <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
+            <input type="hidden" name="ticketId" class="ticket-context-menu-ticketId" />
             <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish" name="dateToFinish"/>
             <select class="ticket-status" name="status" autocomplete="off" readonly="readonly">
 

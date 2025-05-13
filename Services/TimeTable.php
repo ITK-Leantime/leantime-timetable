@@ -2,7 +2,9 @@
 
 namespace Leantime\Plugins\TimeTable\Services;
 
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
@@ -179,5 +181,10 @@ class TimeTable
         }
 
         return $projectGroup;
+    }
+
+    public function modifyTicketDetails(TicketContextMenuDTO $ticketContextMenuDTO)
+    {
+        $this->timeTableRepo->modifyTicketDetails($ticketContextMenuDTO);
     }
 }

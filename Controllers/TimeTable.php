@@ -132,6 +132,7 @@ class TimeTable extends Controller
                 }, fn() => $redirectUrl)(),
                 'copyEntryForward' => $actionHandler->copyEntryForward($_POST, $redirectUrl),
                 'manageAs' => $actionHandler->manageAs($_POST, $redirectUrl),
+                'ticketContextMenu' => $actionHandler->ticketContextMenu($_POST, $redirectUrl),
                 default => $redirectUrl,
             };
         }
@@ -225,6 +226,11 @@ class TimeTable extends Controller
                     $timesheetsSortedByWeekdate['dateToFinishIsSet'] = $timesheetsByTicketAndDate[0]['dateToFinish'] !== '0000-00-00 00:00:00';
                     $timesheetsSortedByWeekdate['tagsIsSet'] = $timesheetsByTicketAndDate[0]['tags'] !== '';
                     $timesheetsSortedByWeekdate['status'] = $timesheetsByTicketAndDate[0]['status'];
+                    $dateToFinish = CarbonImmutable::parse($timesheetsByTicketAndDate[0]['dateToFinish'])->setTimezone('UTC');
+                    //$timesheetsSortedByWeekdate['dateToFinish'] = setToUserTimezone();
+                    if ($timesheetsByTicketAndDate[0]['ticketId'] === 4065) {
+                        die('<pre>' . print_r($timesheetsSortedByWeekdate['dateToFinish'], true) . '</pre>');
+                    }
                 }
             }
 
