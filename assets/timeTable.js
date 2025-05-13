@@ -86,6 +86,7 @@ jQuery(document).ready(function ($) {
         ".timetable-ticket-input",
       );
 
+
       flatpickr("#dateRange", {
         mode: "range",
         dateFormat: "d-m-Y",
@@ -257,25 +258,42 @@ jQuery(document).ready(function ($) {
         }.bind(this),
       );
 
-      $(document).on(
-          'click',
-          'div.ticket-context-menu',
-          function ({ target }) {
-              const rect = target.getBoundingClientRect();
+        $(document).on(
+            'click',
+            'div.ticket-context-menu',
+            ({target}) => {
+                const rect = target.getBoundingClientRect();
+                const $target = $(target);
 
-              this.ticketContextMenuModal
-                  .css({
-                      left: `${rect.left + window.scrollX - 215}px`, // Adjust horizontal position
-                      top: `${rect.top + window.scrollY + rect.height - 50}px`, // Adjust vertical position
-                  })
-                  .addClass("shown");
+                this.ticketContextMenuModal
+                    .css({
+                        left: `${rect.left + window.scrollX - 215}px`,
+                        top: `${rect.top + window.scrollY + rect.height - 50}px`
+                    })
+                    .addClass("shown");
 
-              const projectId = $(target).data('projectid');
-              let stateLabels = allStateLabels[projectId];
+                const projectId = $target.data('projectid');
+                const stateLabels = allStateLabels[projectId];
+                const ticketStatus = $target.parent().data('status');
 
-              console.log(stateLabels);
-          }.bind(this),
-      )
+                // Add project status options to ticket context menu
+                const statusOptions = Object.entries(stateLabels).map(([value, {name, class: className}]) => ({
+                    value,
+                    text: name,
+                    className,
+                    selected: String(value) === String(ticketStatus)
+                }));
+
+                this.ticketContextStatus
+                    .clearOptions()
+                    .addOptions(statusOptions)
+                    .refreshOptions(false);
+
+                if (stateLabels[ticketStatus]) {
+                    this.ticketContextStatus.setValue(ticketStatus);
+                }
+            }
+        ).bind(this);
 
       // Close modal
       this.modalCancelButton.click(() => this.closeEditTimeLogModal());

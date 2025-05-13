@@ -1235,12 +1235,14 @@
     .timetable-tomselect {
 
         &:not(.tomselected) {
+            cursor: wait;
             ~ i {
                 position: absolute;
                 top: 15px;
                 z-index: 99;
                 font-size: 17px;
                 color: var(--primary-font-color);
+                pointer-events: none;
             }
 
             ~ span {
@@ -1248,6 +1250,7 @@
                 top: 13px;
                 left: 40px;
                 color: var(--primary-font-color);
+                pointer-events: none;
             }
         }
 
