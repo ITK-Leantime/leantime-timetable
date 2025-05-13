@@ -224,6 +224,7 @@ class TimeTable extends Controller
                     $timesheetsSortedByWeekdate['ticketId'] = $timesheetsByTicketAndDate[0]['ticketId'];
                     $timesheetsSortedByWeekdate['dateToFinishIsSet'] = $timesheetsByTicketAndDate[0]['dateToFinish'] !== '0000-00-00 00:00:00';
                     $timesheetsSortedByWeekdate['tagsIsSet'] = $timesheetsByTicketAndDate[0]['tags'] !== '';
+                    $timesheetsSortedByWeekdate['status'] = $timesheetsByTicketAndDate[0]['status'];
                 }
             }
 

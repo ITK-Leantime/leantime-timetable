@@ -95,6 +95,7 @@ class TimeTable
         zp_tickets.hourRemaining,
         zp_tickets.tags,
         zp_tickets.dateToFinish,
+        zp_tickets.status,
         zp_projects.id as projectId,
         zp_projects.name
         FROM zp_timesheets AS timesheet

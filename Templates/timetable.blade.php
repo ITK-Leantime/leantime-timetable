@@ -56,7 +56,7 @@
                     <table id="timetable" class="table">
                         <thead>
                             <tr>
-                                <th class="th-ticket-title" scope="col">{{ __('timeTable.title_table_header') }}
+                                <th class="th-ticket-title" scope="col" >{{ __('timeTable.title_table_header') }}
                                 </th>
                                 @if (isset($weekDays, $weekDates) && count($weekDates))
                                     <input type="hidden" name="timetable-current-week-first-day"
@@ -92,7 +92,8 @@
                             @if (!empty($timesheetsByTicket))
                                 @foreach ($timesheetsByTicket as $ticketId => $timesheet)
                                     <tr data-ticketId="{{ $ticketId }}">
-                                        <td class="ticket-title" scope="row">
+                                        <td class="ticket-title" scope="row" data-status="{{ $timesheet['status'] ?? '' }}"
+                                            data-duedate="{{ $timesheet['dateToFinish'] ?? '' }}">
                                             <div>
                                             <a href="{{ $timesheet['ticketLink'] }}"
                                                 data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
