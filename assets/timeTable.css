@@ -926,16 +926,7 @@
   }
 }
 
-#edit-time-log-modal,
-#entry-copy-modal {
-  position: absolute;
-  z-index: 99999;
-  display: none !important;
-
-  &.shown {
-    display: flex !important;
-  }
-}
+#edit-time-log-modal,#entry-copy-modal,#ticket-context-menu-modal {    position: absolute;    z-index: 99999;    display: none !important;    &.shown {        display: flex !important;    }    &.new .timetable-hours-left {        right: 0 !important;    }    .timetable-hours-left:has(input[data-value="0"]) {        display: none;    }}
 
 #entry-copy-modal {
   .entry-copy-form {

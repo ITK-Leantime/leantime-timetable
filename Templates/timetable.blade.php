@@ -105,11 +105,11 @@
                                             $id = $timesheetDate[0]['id'] ?? null;
                                             $headline = $timesheetDate[0]['headline'] ?? null;
                                             $hours = $timesheetDate[0]['hours'] ?? null;
-                                            $hoursLeft = $timesheetDate[0]['hourRemaining'] ?? null;
+                                            $hoursLeft = $timesheet['hourRemaining'] ?? null;
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-                                            
+
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -119,7 +119,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-                                            
+
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
