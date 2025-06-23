@@ -13,6 +13,8 @@ parameters:
         - '#^Call to an undefined method Carbon\\CarbonImmutable::setToDbTimezone\(\).$#'
         - '#^Call to an undefined method Carbon\\CarbonImmutable::setToUserTimezone\(\).$#'
         - '#^Offset mixed on array\{\} in isset\(\) does not exist\.$#'
+        - '#Access to an undefined property Leantime\\Core\\Db\\Db::\$database#'
+
 
 # Local Variables:
 # mode: yaml
