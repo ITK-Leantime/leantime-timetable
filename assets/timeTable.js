@@ -456,7 +456,9 @@ jQuery(document).ready(function ($) {
       this.modalTicketInput.val(taskName);
       this.modalTicketIdInput.val(taskId);
       console.log(parseInt(hoursLeft) < 0);
-        this.modalInputHoursLeft.val(parseInt(hoursLeft) < 0 ? 0 : hoursLeft).attr("data-value", hoursLeft);
+      this.modalInputHoursLeft
+        .val(parseInt(hoursLeft) < 0 ? 0 : hoursLeft)
+        .attr("data-value", hoursLeft);
     }
 
     /**
@@ -484,10 +486,10 @@ jQuery(document).ready(function ($) {
       this.modalInputTicketName.val(headline).attr("disabled", "disabled");
       this.modalInputHours.val(hours);
 
-        this.modalInputHoursLeft
-            .val(hoursLeft)
-            .attr("data-value", hoursLeft)
-            .toggleClass("estimate-exceeded", hoursLeft < 0);
+      this.modalInputHoursLeft
+        .val(hoursLeft)
+        .attr("data-value", hoursLeft)
+        .toggleClass("estimate-exceeded", hoursLeft < 0);
       this.modalTextareaDescription.val(description);
       this.modalInputDate.val(date);
       this.timelogDateChanger.setDate(new Date(date));
