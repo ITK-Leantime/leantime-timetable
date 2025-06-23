@@ -109,7 +109,7 @@
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== "0";
-                                            
+
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
