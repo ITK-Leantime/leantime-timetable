@@ -12,7 +12,7 @@ readonly class WorklogDTO
      * @param int      $ticketId         Associated ticket ID
      * @param string   $workDate         Date when work was performed
      * @param float    $hours            Hours worked
-     * @param string   $description      Description of work performed
+     * @param string|null   $description      Description of work performed
      * @param string   $kind             Type of work (default: GENERAL_BILLABLE)
      * @param int|null $timesheetId      Optional timesheet ID
      * @param int      $invoicedEmpl     Invoice status for employee (0/1)
@@ -29,7 +29,7 @@ readonly class WorklogDTO
         public int $ticketId,
         public string $workDate,
         public float $hours,
-        public string $description,
+        public ?string $description,
         public string $kind = 'GENERAL_BILLABLE',
         public ?int $timesheetId = null,
         public int $invoicedEmpl = 0,
