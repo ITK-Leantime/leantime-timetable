@@ -2,9 +2,7 @@
 
 namespace Leantime\Plugins\TimeTable\Repositories;
 
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
@@ -40,9 +38,12 @@ class TimeTable
     public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
         $sql = 'SELECT DISTINCT
-        timesheet.ticketId
+        timesheet.ticketId,
+        zp_tickets.headline
         FROM zp_timesheets AS timesheet
-        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo ORDER BY timesheet.ticketId ASC';
+        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
+        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo
+        ORDER BY zp_tickets.headline ASC';
         $stmn = $this->db->database->prepare($sql);
 
         if ($userId !== '') {
