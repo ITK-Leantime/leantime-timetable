@@ -24,7 +24,7 @@
                             {{ (int) $requireTimeRegistrationComment === 1 ? 'checked' : '' }} />
                     </div>
                 </div>
-            <br>
+                <br>
                 <input type="submit" value="Save" id="saveBtn" />
             </form>
 
