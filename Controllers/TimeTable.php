@@ -222,7 +222,7 @@ class TimeTable extends Controller
                     $timesheetsSortedByWeekdate['projectName'] = $timesheetsByTicketAndDate[0]['name'];
                     $timesheetsSortedByWeekdate['ticketType'] = $timesheetsByTicketAndDate[0]['ticketType'];
                     $timesheetsSortedByWeekdate['ticketId'] = $timesheetsByTicketAndDate[0]['ticketId'];
-                    $timesheetsSortedByWeekdate['hourRemaining'] = $timesheetsByTicketAndDate[0]['hourRemaining'];
+                    $timesheetsSortedByWeekdate['hourRemaining'] = (int) $timesheetsByTicketAndDate[0]['planHours'] - (int) $timesheetsByTicketAndDate[0]['hoursSum'];
                 }
             }
 

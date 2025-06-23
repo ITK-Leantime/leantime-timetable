@@ -86,15 +86,18 @@ class TimeTable
         timesheet.hours,
         timesheet.description,
         timesheet.ticketId,
+        SUM(timesheet.hours) as hoursSum,
         zp_tickets.headline,
         zp_tickets.id as ticketId,
         zp_tickets.type as ticketType,
+        zp_tickets.planHours,
         zp_tickets.hourRemaining,
         zp_projects.name
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
         LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery;
+        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery . '
+        GROUP BY timesheet.id, workDate, timesheet.description, timesheet.ticketId, zp_tickets.headline, zp_tickets.id, zp_tickets.type, zp_tickets.planHours, zp_tickets.hourRemaining, zp_projects.name';
 
         $stmn = $this->db->database->prepare($sql);
 
