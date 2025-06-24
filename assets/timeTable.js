@@ -455,7 +455,6 @@ jQuery(document).ready(function ($) {
       // Set values from selected ticket
       this.modalTicketInput.val(taskName);
       this.modalTicketIdInput.val(taskId);
-      console.log(parseInt(hoursLeft) < 0);
       this.modalInputHoursLeft
         .val(parseInt(hoursLeft) < 0 ? 0 : hoursLeft)
         .attr("data-value", hoursLeft);
