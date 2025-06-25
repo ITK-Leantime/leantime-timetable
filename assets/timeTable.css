@@ -593,6 +593,7 @@
 
     &.estimate-exceeded {
       color: var(--itk-color-danger);
+      font-weight: bold;
     }
     &[name="timesheet-hours"] {
       border: 1px solid #cbd5e1;
