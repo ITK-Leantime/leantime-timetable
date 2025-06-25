@@ -200,11 +200,7 @@ jQuery(document).ready(function ($) {
           const description = target.dataset.description ?? null;
           const date = target.dataset.date ?? null;
 
-          if (!id) {
-            $(this.timeEditModal).addClass("new");
-          } else {
-            $(this.timeEditModal).removeClass("new");
-          }
+          $(this.timeEditModal).toggleClass("new", !id);
 
           this.editTimeEntry(
             headline,
