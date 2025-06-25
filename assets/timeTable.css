@@ -591,6 +591,10 @@
     box-shadow: none;
     border: none;
 
+    &.estimate-exceeded {
+      color: var(--itk-color-danger);
+      font-weight: bold;
+    }
     &[name="timesheet-hours"] {
       border: 1px solid #cbd5e1;
       padding-right: 0;
@@ -927,13 +931,19 @@
 }
 
 #edit-time-log-modal,
-#entry-copy-modal {
+#entry-copy-modal,
+#ticket-context-menu-modal {
   position: absolute;
   z-index: 99999;
   display: none !important;
-
   &.shown {
     display: flex !important;
+  }
+  &.new .timetable-hours-left {
+    right: 0 !important;
+  }
+  .timetable-hours-left:has(input[data-value="0"]) {
+    display: none;
   }
 }
 

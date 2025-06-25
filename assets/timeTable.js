@@ -196,9 +196,11 @@ jQuery(document).ready(function ($) {
           const ticketId = target.dataset.ticketid ?? null;
           const hours = target.dataset.hours ?? null;
           const headline = target.dataset.headline ?? null;
-          const hoursLeft = target.dataset.hoursleft ?? null;
+          const hoursLeft = parseInt(target.dataset.hoursleft) ?? null;
           const description = target.dataset.description ?? null;
           const date = target.dataset.date ?? null;
+
+          $(this.timeEditModal).toggleClass("new", !id);
 
           this.editTimeEntry(
             headline,
@@ -449,7 +451,9 @@ jQuery(document).ready(function ($) {
       // Set values from selected ticket
       this.modalTicketInput.val(taskName);
       this.modalTicketIdInput.val(taskId);
-      this.modalInputHoursLeft.val(hoursLeft).attr("data-value", hoursLeft);
+      this.modalInputHoursLeft
+        .val(parseInt(hoursLeft) < 0 ? 0 : hoursLeft)
+        .attr("data-value", hoursLeft);
     }
 
     /**
@@ -476,9 +480,11 @@ jQuery(document).ready(function ($) {
       this.modalInputTicketId.val(ticketId);
       this.modalInputTicketName.val(headline).attr("disabled", "disabled");
       this.modalInputHours.val(hours);
+
       this.modalInputHoursLeft
-        .val(hoursLeft > 0 ? `${hoursLeft}` : "")
-        .attr("data-value", hoursLeft);
+        .val(hoursLeft)
+        .attr("data-value", hoursLeft)
+        .toggleClass("estimate-exceeded", hoursLeft < 0);
       this.modalTextareaDescription.val(description);
       this.modalInputDate.val(date);
       this.timelogDateChanger.setDate(new Date(date));

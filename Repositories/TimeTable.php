@@ -2,9 +2,7 @@
 
 namespace Leantime\Plugins\TimeTable\Repositories;
 
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
@@ -40,9 +38,12 @@ class TimeTable
     public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
         $sql = 'SELECT DISTINCT
-        timesheet.ticketId
+        timesheet.ticketId,
+        zp_tickets.headline
         FROM zp_timesheets AS timesheet
-        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo ORDER BY timesheet.ticketId ASC';
+        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
+        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo
+        ORDER BY zp_tickets.headline ASC';
         $stmn = $this->db->database->prepare($sql);
 
         if ($userId !== '') {
@@ -85,15 +86,18 @@ class TimeTable
         timesheet.hours,
         timesheet.description,
         timesheet.ticketId,
+        SUM(timesheet.hours) as hoursSum,
         zp_tickets.headline,
         zp_tickets.id as ticketId,
         zp_tickets.type as ticketType,
+        zp_tickets.planHours,
         zp_tickets.hourRemaining,
         zp_projects.name
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
         LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery;
+        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery . '
+        GROUP BY timesheet.id, workDate, timesheet.description, timesheet.ticketId, zp_tickets.headline, zp_tickets.id, zp_tickets.type, zp_tickets.planHours, zp_tickets.hourRemaining, zp_projects.name';
 
         $stmn = $this->db->database->prepare($sql);
 

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-59](https://github.com/ITK-Leantime/leantime-timetable/pull/59)
+  Fixed how hours-remaining is displayed
+
 ## [4.1.1] - 2025-05-07
 
 * [PR-55](https://github.com/ITK-Leantime/leantime-timetable/pull/55)
