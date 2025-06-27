@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-61](https://github.com/ITK-Leantime/leantime-timetable/pull/61)
+  Correct hours-remaining value
+
 ## [4.1.2] - 2025-06-27
 
 * [PR-59](https://github.com/ITK-Leantime/leantime-timetable/pull/59)
