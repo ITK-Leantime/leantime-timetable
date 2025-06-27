@@ -86,7 +86,7 @@ class TimeTable
         timesheet.hours,
         timesheet.description,
         timesheet.ticketId,
-        SUM(timesheet.hours) as hoursSum,
+        (SELECT SUM(hours) FROM zp_timesheets WHERE ticketId = zp_tickets.id) as hoursSum,
         zp_tickets.headline,
         zp_tickets.id as ticketId,
         zp_tickets.type as ticketType,
