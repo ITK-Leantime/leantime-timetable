@@ -196,7 +196,7 @@ jQuery(document).ready(function ($) {
           const ticketId = target.dataset.ticketid ?? null;
           const hours = target.dataset.hours ?? null;
           const headline = target.dataset.headline ?? null;
-          const hoursLeft = parseInt(target.dataset.hoursleft) ?? null;
+          const hoursLeft = parseFloat(target.dataset.hoursleft) ?? null;
           const description = target.dataset.description ?? null;
           const date = target.dataset.date ?? null;
 
