@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-63](https://github.com/ITK-Leantime/leantime-timetable/pull/63)
+  Hotfix: parse hoursLeft as float
+  
 ## [4.1.3] - 2025-06-27
 
 * [PR-61](https://github.com/ITK-Leantime/leantime-timetable/pull/61)
