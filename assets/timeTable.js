@@ -706,7 +706,7 @@ jQuery(document).ready(function ($) {
                         projectName,
                       );
                       this.enable();
-                      this.clear();
+                      this.destroy();
                       self.initTicketSearch(projects, tickets, false);
                     }
                   });
@@ -721,6 +721,7 @@ jQuery(document).ready(function ($) {
             selectedOption.text,
             selectedOption.projectName,
           );
+          this.clear();
         },
       });
 
