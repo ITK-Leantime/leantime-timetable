@@ -174,4 +174,9 @@ class TimeTable
 
         return $projectGroup;
     }
+
+    public function getAllStateLabels(int $projectId = NULL): array
+    {
+        return $this->timeTableRepo->getAllStateLabels($projectId);
+    }
 }
