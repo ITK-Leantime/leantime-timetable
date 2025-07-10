@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-70](https://github.com/ITK-Leantime/leantime-timetable/pull/70)
+  New ticket status based on project config
+
 ## [4.1.4] - 2025-07-02
 
 * [PR-63](https://github.com/ITK-Leantime/leantime-timetable/pull/63)
