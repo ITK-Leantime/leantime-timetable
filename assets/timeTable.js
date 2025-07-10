@@ -582,6 +582,7 @@ jQuery(document).ready(function ($) {
     }
 
     initTicketSearch(projects, tickets, autofocus = false) {
+      const self = this;
       const pageSize = 50;
       const userId = pluginSettings.userId;
 
@@ -705,7 +706,8 @@ jQuery(document).ready(function ($) {
                         projectName,
                       );
                       this.enable();
-                      this.destroy();
+                      this.clear();
+                      self.initTicketSearch(projects, tickets, false);
                     }
                   });
                 }
@@ -719,7 +721,6 @@ jQuery(document).ready(function ($) {
             selectedOption.text,
             selectedOption.projectName,
           );
-          this.clear();
         },
       });
 

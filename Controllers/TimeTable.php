@@ -74,7 +74,8 @@ class TimeTable extends Controller
      */
     public function createNewTicket(array $input): JsonResponse
     {
-        $allStateLabels = $this->timeTableService->getAllStateLabels($input['projectId']);
+        $projectId = (int) $input['projectId'];
+        $allStateLabels = $this->timeTableService->getAllStateLabels($projectId);
         if (!empty($allStateLabels)) {
             foreach ($allStateLabels[$input['projectId']] as $id => $status) {
                 if ($status['statusType'] === 'NEW') {
@@ -93,7 +94,7 @@ class TimeTable extends Controller
         $ticketValues = [
             'headline' => $input['headline'],
             'type' => 'task',
-            'projectId' => $input['projectId'],
+            'projectId' => $projectId,
             'editorId' => session('userdata.id'),
             'userId' => session('userdata.id'),
             'description' => '',

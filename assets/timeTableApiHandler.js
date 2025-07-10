@@ -35,7 +35,6 @@ export default class TimeTableApiHandler {
   }
 
   static async createNewTicket(ticketName, projectId) {
-      console.log(JSON.stringify({ headline: ticketName, projectId: projectId }));
     let createTicketPromise = fetch("/TimeTable/TimeTable/createNewTicket", {
       method: "POST",
       body: JSON.stringify({ headline: ticketName, projectId: projectId }),
