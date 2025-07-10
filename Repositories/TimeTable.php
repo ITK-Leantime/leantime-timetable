@@ -259,7 +259,7 @@ class TimeTable
      *
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
-    public function getAllStateLabels(int $projectId = NULL): array
+    public function getAllStateLabels(int $projectId = null): array
     {
         $statusListSeed = $this->ticketRepo->statusListSeed;
 
