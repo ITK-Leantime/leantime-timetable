@@ -20,6 +20,7 @@ class TimeTable
 
     private TicketRepository $ticketRepo;
 
+
     /**
      * __construct - get db connection
      *
@@ -261,6 +262,7 @@ class TimeTable
      */
     public function getAllStateLabels(int $projectId = null): array
     {
+        // Default status object defined in app/Domain/Tickets/Repositories/Tickets.php:25
         $statusListSeed = $this->ticketRepo->statusListSeed;
 
         if ($projectId) {
