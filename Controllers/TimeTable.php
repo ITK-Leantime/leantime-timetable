@@ -82,7 +82,7 @@ class TimeTable extends Controller
         $allStateLabels = $this->timeTableService->getAllStateLabels($projectId);
         if (!empty($allStateLabels)) {
             foreach ($allStateLabels[$input['projectId']] as $id => $status) {
-                if ($status['statusType'] === 'NEW') {
+                if (strtolower($status['statusType']) === 'new') {
                     $status = $id;
                     break;
                 }
