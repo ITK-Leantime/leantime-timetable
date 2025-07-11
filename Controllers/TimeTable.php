@@ -32,6 +32,10 @@ class TimeTable extends Controller
     private TimesheetRepository $timesheetRepository;
     private TicketRepository $ticketRepository;
 
+    // Default "New" status id, as per
+    // app/Domain/Tickets/Repositories/Tickets.php:25
+    private const LEANTIME_DEFAULT_NEW_STATUS = 3;
+
     /**
      * constructor
      *
@@ -84,12 +88,10 @@ class TimeTable extends Controller
                 }
             }
             if (!isset($status)) {
-                $status = 3;
+                $status = self::LEANTIME_DEFAULT_NEW_STATUS;
             }
         } else {
-            // Default "New" status id, as per
-            // app/Domain/Tickets/Repositories/Tickets.php:25
-            $status = 3;
+            $status = self::LEANTIME_DEFAULT_NEW_STATUS;
         }
         $ticketValues = [
             'headline' => $input['headline'],
