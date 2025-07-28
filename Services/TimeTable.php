@@ -174,4 +174,15 @@ class TimeTable
 
         return $projectGroup;
     }
+
+    /**
+     * Retrieves all state labels associated with a specific project or all projects if no project ID is provided.
+     *
+     * @param int|null $projectId The ID of the project to filter state labels, or null for all projects.
+     * @return array<int|string,array<string,mixed>> An array of state labels.
+     */
+    public function getAllStateLabels(int $projectId = null): array
+    {
+        return $this->timeTableRepo->getAllStateLabels($projectId);
+    }
 }

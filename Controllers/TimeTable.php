@@ -32,6 +32,10 @@ class TimeTable extends Controller
     private TimesheetRepository $timesheetRepository;
     private TicketRepository $ticketRepository;
 
+    // Default "New" status id, as per
+    // app/Domain/Tickets/Repositories/Tickets.php:25
+    private const LEANTIME_DEFAULT_NEW_STATUS = 3;
+
     /**
      * constructor
      *
@@ -74,16 +78,31 @@ class TimeTable extends Controller
      */
     public function createNewTicket(array $input): JsonResponse
     {
+        $projectId = (int) $input['projectId'];
+        $allStateLabels = $this->timeTableService->getAllStateLabels($projectId);
+        if (!empty($allStateLabels)) {
+            foreach ($allStateLabels[$input['projectId']] as $id => $status) {
+                if (strtolower($status['statusType']) === 'new') {
+                    $status = $id;
+                    break;
+                }
+            }
+            if (!isset($status)) {
+                $status = self::LEANTIME_DEFAULT_NEW_STATUS;
+            }
+        } else {
+            $status = self::LEANTIME_DEFAULT_NEW_STATUS;
+        }
         $ticketValues = [
             'headline' => $input['headline'],
             'type' => 'task',
-            'projectId' => $input['projectId'],
+            'projectId' => $projectId,
             'editorId' => session('userdata.id'),
             'userId' => session('userdata.id'),
             'description' => '',
             'date' => date('Y-m-d H:i:s'),
             'dateToFinish' => '',
-            'status' => '',
+            'status' => $status,
             'storypoints' => '',
             'hourRemaining' => '',
             'planHours' => '',

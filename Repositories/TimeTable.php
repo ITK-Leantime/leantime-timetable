@@ -20,6 +20,7 @@ class TimeTable
 
     private TicketRepository $ticketRepo;
 
+
     /**
      * __construct - get db connection
      *
@@ -257,15 +258,24 @@ class TimeTable
     /**
      * getAllStateLabels - Retrieves all state labels for projects based on a seed list of statuses and stored settings.
      *
-     * @param array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
-    private function getAllStateLabels(array $statusListSeed): array
+    public function getAllStateLabels(int $projectId = null): array
     {
+        // Default status object defined in app/Domain/Tickets/Repositories/Tickets.php:25
         $statusListSeed = $this->ticketRepo->statusListSeed;
-        $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':keyPattern', 'projectsettings.%.ticketlabels', PDO::PARAM_STR);
+
+        if ($projectId) {
+            $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` = :key';
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':key', 'projectsettings.' . $projectId . '.ticketlabels', PDO::PARAM_STR);
+        } else {
+            $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':keyPattern', 'projectsettings.%.ticketlabels', PDO::PARAM_STR);
+        }
+
+
         $stmn->execute();
         $results = $stmn->fetchAll(PDO::FETCH_ASSOC);
         $stmn->closeCursor();
@@ -304,16 +314,18 @@ class TimeTable
             }
         }
 
-        // Ensure every project has a state list
-
-        // Fetch all project IDs separately
-        $projectIds = $this->getAllProjectIds();
-        foreach ($projectIds as $projectId) {
-            if (!isset($allStatusLabels[$projectId])) {
-                // Default to $statusListSeed if no state list exists
-                $allStatusLabels[$projectId] = $statusListSeed;
+        if (!empty($allStatusLabels)) {
+            // Ensure every project has a state list
+            // Fetch all project IDs separately
+            $projectIds = $this->getAllProjectIds();
+            foreach ($projectIds as $projectId) {
+                if (!isset($allStatusLabels[$projectId])) {
+                    // Default to $statusListSeed if no state list exists
+                    $allStatusLabels[$projectId] = $statusListSeed;
+                }
             }
         }
+
 
         return $allStatusLabels;
     }
@@ -369,8 +381,7 @@ class TimeTable
     public function getAllTickets(): array
     {
         $userId = session('userdata.id');
-        $statusListSeed = $this->ticketRepo->statusListSeed;
-        $allStateLabels = $this->getAllStateLabels($statusListSeed);
+        $allStateLabels = $this->getAllStateLabels();
 
         $sql = 'SELECT
                 t.id,
