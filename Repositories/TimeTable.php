@@ -122,8 +122,8 @@ class TimeTable
     /**
      * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param WorklogDTO $worklog    Worklog DTO
-     * @param int|null   $originalId (Optional) The original timelog id to check for updates or deletion
+     * @param WorklogDTO $worklog Worklog DTO
+     * @param int|null $originalId (Optional) The original timelog id to check for updates or deletion
      *
      * @return void
      * @access public
@@ -143,9 +143,17 @@ class TimeTable
 
         if ($timesheet) {
             if ($originalId && $originalId == $timesheet['id']) {
-                $sql = 'UPDATE zp_timesheets SET hours = :hours, description = :description WHERE id = :id AND userId = :userId';
+                $sql = 'UPDATE zp_timesheets SET hours = :hours, description = :description, kind = :kind,
+                    invoicedEmpl = :invoicedEmpl, invoicedComp = :invoicedComp,
+                    invoicedEmplDate = :invoicedEmplDate, invoicedCompDate = :invoicedCompDate,
+                    rate = :rate, paid = :paid, paidDate = :paidDate, modified = :modified
+                    WHERE id = :id AND userId = :userId';
             } else {
-                $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description) WHERE id = :id AND userId = :userId';
+                $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description),
+                    kind = :kind, invoicedEmpl = :invoicedEmpl, invoicedComp = :invoicedComp,
+                    invoicedEmplDate = :invoicedEmplDate, invoicedCompDate = :invoicedCompDate,
+                    rate = :rate, paid = :paid, paidDate = :paidDate, modified = :modified
+                    WHERE id = :id AND userId = :userId';
             }
 
             $stmn = $this->db->database->prepare($sql);
@@ -153,32 +161,42 @@ class TimeTable
             $stmn->bindValue(':hours', $worklog->hours);
             $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->bindValue(':description', $worklog->description);
+            $stmn->bindValue(':kind', $worklog->kind);
+            $stmn->bindValue(':invoicedEmpl', $worklog->invoicedEmpl, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedComp', $worklog->invoicedComp, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedEmplDate', $worklog->invoicedEmplDate);
+            $stmn->bindValue(':invoicedCompDate', $worklog->invoicedCompDate);
+            $stmn->bindValue(':rate', $worklog->rate);
+            $stmn->bindValue(':paid', $worklog->paid, PDO::PARAM_INT);
+            $stmn->bindValue(':paidDate', $worklog->paidDate);
+            $stmn->bindValue(':modified', $worklog->modified);
         } else {
             // else, insert new record
             $sql = 'INSERT INTO zp_timesheets (
-        userId,
-        ticketId,
-        workDate,
-        hours,
-        description,
-        kind
-   ) VALUES (
-        :userId,
-        :ticket,
-        :date,
-        :hours,
-        :description,
-        :kind
-)';
+                userId, ticketId, workDate, hours, description, kind,
+                invoicedEmpl, invoicedComp, invoicedEmplDate, invoicedCompDate,
+                rate, paid, paidDate, modified
+            ) VALUES (
+                :userId, :ticket, :date, :hours, :description, :kind,
+                :invoicedEmpl, :invoicedComp, :invoicedEmplDate, :invoicedCompDate,
+                :rate, :paid, :paidDate, :modified
+            )';
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->bindValue(':ticket', $worklog->ticketId);
-            ;
             $stmn->bindValue(':date', $worklog->workDate);
             $stmn->bindValue(':kind', $worklog->kind);
             $stmn->bindValue(':description', $worklog->description);
             $stmn->bindValue(':hours', $worklog->hours);
+            $stmn->bindValue(':invoicedEmpl', $worklog->invoicedEmpl, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedComp', $worklog->invoicedComp, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedEmplDate', $worklog->invoicedEmplDate);
+            $stmn->bindValue(':invoicedCompDate', $worklog->invoicedCompDate);
+            $stmn->bindValue(':rate', $worklog->rate);
+            $stmn->bindValue(':paid', $worklog->paid, PDO::PARAM_INT);
+            $stmn->bindValue(':paidDate', $worklog->paidDate);
+            $stmn->bindValue(':modified', $worklog->modified);
         }
 
         $stmn->execute();
