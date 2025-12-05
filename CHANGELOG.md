@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.1.6] - 2025-12-05
+
 * [PR-74](https://github.com/ITK-Leantime/leantime-timetable/pull/74)
   Saving all values from worklogDTO in database.
 
@@ -202,7 +204,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.5...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.6...HEAD
+[4.1.6]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.5...4.1.6
 [4.1.5]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.4...4.1.5
 [4.1.4]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.3...4.1.4
 [4.1.3]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.2...4.1.3
