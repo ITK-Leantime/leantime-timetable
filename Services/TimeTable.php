@@ -102,12 +102,13 @@ class TimeTable
     /**
      * Adds a timelog to a ticket.
      *
-     * @param array<string, mixed> $values The data required to add the timelog on the ticket.
+     * @param WorklogDTO $worklog
+     * @param bool $shouldOverwrite
      * @return void
      */
-    public function addTimelogOnTicket(array $values)
+    public function addTimelogOnTicket(WorklogDTO $worklog, bool $shouldOverwrite)
     {
-        $this->timeTableRepo->addTimelogOnTicket($values);
+        $this->timeTableRepo->addTimelogOnTicket($worklog, $shouldOverwrite);
     }
 
     /**

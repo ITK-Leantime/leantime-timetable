@@ -228,14 +228,14 @@ class TimeTable
      *
      * @return void
      */
-    public function addTimelogOnTicket(array $values)
+    public function addTimelogOnTicket(WorklogDTO $worklogDTO, bool $shouldOverwrite = false): void
     {
         // Check for an existing timelog
         $sql = 'SELECT id FROM zp_timesheets WHERE ticketId = :ticketId AND workDate = :date AND userId = :userId';
         $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':ticketId', $values['ticketId']);
-        $stmn->bindValue(':date', $values['workDate']->format('Y-m-d H:i:s'));
-        $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
+        $stmn->bindValue(':ticketId', $worklogDTO->ticketId);
+        $stmn->bindValue(':date', $worklogDTO->workDate);
+        $stmn->bindValue(':userId', $worklogDTO->userId, PDO::PARAM_INT);
         $stmn->execute();
 
         $existingEntry = $stmn->fetch(PDO::FETCH_ASSOC);
@@ -243,7 +243,7 @@ class TimeTable
 
         // If 'entryCopyOverwrite' is set, delete the existing entry
         if ($existingEntry) {
-            if (isset($values['entryCopyOverwrite']) && $values['entryCopyOverwrite'] === 'on') {
+            if ($shouldOverwrite) {
                 $sql = 'DELETE FROM zp_timesheets WHERE id = :id';
                 $stmn = $this->db->database->prepare($sql);
                 $stmn->bindValue(':id', $existingEntry['id'], PDO::PARAM_INT);
@@ -257,18 +257,30 @@ class TimeTable
 
         // Insert the new timelog
         $sql = 'INSERT INTO zp_timesheets (
-            userId, ticketId, workDate, hours, description, kind
+            userId, ticketId, workDate, hours, description, kind,
+            invoicedEmpl, invoicedComp, invoicedEmplDate, invoicedCompDate,
+            rate, paid, paidDate, modified
         ) VALUES (
-            :userId, :ticketId, :date, :hours, :description, :kind
+            :userId, :ticketId, :date, :hours, :description, :kind,
+            :invoicedEmpl, :invoicedComp, :invoicedEmplDate, :invoicedCompDate,
+            :rate, :paid, :paidDate, :modified
         )';
 
         $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
-        $stmn->bindValue(':ticketId', $values['ticketId']);
-        $stmn->bindValue(':date', $values['workDate']->format('Y-m-d H:i:s'));
-        $stmn->bindValue(':hours', $values['hours']);
-        $stmn->bindValue(':description', $values['description']);
-        $stmn->bindValue(':kind', $values['kind']);
+        $stmn->bindValue(':userId', $worklogDTO->userId, PDO::PARAM_INT);
+        $stmn->bindValue(':ticketId', $worklogDTO->ticketId);
+        $stmn->bindValue(':date', $worklogDTO->workDate);
+        $stmn->bindValue(':hours', $worklogDTO->hours);
+        $stmn->bindValue(':description', $worklogDTO->description);
+        $stmn->bindValue(':kind', $worklogDTO->kind);
+        $stmn->bindValue(':invoicedEmpl', $worklogDTO->invoicedEmpl, PDO::PARAM_INT);
+        $stmn->bindValue(':invoicedComp', $worklogDTO->invoicedComp, PDO::PARAM_INT);
+        $stmn->bindValue(':invoicedEmplDate', $worklogDTO->invoicedEmplDate);
+        $stmn->bindValue(':invoicedCompDate', $worklogDTO->invoicedCompDate);
+        $stmn->bindValue(':rate', $worklogDTO->rate);
+        $stmn->bindValue(':paid', $worklogDTO->paid, PDO::PARAM_INT);
+        $stmn->bindValue(':paidDate', $worklogDTO->paidDate);
+        $stmn->bindValue(':modified', $worklogDTO->modified);
         $stmn->execute();
         $stmn->closeCursor();
     }
