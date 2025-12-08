@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.1.7] - 2025-12-08
+
 * [PR-77](https://github.com/ITK-Leantime/leantime-timetable/pull/77)
   Use DTO when copying worklog forward.
 
@@ -207,7 +209,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.6...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.7...HEAD
+[4.1.7]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.6...4.1.7
 [4.1.6]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.5...4.1.6
 [4.1.5]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.4...4.1.5
 [4.1.4]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.3...4.1.4
