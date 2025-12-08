@@ -103,7 +103,7 @@ class TimeTable
      * Adds a timelog to a ticket.
      *
      * @param WorklogDTO $worklog
-     * @param bool $shouldOverwrite
+     * @param bool       $shouldOverwrite
      * @return void
      */
     public function addTimelogOnTicket(WorklogDTO $worklog, bool $shouldOverwrite)
