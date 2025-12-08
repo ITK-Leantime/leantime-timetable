@@ -217,15 +217,8 @@ class TimeTable
      * If an entry for the same date, ticket, and user already exists, it checks
      * whether the entry should be overwritten or prevents duplicate insertion.
      *
-     * @param array<string, mixed> $values An associative array containing the following keys:
-     *     - 'userId' (int): The ID of the user creating the timelog.
-     *     - 'ticketId' (int): The ID of the ticket associated with the timelog.
-     *     - 'workDate' (DateTime): The date and time the timelog is being created for.
-     *     - 'hours' (float): The number of hours being logged.
-     *     - 'description' (string): The description of the work done.
-     *     - 'kind' (string): The type of work being logged.
-     *     - 'entryCopyOverwrite' (string|null, optional): A flag to indicate if existing entries should be overwritten.
-     *
+     * @param WorklogDTO $worklogDTO
+     * @param bool       $shouldOverwrite
      * @return void
      */
     public function addTimelogOnTicket(WorklogDTO $worklogDTO, bool $shouldOverwrite = false): void
