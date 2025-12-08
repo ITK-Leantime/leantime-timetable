@@ -213,10 +213,11 @@ class TimeTableActionHandler
         $hours = $postData['entryCopyHours'];
         $description = $postData['entryCopyDescription'];
         $userId = $_GET['manageAsUserId'] ?? $postData['manageAsUserId'];
+        $modifiedDate = CarbonImmutable::now()->format('Y-m-d H:i:s');
+        $shouldOverwrite = isset($postData['entryCopyOverwrite']) ? $postData['entryCopyOverwrite'] : false;
 
         // Move to the next day to skip the first date
-        $currentDate = $copyFromDate;
-        $currentDate->addDay();
+        $currentDate = $copyFromDate->addDay();
         $copyToDateUserTimezone = $copyToDate->setToUserTimezone();
         while ($currentDate <= $copyToDateUserTimezone) {
             $currentDateUserTimezone = $currentDate->setToUserTimezone();
@@ -225,23 +226,18 @@ class TimeTableActionHandler
                 $currentDate = $currentDate->addDay();
                 continue;
             }
-            $values = [
-                'userId' => $userId,
-                'ticketId' => $ticketId,
-                'workDate' => $currentDate,
-                'hours' => $hours,
-                'description' => $description,
-                'kind' => 'GENERAL_BILLABLE',
-            ];
-
-            // Use $postData (correct case)
-            if (isset($postData['entryCopyOverwrite'])) {
-                $values['entryCopyOverwrite'] = $postData['entryCopyOverwrite'];
-            }
-
 
             try {
-                $this->timeTableService->addTimelogOnTicket($values);
+                $worklog = new WorklogDTO(
+                    userId: $userId,
+                    ticketId: $ticketId,
+                    workDate: $currentDate,
+                    hours: $hours,
+                    description: $description,
+                    modified: $modifiedDate
+                );
+
+                $this->timeTableService->addTimelogOnTicket($worklog, $shouldOverwrite);
                 $currentDate = $currentDate->addDay();
             } catch (\Exception $e) {
                 exit(json_encode(['status' => 'error', 'error' => $e->getMessage()]));

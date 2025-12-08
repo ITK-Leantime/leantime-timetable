@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-77](https://github.com/ITK-Leantime/leantime-timetable/pull/77)
+  Use DTO when copying worklog forward.
+
 ## [4.1.6] - 2025-12-05
 
 * [PR-74](https://github.com/ITK-Leantime/leantime-timetable/pull/74)
