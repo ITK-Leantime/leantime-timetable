@@ -445,15 +445,50 @@ class TimeTable
     {
         $sql = "UPDATE zp_tickets
             SET status = :status,
-                dateToFinish = :dateToFinish
+                dateToFinish = :dateToFinish,
+                tags = :tags
             WHERE id = :ticketId";
 
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':status', $ticketContextMenuDTO->status, PDO::PARAM_INT);
         $stmn->bindValue(':dateToFinish', $ticketContextMenuDTO->dateToFinish, PDO::PARAM_STR);
+        $stmn->bindValue(':tags', $ticketContextMenuDTO->tags, PDO::PARAM_STR);
         $stmn->bindValue(':ticketId', $ticketContextMenuDTO->ticketId, PDO::PARAM_INT);
 
         $stmn->execute();
         $stmn->closeCursor();
+    }
+
+    /**
+     * Get all unique tags from tickets in the system
+     *
+     * @return array Array of unique tag strings
+     */
+    public function getAllUniqueTags(): array
+    {
+        $sql = "SELECT DISTINCT tags FROM zp_tickets WHERE tags IS NOT NULL AND tags != ''";
+
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->execute();
+
+        $results = $stmn->fetchAll(PDO::FETCH_COLUMN);
+        $stmn->closeCursor();
+
+        // Split comma-separated tags and collect unique values
+        $uniqueTags = [];
+        foreach ($results as $tagString) {
+            $tags = explode(',', $tagString);
+            foreach ($tags as $tag) {
+                $tag = trim($tag);
+                if ($tag !== '' && !in_array($tag, $uniqueTags)) {
+                    $uniqueTags[] = $tag;
+                }
+            }
+        }
+
+        // Sort alphabetically
+        sort($uniqueTags);
+
+        return $uniqueTags;
     }
 }

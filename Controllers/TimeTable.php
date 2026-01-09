@@ -223,14 +223,11 @@ class TimeTable extends Controller
                     $timesheetsSortedByWeekdate['projectName'] = $timesheetsByTicketAndDate[0]['name'];
                     $timesheetsSortedByWeekdate['ticketType'] = $timesheetsByTicketAndDate[0]['ticketType'];
                     $timesheetsSortedByWeekdate['ticketId'] = $timesheetsByTicketAndDate[0]['ticketId'];
+                    $timesheetsSortedByWeekdate['dateToFinish'] = $timesheetsByTicketAndDate[0]['dateToFinish'];
                     $timesheetsSortedByWeekdate['dateToFinishIsSet'] = $timesheetsByTicketAndDate[0]['dateToFinish'] !== '0000-00-00 00:00:00';
+                    $timesheetsSortedByWeekdate['tags'] = $timesheetsByTicketAndDate[0]['tags'];
                     $timesheetsSortedByWeekdate['tagsIsSet'] = $timesheetsByTicketAndDate[0]['tags'] !== '';
                     $timesheetsSortedByWeekdate['status'] = $timesheetsByTicketAndDate[0]['status'];
-                    $dateToFinish = CarbonImmutable::parse($timesheetsByTicketAndDate[0]['dateToFinish'])->setTimezone('UTC');
-                    //$timesheetsSortedByWeekdate['dateToFinish'] = setToUserTimezone();
-                    if ($timesheetsByTicketAndDate[0]['ticketId'] === 4065) {
-                        die('<pre>' . print_r($timesheetsSortedByWeekdate['dateToFinish'], true) . '</pre>');
-                    }
                 }
             }
 
@@ -238,6 +235,9 @@ class TimeTable extends Controller
         }
         // All tickets assigned to the template
         $this->template->assign('errorMessage', $errorMessage);
+        // Get all unique tags for autocomplete
+        $allTags = $this->timeTableService->getAllUniqueTags();
+
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
         $this->template->assign('weekDays', $days);
         $this->template->assign('weekDates', $weekDates);
@@ -247,6 +247,7 @@ class TimeTable extends Controller
         $this->template->assign('allUsers', $allUsers);
         $this->template->assign('userId', $userId);
         $this->template->assign('canCrossManage', $canCrossManage);
+        $this->template->assign('allTags', $allTags);
         return $this->template->display('TimeTable.timetable');
     }
 }

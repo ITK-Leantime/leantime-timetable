@@ -267,18 +267,28 @@ class TimeTableActionHandler
 
     public function ticketContextMenu(array $postData, string $redirectUrl)
     {
-        $dateToFinish = $postData['dateToFinish'];
-        if ($dateToFinish) {
-            $dateToFinish = CarbonImmutable::createFromTimestamp(strtotime($dateToFinish))
+        $dateToFinish = $postData['dateToFinish'] ?? null;
+        if ($dateToFinish && !empty(trim($dateToFinish))) {
+            $dateToFinish = CarbonImmutable::createFromFormat('d-m-Y', $dateToFinish)
+                ->setTime(0, 0, 0)
                 ->setToDbTimezone()
                 ->format('Y-m-d H:i:s');
+        } else {
+            $dateToFinish = '0000-00-00 00:00:00';
+        }
+
+        // Process tags - TomSelect sends as array
+        $tags = $postData['tags'] ?? '';
+        if (is_array($tags)) {
+            $tags = implode(',', $tags);
         }
 
         $ticketContextMenuDTO = new TicketContextMenuDTO(
-            ticketId: $postData['ticketId'],
-            status: $postData['status'],
-            manageAsUserId: $postData['manageAsUserId'],
-            dateToFinish: $dateToFinish
+            ticketId: (int) $postData['ticketId'],
+            status: (int) $postData['status'],
+            manageAsUserId: (int) $postData['manageAsUserId'],
+            dateToFinish: $dateToFinish,
+            tags: $tags
         );
 
         $this->timeTableService->modifyTicketDetails($ticketContextMenuDTO);

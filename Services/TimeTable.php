@@ -187,4 +187,15 @@ class TimeTable
     {
         $this->timeTableRepo->modifyTicketDetails($ticketContextMenuDTO);
     }
+
+    /**
+     * Get all unique tags from the system
+     *
+     * @return array Array of unique tag strings
+     * @api
+     */
+    public function getAllUniqueTags(): array
+    {
+        return $this->timeTableRepo->getAllUniqueTags();
+    }
 }

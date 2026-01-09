@@ -93,7 +93,8 @@
                                 @foreach ($timesheetsByTicket as $ticketId => $timesheet)
                                     <tr data-ticketId="{{ $ticketId }}">
                                         <td class="ticket-title" scope="row" data-status="{{ $timesheet['status'] ?? '' }}"
-                                            data-datetofinish="{{ $timesheet['dateToFinish'] ?? '' }}">
+                                            data-datetofinish="{{ $timesheet['dateToFinish'] ?? '' }}"
+                                            data-tags="{{ $timesheet['tags'] ?? '' }}">
                                             <div>
                                             <a href="{{ $timesheet['ticketLink'] }}"
                                                 data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
@@ -290,10 +291,32 @@
             <input type="hidden" name="action" value="ticketContextMenu">
             <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
             <input type="hidden" name="ticketId" class="ticket-context-menu-ticketId" />
-            <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish" name="dateToFinish"/>
-            <select class="ticket-status" name="status" autocomplete="off" readonly="readonly">
 
-            </select>
+            <div class="context-menu-field">
+                <div class="context-menu-icon">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish" name="dateToFinish"/>
+            </div>
+
+            <div class="context-menu-field">
+                <div class="context-menu-icon">
+                    <i class="fa-solid fa-circle-dot"></i>
+                </div>
+                <select class="ticket-status" name="status" autocomplete="off" readonly="readonly">
+
+                </select>
+            </div>
+
+            <div class="context-menu-field">
+                <div class="context-menu-icon">
+                    <i class="fa-solid fa-tags"></i>
+                </div>
+                <select class="ticket-tags" name="tags" multiple autocomplete="off">
+
+                </select>
+            </div>
+
             <div class="buttons flex-container gap-1">
                 <button type="button"
                         class="ticket-context-menu-cancel btn btn-default ml-auto">{{ __('timeTable.ticket_context_discard_changes') }}</button>

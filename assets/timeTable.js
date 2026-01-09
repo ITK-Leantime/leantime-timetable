@@ -11,6 +11,7 @@ jQuery(document).ready(function ($) {
     };
 
     const allStateLabels = JSON.parse(timetableSettings.settings.allStateLabels);
+    const allTags = timetableSettings.settings.allTags || [];
 
     class TimeTable {
         constructor() {
@@ -26,6 +27,9 @@ jQuery(document).ready(function ($) {
             this.ticketContextMenuModal = $("#ticket-context-menu-modal");
             this.ticketContextDateToFinish = this.ticketContextMenuModal.find(".date-to-finish");
             this.ticketContextStatus = this.ticketContextMenuModal.find(".ticket-status");
+            this.ticketContextForm = this.ticketContextMenuModal.find(".ticket-context-menu-form");
+            this.ticketContextButtonCancel = this.ticketContextMenuModal.find(".ticket-context-menu-cancel");
+            this.ticketContextButtonApply = this.ticketContextMenuModal.find(".ticket-context-menu-apply");
             this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
             this.entryCopyButtonClose = this.entryCopyModal.find(
                 ".entry-copy-modal-cancel",
@@ -104,7 +108,7 @@ jQuery(document).ready(function ($) {
                 },
             });
 
-            flatpickr(this.ticketContextDateToFinish, {
+            this.ticketContextDatePicker = flatpickr(this.ticketContextDateToFinish, {
                 dateFormat: "d-m-Y",
                 weekNumbers: true,
                 locale: Danish,
@@ -119,6 +123,32 @@ jQuery(document).ready(function ($) {
                 onChange: () => {
                     this.ticketContextStatus.blur();
                 },
+            });
+
+            this.ticketContextTags = this.ticketContextMenuModal.find(".ticket-tags");
+
+            this.ticketContextTags = new TomSelect(this.ticketContextTags, {
+                plugins: ['remove_button'],
+                maxItems: 3,
+                create: true,
+                persist: false,
+                openOnFocus: false,
+                loadThrottle: 300,
+                load: function(query, callback) {
+                    if (!query.length) return callback();
+
+                    // Filter tags that match the search query
+                    const filtered = allTags
+                        .filter(tag => tag.toLowerCase().includes(query.toLowerCase()))
+                        .slice(0, 50) // Limit to 50 results
+                        .map(tag => ({value: tag, text: tag}));
+
+                    callback(filtered);
+                },
+                onItemAdd: function() {
+                    this.setTextboxValue('');
+                    this.refreshOptions();
+                }
             });
 
 
@@ -265,9 +295,18 @@ jQuery(document).ready(function ($) {
             $(document).on(
                 'click',
                 'div.ticket-context-menu',
-                ({target}) => {
+                (event) => {
+                    const target = event.target;
                     const rect = target.getBoundingClientRect();
-                    const $target = $(target);
+
+                    // Find the ticket-context-menu div (in case a child span was clicked)
+                    const $contextMenuDiv = $(target).closest('div.ticket-context-menu');
+
+                    // Get the parent td which contains all the data attributes
+                    const $ticketTd = $contextMenuDiv.parent();
+
+                    // Get the tr which contains the ticketId
+                    const $ticketTr = $ticketTd.parent();
 
                     this.ticketContextMenuModal
                         .css({
@@ -276,28 +315,48 @@ jQuery(document).ready(function ($) {
                         })
                         .addClass("shown");
 
-                    const projectId = $target.data('projectid');
+                    const projectId = $contextMenuDiv.data('projectid');
                     const stateLabels = allStateLabels[projectId];
-                    const ticketStatus = $target.parent().data('status');
-                    const ticketId = $target.parent().parent().data('ticketid');
+                    const ticketStatus = $ticketTd.data('status');
+                    const ticketId = $ticketTr.data('ticketid');
+                    const ticketDateToFinish = $ticketTd.data('datetofinish');
+                    const ticketTags = $ticketTd.data('tags') || '';
+
                     this.contextMenuTicketId.val(ticketId);
-                    const ticketDateToFinish = $target.parent().data('datetofinish');
+
+                    // Set date
                     const dateToFinish = ticketDateToFinish === "0000-00-00 00:00:00" ? null : ticketDateToFinish?.split(' ')[0];
                     const parsedDate = dateToFinish ? new Date(dateToFinish + 'T00:00:00') : null;
-                    this.ticketContextDateToFinish[0]._flatpickr.setDate(parsedDate);
+                    this.ticketContextDatePicker.setDate(parsedDate);
 
                     // Add project status options to ticket context menu
+                    const statusTranslations = timetableSettings.settings.statusTranslations || {};
                     const statusOptions = Object.entries(stateLabels).map(([value, {name, class: className}]) => ({
                         value,
-                        text: name,
+                        text: statusTranslations[name] || name,
                         className,
                         selected: String(value) === String(ticketStatus)
                     }));
 
+                    this.ticketContextStatus.clearOptions();
                     this.ticketContextStatus.addOptions(statusOptions);
 
                     if (stateLabels[ticketStatus]) {
                         this.ticketContextStatus.setValue(ticketStatus);
+                    }
+
+                    // Handle tags
+                    this.ticketContextTags.clear();
+
+                    if (ticketTags) {
+                        const tagsArray = ticketTags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        // Add any tags that aren't already in the options
+                        tagsArray.forEach(tag => {
+                            if (!this.ticketContextTags.options[tag]) {
+                                this.ticketContextTags.addOption({value: tag, text: tag});
+                            }
+                        });
+                        this.ticketContextTags.setValue(tagsArray);
                     }
                 }
             ).bind(this);
@@ -458,6 +517,18 @@ jQuery(document).ready(function ($) {
                     '<i class="fa-solid fa-arrows-rotate fa-spin"></i>',
                 );
                 this.entryCopyButtonApply.attr("disabled", "disabled");
+            });
+
+            // Ticket context menu handlers
+            this.ticketContextButtonCancel.click(() => {
+                this.closeTicketContextMenuModal();
+            });
+
+            $(this.ticketContextForm).on("submit", () => {
+                this.ticketContextButtonApply.html(
+                    '<i class="fa-solid fa-arrows-rotate fa-spin"></i>',
+                );
+                this.ticketContextButtonApply.attr("disabled", "disabled");
             });
         }
 
