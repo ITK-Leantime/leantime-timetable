@@ -856,6 +856,7 @@ jQuery(document).ready(function ($) {
                                         );
                                         this.enable();
                                         this.destroy();
+                                        parentContext.tomselect.clear();
                                         parentContext.tomselect.destroy();
                                         timeTable.initTicketSearch(originalProjects, originalTickets);
                                     }

@@ -4,21 +4,21 @@ namespace Leantime\Plugins\TimeTable\Controllers;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Leantime\Core\Controller\Controller;
 use Leantime\Core\Controller\Frontcontroller;
-use Leantime\Domain\Auth\Services\Auth;
-use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
-use Symfony\Component\HttpFoundation\Response;
-use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 use Leantime\Core\Language as LanguageCore;
+use Leantime\Core\UI\Template;
 use Leantime\Domain\Auth\Models\Roles;
+use Leantime\Domain\Auth\Services\Auth;
 use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
-use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
-use Leantime\Core\UI\Template;
-use Illuminate\Http\JsonResponse as JsonResponse;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
+use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
+use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
+use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * TimeTable controller.
@@ -26,21 +26,19 @@ use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 class TimeTable extends Controller
 {
     private TimeTableService $timeTableService;
+
     protected LanguageCore $language;
+
     private SettingRepository $settings;
+
     protected Template $template;
+
     private TimesheetRepository $timesheetRepository;
+
     private TicketRepository $ticketRepository;
 
     /**
      * constructor
-     *
-     * @param TimeTableService    $timeTableService
-     * @param LanguageCore        $language
-     * @param SettingRepository   $settings
-     * @param Template            $template
-     * @param TimesheetRepository $timesheetRepository
-     * @return void
      */
     public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository): void
     {
@@ -60,26 +58,45 @@ class TimeTable extends Controller
     public function getAllTickets(): JsonResponse
     {
         $allTickets = $this->timeTableService->getAllTickets();
+
         return response()->json(['result' => $allTickets]);
     }
 
     /**
      * Creates a new ticket with the provided input values and saves it.
      *
-     * @param string[] $input The input data for creating the new ticket, which should contain:
-     *                     - 'headline' (string): The title of the ticket.
-     *                     - 'projectId' (int): The project to which the ticket belongs.
-     *
+     * @param  string[]  $input  The input data for creating the new ticket, which should contain:
+     *                           - 'headline' (string): The title of the ticket.
+     *                           - 'projectId' (int): The project to which the ticket belongs.
      * @return JsonResponse Returns a JSON response containing the result of the ticket creation.
      */
     public function createNewTicket(array $input): JsonResponse
     {
+        $userId = session('userdata.id');
+        $clientId = session('userdata.clientId') ?? '';
+        $projectId = (int) $input['projectId'];
+
+        // Verify user has access to the project
+        $accessibleProjects = $this->timeTableService->getAllProjects($userId, $clientId);
+        $hasAccess = false;
+
+        foreach ($accessibleProjects['children'] ?? [] as $project) {
+            if ((int) $project['id'] === $projectId) {
+                $hasAccess = true;
+                break;
+            }
+        }
+
+        if (! $hasAccess) {
+            return response()->json(['error' => 'Unauthorized: You do not have access to this project'], 403);
+        }
+
         $ticketValues = [
             'headline' => $input['headline'],
             'type' => 'task',
-            'projectId' => $input['projectId'],
-            'editorId' => session('userdata.id'),
-            'userId' => session('userdata.id'),
+            'projectId' => $projectId,
+            'editorId' => $userId,
+            'userId' => $userId,
             'description' => '',
             'date' => date('Y-m-d H:i:s'),
             'dateToFinish' => '',
@@ -96,31 +113,34 @@ class TimeTable extends Controller
             'dependingTicketId' => '',
             'milestoneid' => '',
         ];
-            $result = $this->ticketRepository->addTicket($ticketValues);
+        $result = $this->ticketRepository->addTicket($ticketValues);
+
         return response()->json(['result' => [$result]]);
     }
 
     /**
-     * Retrieves all projects from the timetable service and returns them as a JSON response.
+     * Retrieves all projects that the user has access to from the timetable service and returns them as a JSON response.
      *
      * @return JsonResponse The JSON response containing the list of projects or an empty array.
      */
     public function getAllProjects(): JsonResponse
     {
-        $allProjects = $this->timeTableService->getAllProjects();
+        $userId = session('userdata.id');
+        $clientId = session('userdata.clientId') ?? '';
+        $allProjects = $this->timeTableService->getAllProjects($userId, $clientId);
+
         return response()->json(['result' => $allProjects]);
     }
 
     /**
-     * @return Response
      * @throws \Exception
      */
     public function post(): Response
     {
-        if (!AuthService::userIsAtLeast(Roles::$editor)) {
+        if (! AuthService::userIsAtLeast(Roles::$editor)) {
             return $this->template->displayJson(['Error' => 'Not Authorized'], 403);
         }
-        $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
+        $redirectUrl = BASE_URL.'/TimeTable/TimeTable';
         $actionHandler = new TimeTableActionHandler($this->timeTableService, $this->timesheetRepository);
 
         if (isset($_POST['action'])) {
@@ -129,7 +149,7 @@ class TimeTable extends Controller
                 'saveTicket' => $actionHandler->saveTicket($_POST, $redirectUrl),
                 'deleteTicket' => tap(function () use ($actionHandler, $redirectUrl) {
                     $actionHandler->deleteTicket($_POST, $redirectUrl);
-                }, fn() => $redirectUrl)(),
+                }, fn () => $redirectUrl)(),
                 'copyEntryForward' => $actionHandler->copyEntryForward($_POST, $redirectUrl),
                 'manageAs' => $actionHandler->manageAs($_POST, $redirectUrl),
                 'ticketContextMenu' => $actionHandler->ticketContextMenu($_POST, $redirectUrl),
@@ -143,7 +163,6 @@ class TimeTable extends Controller
     /**
      * get
      *
-     * @return Response
      *
      * @throws \Exception
      * @throws BindingResolutionException
@@ -209,7 +228,7 @@ class TimeTable extends Controller
 
         $timesheetsByTicket = [];
         foreach ($relevantTicketIds as $ticket) {
-            if (!$ticket['ticketId']) {
+            if (! $ticket['ticketId']) {
                 continue;
             }
             $timesheetsSortedByWeekdate = [];
@@ -218,7 +237,7 @@ class TimeTable extends Controller
                 $timesheetsSortedByWeekdate[$weekDate->format('Y-m-d')] = $timesheetsByTicketAndDate;
                 if (count($timesheetsByTicketAndDate) > 0) {
                     $timesheetsSortedByWeekdate['ticketTitle'] = $timesheetsByTicketAndDate[0]['headline'];
-                    $timesheetsSortedByWeekdate['ticketLink'] = '?showTicketModal=' . $timesheetsByTicketAndDate[0]['ticketId'] . '#/tickets/showTicket/' . $timesheetsByTicketAndDate[0]['ticketId'];
+                    $timesheetsSortedByWeekdate['ticketLink'] = '?showTicketModal='.$timesheetsByTicketAndDate[0]['ticketId'].'#/tickets/showTicket/'.$timesheetsByTicketAndDate[0]['ticketId'];
                     $timesheetsSortedByWeekdate['projectId'] = $timesheetsByTicketAndDate[0]['projectId'];
                     $timesheetsSortedByWeekdate['projectName'] = $timesheetsByTicketAndDate[0]['name'];
                     $timesheetsSortedByWeekdate['ticketType'] = $timesheetsByTicketAndDate[0]['ticketType'];
@@ -248,6 +267,7 @@ class TimeTable extends Controller
         $this->template->assign('userId', $userId);
         $this->template->assign('canCrossManage', $canCrossManage);
         $this->template->assign('allTags', $allTags);
+
         return $this->template->display('TimeTable.timetable');
     }
 }

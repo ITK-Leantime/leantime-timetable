@@ -2,9 +2,7 @@
 
 namespace Leantime\Plugins\TimeTable\Repositories;
 
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
@@ -18,8 +16,7 @@ class TimeTable
     /**
      * @var DbCore|null - db connection
      */
-    private null|DbCore $db = null;
-
+    private ?DbCore $db = null;
 
     private TicketRepository $ticketRepo;
 
@@ -28,7 +25,6 @@ class TimeTable
     /**
      * __construct - get db connection
      *
-     * @access public
      * @return void
      */
     public function __construct(DbCore $db, TicketRepository $ticketRepo)
@@ -67,11 +63,10 @@ class TimeTable
      * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date,
      * optionally filtering by a search term.
      *
-     * @access public
-     * @param string          $ticketId   The ticket ID to filter the timesheet data.
-     * @param CarbonInterface $workDate   The specific work date to filter the timesheet data.
-     * @param int             $userId     The id of the user to grab data for.
-     * @param string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
+     * @param  string  $ticketId  The ticket ID to filter the timesheet data.
+     * @param  CarbonInterface  $workDate  The specific work date to filter the timesheet data.
+     * @param  int  $userId  The id of the user to grab data for.
+     * @param  string|null  $searchTerm  An optional search term to further filter results by ticket ID or headline.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
     public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
@@ -101,7 +96,7 @@ class TimeTable
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
         LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery;
+        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)'.$searchTermQuery;
 
         $stmn = $this->db->database->prepare($sql);
 
@@ -119,17 +114,15 @@ class TimeTable
         $stmn->execute();
         $values = $stmn->fetchAll();
         $stmn->closeCursor();
+
         return $values;
     }
 
     /**
      * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param WorklogDTO $worklog    Worklog DTO
-     * @param int|null   $originalId (Optional) The original timelog id to check for updates or deletion
-     *
-     * @return void
-     * @access public
+     * @param  WorklogDTO  $worklog  Worklog DTO
+     * @param  int|null  $originalId  (Optional) The original timelog id to check for updates or deletion
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, ?int $originalId = null): void
     {
@@ -177,7 +170,7 @@ class TimeTable
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->bindValue(':ticket', $worklog->ticketId);
-            ;
+
             $stmn->bindValue(':date', $worklog->workDate);
             $stmn->bindValue(':kind', $worklog->kind);
             $stmn->bindValue(':description', $worklog->description);
@@ -202,15 +195,14 @@ class TimeTable
      * If an entry for the same date, ticket, and user already exists, it checks
      * whether the entry should be overwritten or prevents duplicate insertion.
      *
-     * @param array<string, mixed> $values An associative array containing the following keys:
-     *     - 'userId' (int): The ID of the user creating the timelog.
-     *     - 'ticketId' (int): The ID of the ticket associated with the timelog.
-     *     - 'workDate' (DateTime): The date and time the timelog is being created for.
-     *     - 'hours' (float): The number of hours being logged.
-     *     - 'description' (string): The description of the work done.
-     *     - 'kind' (string): The type of work being logged.
-     *     - 'entryCopyOverwrite' (string|null, optional): A flag to indicate if existing entries should be overwritten.
-     *
+     * @param  array<string, mixed>  $values  An associative array containing the following keys:
+     *                                        - 'userId' (int): The ID of the user creating the timelog.
+     *                                        - 'ticketId' (int): The ID of the ticket associated with the timelog.
+     *                                        - 'workDate' (DateTime): The date and time the timelog is being created for.
+     *                                        - 'hours' (float): The number of hours being logged.
+     *                                        - 'description' (string): The description of the work done.
+     *                                        - 'kind' (string): The type of work being logged.
+     *                                        - 'entryCopyOverwrite' (string|null, optional): A flag to indicate if existing entries should be overwritten.
      * @return void
      */
     public function addTimelogOnTicket(array $values)
@@ -261,7 +253,7 @@ class TimeTable
     /**
      * getAllStateLabels - Retrieves all state labels for projects based on a seed list of statuses and stored settings.
      *
-     * @param array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
+     * @param  array<int|string, mixed>  $statusListSeed  An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
     public function getAllStateLabels(array $statusListSeed): array
@@ -289,7 +281,7 @@ class TimeTable
 
                 foreach ($values as $key => $status) {
                     if (is_int($key)) {
-                        if (!is_array($status)) {
+                        if (! is_array($status)) {
                             $statusList[$key] = $statusListSeed[$key];
                             if (is_array($statusList[$key]) && isset($statusList[$key]['name']) && $key !== -1) {
                                 $statusList[$key]['name'] = $status;
@@ -313,7 +305,7 @@ class TimeTable
         // Fetch all project IDs separately
         $projectIds = $this->getAllProjectIds();
         foreach ($projectIds as $projectId) {
-            if (!isset($allStatusLabels[$projectId])) {
+            if (! isset($allStatusLabels[$projectId])) {
                 // Default to $statusListSeed if no state list exists
                 $allStatusLabels[$projectId] = $statusListSeed;
             }
@@ -325,7 +317,6 @@ class TimeTable
     /**
      * getAllProjectIds - Retrieve all project IDs from the database
      *
-     * @access private
      * @return array<string, string> Array of project IDs
      */
     private function getAllProjectIds(): array
@@ -343,7 +334,6 @@ class TimeTable
     /**
      * getAllUsers - Retrieves a list of all users from the database
      *
-     * @access public
      * @return array<string, mixed> An array containing user details, including ID, full name, and role
      */
     public function getAllUsers(): array
@@ -357,22 +347,22 @@ class TimeTable
         return array_map(function ($user) {
             return [
                 'id' => $user['id'],
-                'fullName' => $user['firstname'] . ' ' . $user['lastname'],
+                'fullName' => $user['firstname'].' '.$user['lastname'],
                 'role' => $user['role'],
             ];
         }, $users);
     }
 
     /**
-     * getAllTickets - Retrieves all tickets for the authenticated user, filters them based on their status,
-     * and includes additional information such as project details and the last work date.
+     * getAllTickets - Retrieves all tickets for projects the authenticated user has access to,
+     * filters them based on their status, and includes additional information such as project details.
      *
-     * @access public
      * @return array<int<0, max>,mixed> An array of filtered tickets with their associated details.
      */
     public function getAllTickets(): array
     {
         $userId = session('userdata.id');
+        $clientId = session('userdata.clientId') ?? '';
 
         $allStateLabels = $this->getAllStateLabels($this->statusListSeed);
 
@@ -382,20 +372,29 @@ class TimeTable
                 LOWER(t.type) as type,
                 t.tags,
                 t.projectId,
-                p.name as projectName, -- Fetch project name via JOIN
+                p.name as projectName,
                 t.editorId,
                 t.hourRemaining,
                 t.date
             FROM zp_tickets t
             LEFT JOIN zp_projects p ON t.projectId = p.id
+            LEFT JOIN zp_relationuserproject relation ON p.id = relation.projectId
             LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
             WHERE t.type NOT IN (:story, :milestone)
+              AND (
+                  relation.userId = :userId
+                  OR p.psettings = \'all\'
+                  OR (p.psettings = \'clients\' AND p.clientId = :clientId)
+              )
+              AND (p.active > \'-1\' OR p.active IS NULL)
+              AND (p.state <> \'-1\' OR p.state IS NULL)
             GROUP BY t.id
             ORDER BY (t.editorId = :userId) DESC, t.date DESC, id DESC';
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
         $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
         $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
+        $stmn->bindValue(':clientId', $clientId, PDO::PARAM_STR);
         $stmn->execute();
         $tickets = $stmn->fetchAll(PDO::FETCH_ASSOC);
         $stmn->closeCursor();
@@ -410,7 +409,7 @@ class TimeTable
         foreach ($tickets as $ticket) {
             $projectId = $ticket['projectId'] ?? null;
             $status = $ticket['status'] ?? null;
-            if (!isset($stateLabelMappings[$projectId][$status]) || $stateLabelMappings[$projectId][$status] !== 'DONE') {
+            if (! isset($stateLabelMappings[$projectId][$status]) || $stateLabelMappings[$projectId][$status] !== 'DONE') {
                 $filteredTickets[] = $ticket;
             }
         }
@@ -419,15 +418,29 @@ class TimeTable
     }
 
     /**
-     * getAllProjects - Retrieves all projects for the authenticated user
+     * getAllProjects - Retrieves all projects that the user has access to
      *
-     * @access public
+     * @param  int  $userId  The user ID to check project access for
+     * @param  string  $clientId  The client ID of the user
      * @return array<array<string, mixed>> An array of projects with their associated details.
      */
-    public function getAllProjects(): array
+    public function getAllProjects(int $userId, string $clientId): array
     {
-        $sql = 'SELECT id, name FROM zp_projects';
+        $sql = 'SELECT DISTINCT project.id, project.name
+                FROM zp_projects AS project
+                LEFT JOIN zp_relationuserproject as relation ON project.id = relation.projectId
+                WHERE
+                    (   relation.userId = :userId
+                        OR project.psettings = \'all\'
+                        OR (project.psettings = \'clients\' AND project.clientId = :clientId)
+                    )
+                  AND (project.active > \'-1\' OR project.active IS NULL)
+                  AND (project.state <> \'-1\' OR project.state IS NULL)
+                ORDER BY project.name';
+
         $stmn = $this->db->database->prepare($sql);
+        $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
+        $stmn->bindValue(':clientId', $clientId, PDO::PARAM_STR);
         $stmn->execute();
         $projects = $stmn->fetchAll(PDO::FETCH_ASSOC);
         $stmn->closeCursor();
@@ -443,11 +456,11 @@ class TimeTable
 
     public function modifyTicketDetails(\Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO)
     {
-        $sql = "UPDATE zp_tickets
+        $sql = 'UPDATE zp_tickets
             SET status = :status,
                 dateToFinish = :dateToFinish,
                 tags = :tags
-            WHERE id = :ticketId";
+            WHERE id = :ticketId';
 
         $stmn = $this->db->database->prepare($sql);
         $stmn->bindValue(':status', $ticketContextMenuDTO->status, PDO::PARAM_INT);
@@ -480,7 +493,7 @@ class TimeTable
             $tags = explode(',', $tagString);
             foreach ($tags as $tag) {
                 $tag = trim($tag);
-                if ($tag !== '' && !in_array($tag, $uniqueTags)) {
+                if ($tag !== '' && ! in_array($tag, $uniqueTags)) {
                     $uniqueTags[] = $tag;
                 }
             }

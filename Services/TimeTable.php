@@ -2,12 +2,10 @@
 
 namespace Leantime\Plugins\TimeTable\Services;
 
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
-use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 
 /**
  * Time table services file.
@@ -21,14 +19,13 @@ class TimeTable
      */
     private static array $assets = [
         // source => target
-        __DIR__ . '/../dist/js/timeTable.js' => APP_ROOT . '/public/dist/js/plugin-timeTable.js',
-        __DIR__ . '/../dist/css/timeTable.css' => APP_ROOT . '/public/dist/css/plugin-timeTable.css',
+        __DIR__.'/../dist/js/timeTable.js' => APP_ROOT.'/public/dist/js/plugin-timeTable.js',
+        __DIR__.'/../dist/css/timeTable.css' => APP_ROOT.'/public/dist/css/plugin-timeTable.css',
     ];
 
     /**
      * constructor
      *
-     * @param  TimeTableRepository $timeTableRepo
      * @return void
      */
     public function __construct(TimeTableRepository $timeTableRepo)
@@ -38,8 +35,6 @@ class TimeTable
 
     /**
      * Install plugin.
-     *
-     * @return void
      */
     public function install(): void
     {
@@ -53,8 +48,6 @@ class TimeTable
 
     /**
      * Uninstall plugin.
-     *
-     * @return void
      */
     public function uninstall(): void
     {
@@ -93,8 +86,6 @@ class TimeTable
 
     /**
      * updateTime - update specific time entry
-     * @param WorklogDTO $worklog
-     * @return void
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, int $originalId): void
     {
@@ -104,7 +95,7 @@ class TimeTable
     /**
      * Adds a timelog to a ticket.
      *
-     * @param array<string, mixed> $values The data required to add the timelog on the ticket.
+     * @param  array<string, mixed>  $values  The data required to add the timelog on the ticket.
      * @return void
      */
     public function addTimelogOnTicket(array $values)
@@ -125,6 +116,7 @@ class TimeTable
     public function getAllStateLabels(): array
     {
         $statusListSeed = $this->timeTableRepo->statusListSeed;
+
         return $this->timeTableRepo->getAllStateLabels($statusListSeed);
     }
 
@@ -157,13 +149,15 @@ class TimeTable
     }
 
     /**
-     * Retrieves all projects from the timetable repository.
+     * Retrieves all projects that the user has access to from the timetable repository.
      *
-     * @return string[]  the list of pronjects or an empty array.
+     * @param  int  $userId  The user ID to check project access for
+     * @param  string  $clientId  The client ID of the user
+     * @return string[] the list of projects or an empty array.
      */
-    public function getAllProjects(): array
+    public function getAllProjects(int $userId, string $clientId): array
     {
-        $projects = $this->timeTableRepo->getAllProjects();
+        $projects = $this->timeTableRepo->getAllProjects($userId, $clientId);
         $projectGroup = [
             'id' => 'project',
             'text' => 'Projects',
@@ -192,6 +186,7 @@ class TimeTable
      * Get all unique tags from the system
      *
      * @return array Array of unique tag strings
+     *
      * @api
      */
     public function getAllUniqueTags(): array
