@@ -312,7 +312,7 @@
                 <div class="context-menu-icon">
                     <i class="fa-solid fa-tags"></i>
                 </div>
-                <select class="ticket-tags" name="tags" multiple autocomplete="off">
+                <select class="ticket-tags" name="tags[]" multiple autocomplete="off">
 
                 </select>
             </div>

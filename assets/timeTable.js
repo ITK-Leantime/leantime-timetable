@@ -135,7 +135,10 @@ jQuery(document).ready(function ($) {
                 openOnFocus: false,
                 loadThrottle: 300,
                 load: function(query, callback) {
-                    if (!query.length) return callback();
+                    if (!query.length) {
+                        this.close();
+                        return callback();
+                    }
 
                     // Filter tags that match the search query
                     const filtered = allTags
@@ -147,7 +150,12 @@ jQuery(document).ready(function ($) {
                 },
                 onItemAdd: function() {
                     this.setTextboxValue('');
-                    this.refreshOptions();
+                    this.close();
+                },
+                onType: function(str) {
+                    if (!str || str.length === 0) {
+                        this.close();
+                    }
                 }
             });
 
@@ -898,6 +906,10 @@ jQuery(document).ready(function ($) {
                 $('input[name="timetable-days-loaded"]').val(),
             );
 
+            // Get date parameters to preserve week selection
+            const fromDate = $('.fromdate-input').val();
+            const toDate = $('.todate-input').val();
+
             // Create a new date object to ensure the original date is preserved
             let dateIterator = new Date(firstDateOfWeek.getTime());
 
@@ -905,7 +917,7 @@ jQuery(document).ready(function ($) {
     <tr class="newly-added-tr">
         <td class="ticket-title">
         <div>
-            <a href="?showTicketModal=${ticketId}#/tickets/showTicket/${ticketId}">${ticketText}</a>
+            <a href="?showTicketModal=${ticketId}&fromDate=${fromDate}&toDate=${toDate}#/tickets/showTicket/${ticketId}">${ticketText}</a>
             <span>${projectName}</span>
             </div>
             <div></div>
