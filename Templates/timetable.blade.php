@@ -102,10 +102,10 @@
                                             <a href="{{ $timesheet['ticketLink'] }}"
                                                 data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
                                                 data-tippy-placement="top">
-                                                @if(isset($timesheet['isFavorite']) && $timesheet['isFavorite'])
-                                                    <i class="fa-regular fa-star" style="font-size: 12px; margin-right: 4px;" title="Favorite"></i>
-                                                @endif
                                                 {{ $timesheet['ticketTitle'] }}
+                                                @if(isset($timesheet['isFavorite']) && $timesheet['isFavorite'])
+                                                    <i class="fa-regular fa-star" style="font-size: 12px; margin-left: 4px;" title="Favorite"></i>
+                                                @endif
                                             </a>
                                             <span>{{ $timesheet['projectName'] }}</span>
                                         </div>
@@ -183,8 +183,10 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="add-new"><input class="timetable-tomselect form-control-lg"
-                                            placeholder="{{ __('timeTable.getting-data-for-you') }}" /></td>
+                                    <td class="add-new"><input class="timetable-tomselect form-control-lg">
+                                        <i class='fa-regular fa-clock fa-spin'></i>
+                                        <span>{{ __('timeTable.syncing_data') }}</span>
+                                    </td>
                                     @foreach ($weekDates as $date)
                                         <td>—</td>
                                     @endforeach
