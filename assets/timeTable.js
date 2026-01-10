@@ -93,6 +93,35 @@ jQuery(document).ready(function ($) {
                 ".ticket-context-menu-ticketId",
             );
 
+            // Sort menu elements
+            this.sortMenuModal = $("#sort-menu-modal");
+            this.sortMenuTrigger = $(".timetable-sort-menu");
+            this.sortOptions = $(".sort-option");
+            this.sortDirectionBtns = $(".sort-direction-btn");
+            this.sortMenuSaveBtn = $(".sort-menu-save");
+            this.sortMenuCloseBtn = $(".sort-menu-close");
+
+            // Get sort order from data attribute to avoid jQuery conflicts
+            // Use an object to avoid jQuery trying to attach properties to strings
+            const sortDataElement = document.getElementById('timetable-sort-data');
+            const sortOrderValue = sortDataElement ? sortDataElement.getAttribute('data-sort-order') : '';
+
+            this.sortState = {
+                savedOrder: (sortOrderValue && sortOrderValue !== '') ? String(sortOrderValue) : null,
+                field: null,
+                direction: 'asc'
+            };
+
+            // Parse saved sort to extract field and direction
+            if (this.sortState.savedOrder) {
+                const parts = this.sortState.savedOrder.split('-');
+                if (parts.length > 2 && (parts[parts.length - 1] === 'asc' || parts[parts.length - 1] === 'desc')) {
+                    this.sortState.direction = parts.pop();
+                    this.sortState.field = parts.join('-');
+                } else {
+                    this.sortState.field = this.sortState.savedOrder;
+                }
+            }
 
             flatpickr("#dateRange", {
                 mode: "range",
@@ -538,6 +567,104 @@ jQuery(document).ready(function ($) {
                 );
                 this.ticketContextButtonApply.attr("disabled", "disabled");
             });
+
+            // Sort menu handlers
+            this.sortMenuTrigger.click((e) => {
+                e.stopPropagation();
+                e.preventDefault();
+
+                const rect = e.currentTarget.getBoundingClientRect();
+
+                // Position the menu below and aligned to the right of the button
+                this.sortMenuModal
+                    .css({
+                        right: `${window.innerWidth - rect.right - window.scrollX}px`,
+                        top: `${rect.bottom + window.scrollY - 50}px`,
+                        left: 'auto',
+                    })
+                    .addClass("shown");
+
+                // Mark current sort field and direction as active
+                this.sortOptions.removeClass("active");
+                if (this.sortState.field) {
+                    $(`.sort-option[data-sort="${this.sortState.field}"]`).addClass("active");
+                }
+
+                this.sortDirectionBtns.removeClass("active");
+                $(`.sort-direction-btn[data-direction="${this.sortState.direction}"]`).addClass("active");
+
+                // Close menu when clicking outside - delay to prevent immediate closure
+                setTimeout(() => {
+                    $(document).one("click", () => {
+                        this.closeSortMenuModal();
+                    });
+                }, 100);
+            });
+
+            // Prevent modal from closing when clicking inside it
+            this.sortMenuModal.click((e) => {
+                e.stopPropagation();
+            });
+
+            // Handle sort option selection (just highlight, don't save yet)
+            this.sortOptions.click((e) => {
+                e.stopPropagation();
+                const sortField = $(e.currentTarget).data("sort");
+                this.sortState.field = sortField;
+
+                // Update active state
+                this.sortOptions.removeClass("active");
+                $(e.currentTarget).addClass("active");
+            });
+
+            // Handle direction toggle
+            this.sortDirectionBtns.click((e) => {
+                e.stopPropagation();
+                const direction = $(e.currentTarget).data("direction");
+                this.sortState.direction = direction;
+
+                // Update active state
+                this.sortDirectionBtns.removeClass("active");
+                $(e.currentTarget).addClass("active");
+            });
+
+            // Handle save button
+            this.sortMenuSaveBtn.click((e) => {
+                e.stopPropagation();
+
+                if (!this.sortState.field) {
+                    this.closeSortMenuModal();
+                    return;
+                }
+
+                // Build the sort order string: field-direction (e.g., "ticket-name-asc")
+                const sortOrder = `${this.sortState.field}-${this.sortState.direction}`;
+
+                // Save to backend
+                fetch("/TimeTable/TimeTable/saveSortOrder", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ sortOrder: sortOrder }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        // Reload the page to apply the sort on the backend
+                        window.location.reload();
+                    }
+                })
+                .catch((error) => console.error("Error saving sort order:", error));
+
+                this.closeSortMenuModal();
+            });
+
+            // Handle close button
+            this.sortMenuCloseBtn.click((e) => {
+                e.stopPropagation();
+                this.closeSortMenuModal();
+            });
         }
 
         handleHighlighting(element, overwrite = false, includeWeekends = false) {
@@ -724,6 +851,10 @@ jQuery(document).ready(function ($) {
         closeTicketContextMenuModal() {
             this.ticketContextMenuModal.removeClass("shown");
 
+        }
+
+        closeSortMenuModal() {
+            this.sortMenuModal.removeClass("shown");
         }
 
         /**

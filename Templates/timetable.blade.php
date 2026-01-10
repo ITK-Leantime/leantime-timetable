@@ -48,6 +48,9 @@
                             <p><i class="fas fa-info-circle"></i>
                                 {{ __('timeTable.update_to_show_correct_sums') }}</p>
                         </div>
+                        <div class="timetable-sort-menu">
+                            <span class="sort-menu-trigger"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                        </div>
                     </div>
 
                 </form>
@@ -326,4 +329,35 @@
 
         </form>
     </div>
+    <div id="sort-menu-modal">
+        <div class="sort-menu-header">
+            <span>{{ __('timeTable.sort_options') }}</span>
+        </div>
+        <div class="sort-menu-options">
+            <div class="sort-option" data-sort="ticket-name">
+                <span>{{ __('timeTable.sort_by_ticket_name') }}</span>
+            </div>
+            <div class="sort-option" data-sort="project-name">
+                <span>{{ __('timeTable.sort_by_project_name') }}</span>
+            </div>
+        </div>
+        <div class="sort-menu-direction">
+            <span>{{ __('timeTable.sort_direction') }}</span>
+            <div class="sort-direction-toggle">
+                <button class="sort-direction-btn" data-direction="asc">
+                    <i class="fa-solid fa-arrow-down-a-z"></i>
+                </button>
+                <button class="sort-direction-btn" data-direction="desc">
+                    <i class="fa-solid fa-arrow-up-z-a"></i>
+                </button>
+            </div>
+        </div>
+        <div class="sort-menu-actions">
+            <button class="btn btn-default sort-menu-close">{{ __('buttons.close') }}</button>
+            <button class="btn btn-primary sort-menu-save">{{ __('buttons.save') }}</button>
+        </div>
+    </div>
+
+    <!-- Store sort order in a data attribute to avoid jQuery conflicts -->
+    <div id="timetable-sort-data" data-sort-order="{{ $sortOrder ?? '' }}" style="display: none;"></div>
 @endsection

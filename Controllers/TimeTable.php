@@ -132,6 +132,40 @@ class TimeTable extends Controller
     }
 
     /**
+     * Saves the user's timetable sort preference
+     *
+     * @param  array  $input  The input data containing:
+     *                        - 'sortOrder' (string): The sort order ('ticket-name' or 'project-name')
+     * @return JsonResponse Returns a JSON response indicating success or failure
+     */
+    public function saveSortOrder(array $input): JsonResponse
+    {
+        $userId = session('userdata.id');
+        $sortOrder = $input['sortOrder'] ?? '';
+
+        // Validate sort order format: field-direction (e.g., "ticket-name-asc")
+        $validFields = ['ticket-name', 'project-name'];
+        $validDirections = ['asc', 'desc'];
+
+        $parts = explode('-', $sortOrder);
+        if (count($parts) < 2) {
+            return response()->json(['error' => 'Invalid sort order format'], 400);
+        }
+
+        $direction = array_pop($parts);
+        $field = implode('-', $parts);
+
+        if (!in_array($field, $validFields) || !in_array($direction, $validDirections)) {
+            return response()->json(['error' => 'Invalid sort order'], 400);
+        }
+
+        $userService = app()->make(\Leantime\Domain\Users\Services\Users::class);
+        $userService->updateUserSettings('timetable', 'sortOrder', $sortOrder);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Retrieves all projects that the user has access to from the timetable service and returns them as a JSON response.
      *
      * @return JsonResponse The JSON response containing the list of projects or an empty array.
@@ -265,6 +299,41 @@ class TimeTable extends Controller
 
             $timesheetsByTicket[$ticket['ticketId']] = $timesheetsSortedByWeekdate;
         }
+
+        // Get user's sort preference and sort the timesheets accordingly
+        $userRepository = app()->make(\Leantime\Domain\Users\Repositories\Users::class);
+        $sortOrder = $userRepository->getUserSettings($userId, 'timetable.sortOrder') ?? '';
+
+        if ($sortOrder && !empty($timesheetsByTicket)) {
+            // Parse sort order to extract field and direction (e.g., "ticket-name-asc")
+            $parts = explode('-', $sortOrder);
+            $direction = 'asc'; // default
+            $sortField = $sortOrder;
+
+            // Check if last part is a direction indicator
+            if (count($parts) > 1 && in_array(end($parts), ['asc', 'desc'])) {
+                $direction = array_pop($parts);
+                $sortField = implode('-', $parts);
+            }
+
+            uasort($timesheetsByTicket, function ($a, $b) use ($sortField, $direction) {
+                if ($sortField === 'ticket-name') {
+                    $aValue = strtolower($a['ticketTitle'] ?? '');
+                    $bValue = strtolower($b['ticketTitle'] ?? '');
+                } elseif ($sortField === 'project-name') {
+                    $aValue = strtolower($a['projectName'] ?? '');
+                    $bValue = strtolower($b['projectName'] ?? '');
+                } else {
+                    return 0;
+                }
+
+                $comparison = strcmp($aValue, $bValue);
+
+                // Reverse comparison for descending order
+                return $direction === 'desc' ? -$comparison : $comparison;
+            });
+        }
+
         // All tickets assigned to the template
         $this->template->assign('errorMessage', $errorMessage);
         // Get all unique tags for autocomplete
@@ -280,6 +349,7 @@ class TimeTable extends Controller
         $this->template->assign('userId', $userId);
         $this->template->assign('canCrossManage', $canCrossManage);
         $this->template->assign('allTags', $allTags);
+        $this->template->assign('sortOrder', $sortOrder);
 
         return $this->template->display('TimeTable.timetable');
     }
