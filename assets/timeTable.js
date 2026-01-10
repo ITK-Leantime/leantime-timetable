@@ -10,7 +10,7 @@ jQuery(document).ready(function ($) {
     userId: $("select[name='manageAsUserId'] > option:selected").val(),
   };
 
-  const allStateLabels = JSON.parse(timetableSettings.settings.allStateLabels);
+  const allStateLabels = timetableSettings.settings.allStateLabels;
   const allTags = timetableSettings.settings.allTags || [];
 
   class TimeTable {

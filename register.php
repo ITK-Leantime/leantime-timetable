@@ -79,7 +79,7 @@ if (class_exists(EventDispatcher::class)) {
                         'settings' => [
                             'userId' => $userId,
                             'requireTimeRegistrationComment' => $requireTimeRegistrationComment,
-                            'allStateLabels' => json_encode($allStateLabels),
+                            'allStateLabels' => $allStateLabels,
                             'allTags' => $allTags,
                             'statusTranslations' => $statusTranslations,
                         ],

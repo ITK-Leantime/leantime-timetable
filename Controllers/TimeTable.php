@@ -413,6 +413,8 @@ class TimeTable extends Controller
         $this->template->assign('errorMessage', $errorMessage);
         // Get all unique tags for autocomplete
         $allTags = $this->timeTableService->getAllUniqueTags();
+        // Get all state labels for context menu
+        $allStateLabels = $this->timeTableService->getAllStateLabels();
 
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
         $this->template->assign('weekDays', $days);
@@ -424,6 +426,7 @@ class TimeTable extends Controller
         $this->template->assign('userId', $userId);
         $this->template->assign('canCrossManage', $canCrossManage);
         $this->template->assign('allTags', $allTags);
+        $this->template->assign('allStateLabels', $allStateLabels);
         $this->template->assign('sortOrder', $sortOrder);
 
         return $this->template->display('TimeTable.timetable');
