@@ -95,12 +95,13 @@ class TimeTable
     /**
      * Adds a timelog to a ticket.
      *
-     * @param  array<string, mixed> $values The data required to add the timelog on the ticket.
+     * @param WorklogDTO $worklog
+     * @param bool       $shouldOverwrite
      * @return void
      */
-    public function addTimelogOnTicket(array $values)
+    public function addTimelogOnTicket(WorklogDTO $worklog, bool $shouldOverwrite)
     {
-        $this->timeTableRepo->addTimelogOnTicket($values);
+        $this->timeTableRepo->addTimelogOnTicket($worklog, $shouldOverwrite);
     }
 
     /**
@@ -204,5 +205,16 @@ class TimeTable
     public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
     {
         return $this->timeTableRepo->getRecentlyViewedTicketIds($userId, $limit);
+    }
+
+    /**
+     * Retrieves all state labels associated with a specific project or all projects if no project ID is provided.
+     *
+     * @param int|null $projectId The ID of the project to filter state labels, or null for all projects.
+     * @return array<int|string,array<string,mixed>> An array of state labels.
+     */
+    public function getAllStateLabels(int $projectId = null): array
+    {
+        return $this->timeTableRepo->getAllStateLabels($projectId);
     }
 }

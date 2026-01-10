@@ -40,9 +40,12 @@ class TimeTable
     public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
         $sql = 'SELECT DISTINCT
-        timesheet.ticketId
+        timesheet.ticketId,
+        zp_tickets.headline
         FROM zp_timesheets AS timesheet
-        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo ORDER BY timesheet.ticketId ASC';
+        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
+        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo
+        ORDER BY zp_tickets.headline ASC';
         $stmn = $this->db->database->prepare($sql);
 
         if ($userId !== '') {
@@ -84,9 +87,11 @@ class TimeTable
         timesheet.hours,
         timesheet.description,
         timesheet.ticketId,
+        (SELECT SUM(hours) FROM zp_timesheets WHERE ticketId = zp_tickets.id) as hoursSum,
         zp_tickets.headline,
         zp_tickets.id as ticketId,
         zp_tickets.type as ticketType,
+        zp_tickets.planHours,
         zp_tickets.hourRemaining,
         zp_tickets.tags,
         zp_tickets.dateToFinish,
@@ -96,7 +101,8 @@ class TimeTable
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
         LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery;
+        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery . '
+        GROUP BY timesheet.id, workDate, timesheet.description, timesheet.ticketId, zp_tickets.headline, zp_tickets.id, zp_tickets.type, zp_tickets.planHours, zp_tickets.hourRemaining, zp_projects.name';
 
         $stmn = $this->db->database->prepare($sql);
 
@@ -139,9 +145,17 @@ class TimeTable
 
         if ($timesheet) {
             if ($originalId && $originalId == $timesheet['id']) {
-                $sql = 'UPDATE zp_timesheets SET hours = :hours, description = :description WHERE id = :id AND userId = :userId';
+                $sql = 'UPDATE zp_timesheets SET hours = :hours, description = :description, kind = :kind,
+                    invoicedEmpl = :invoicedEmpl, invoicedComp = :invoicedComp,
+                    invoicedEmplDate = :invoicedEmplDate, invoicedCompDate = :invoicedCompDate,
+                    rate = :rate, paid = :paid, paidDate = :paidDate, modified = :modified
+                    WHERE id = :id AND userId = :userId';
             } else {
-                $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description) WHERE id = :id AND userId = :userId';
+                $sql = 'UPDATE zp_timesheets SET hours = hours + :hours, description = CONCAT(description, " ", :description),
+                    kind = :kind, invoicedEmpl = :invoicedEmpl, invoicedComp = :invoicedComp,
+                    invoicedEmplDate = :invoicedEmplDate, invoicedCompDate = :invoicedCompDate,
+                    rate = :rate, paid = :paid, paidDate = :paidDate, modified = :modified
+                    WHERE id = :id AND userId = :userId';
             }
 
             $stmn = $this->db->database->prepare($sql);
@@ -149,32 +163,42 @@ class TimeTable
             $stmn->bindValue(':hours', $worklog->hours);
             $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->bindValue(':description', $worklog->description);
+            $stmn->bindValue(':kind', $worklog->kind);
+            $stmn->bindValue(':invoicedEmpl', $worklog->invoicedEmpl, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedComp', $worklog->invoicedComp, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedEmplDate', $worklog->invoicedEmplDate);
+            $stmn->bindValue(':invoicedCompDate', $worklog->invoicedCompDate);
+            $stmn->bindValue(':rate', $worklog->rate);
+            $stmn->bindValue(':paid', $worklog->paid, PDO::PARAM_INT);
+            $stmn->bindValue(':paidDate', $worklog->paidDate);
+            $stmn->bindValue(':modified', $worklog->modified);
         } else {
             // else, insert new record
             $sql = 'INSERT INTO zp_timesheets (
-        userId,
-        ticketId,
-        workDate,
-        hours,
-        description,
-        kind
-   ) VALUES (
-        :userId,
-        :ticket,
-        :date,
-        :hours,
-        :description,
-        :kind
-)';
+                userId, ticketId, workDate, hours, description, kind,
+                invoicedEmpl, invoicedComp, invoicedEmplDate, invoicedCompDate,
+                rate, paid, paidDate, modified
+            ) VALUES (
+                :userId, :ticket, :date, :hours, :description, :kind,
+                :invoicedEmpl, :invoicedComp, :invoicedEmplDate, :invoicedCompDate,
+                :rate, :paid, :paidDate, :modified
+            )';
 
             $stmn = $this->db->database->prepare($sql);
             $stmn->bindValue(':userId', $worklog->userId, PDO::PARAM_INT);
             $stmn->bindValue(':ticket', $worklog->ticketId);
-
             $stmn->bindValue(':date', $worklog->workDate);
             $stmn->bindValue(':kind', $worklog->kind);
             $stmn->bindValue(':description', $worklog->description);
             $stmn->bindValue(':hours', $worklog->hours);
+            $stmn->bindValue(':invoicedEmpl', $worklog->invoicedEmpl, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedComp', $worklog->invoicedComp, PDO::PARAM_INT);
+            $stmn->bindValue(':invoicedEmplDate', $worklog->invoicedEmplDate);
+            $stmn->bindValue(':invoicedCompDate', $worklog->invoicedCompDate);
+            $stmn->bindValue(':rate', $worklog->rate);
+            $stmn->bindValue(':paid', $worklog->paid, PDO::PARAM_INT);
+            $stmn->bindValue(':paidDate', $worklog->paidDate);
+            $stmn->bindValue(':modified', $worklog->modified);
         }
 
         $stmn->execute();
@@ -195,24 +219,18 @@ class TimeTable
      * If an entry for the same date, ticket, and user already exists, it checks
      * whether the entry should be overwritten or prevents duplicate insertion.
      *
-     * @param  array<string, mixed> $values An associative array containing the following keys:
-     *                                      - 'userId' (int): The ID of the user creating the timelog.
-     *                                      - 'ticketId' (int): The ID of the ticket associated with the timelog.
-     *                                      - 'workDate' (DateTime): The date and time the timelog is being created for.
-     *                                      - 'hours' (float): The number of hours being logged.
-     *                                      - 'description' (string): The description of the work done.
-     *                                      - 'kind' (string): The type of work being logged.
-     *                                      - 'entryCopyOverwrite' (string|null, optional): A flag to indicate if existing entries should be overwritten.
+     * @param WorklogDTO $worklogDTO
+     * @param bool       $shouldOverwrite
      * @return void
      */
-    public function addTimelogOnTicket(array $values)
+    public function addTimelogOnTicket(WorklogDTO $worklogDTO, bool $shouldOverwrite = false): void
     {
         // Check for an existing timelog
         $sql = 'SELECT id FROM zp_timesheets WHERE ticketId = :ticketId AND workDate = :date AND userId = :userId';
         $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':ticketId', $values['ticketId']);
-        $stmn->bindValue(':date', $values['workDate']->format('Y-m-d H:i:s'));
-        $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
+        $stmn->bindValue(':ticketId', $worklogDTO->ticketId);
+        $stmn->bindValue(':date', $worklogDTO->workDate);
+        $stmn->bindValue(':userId', $worklogDTO->userId, PDO::PARAM_INT);
         $stmn->execute();
 
         $existingEntry = $stmn->fetch(PDO::FETCH_ASSOC);
@@ -220,7 +238,7 @@ class TimeTable
 
         // If 'entryCopyOverwrite' is set, delete the existing entry
         if ($existingEntry) {
-            if (isset($values['entryCopyOverwrite']) && $values['entryCopyOverwrite'] === 'on') {
+            if ($shouldOverwrite) {
                 $sql = 'DELETE FROM zp_timesheets WHERE id = :id';
                 $stmn = $this->db->database->prepare($sql);
                 $stmn->bindValue(':id', $existingEntry['id'], PDO::PARAM_INT);
@@ -234,18 +252,30 @@ class TimeTable
 
         // Insert the new timelog
         $sql = 'INSERT INTO zp_timesheets (
-            userId, ticketId, workDate, hours, description, kind
+            userId, ticketId, workDate, hours, description, kind,
+            invoicedEmpl, invoicedComp, invoicedEmplDate, invoicedCompDate,
+            rate, paid, paidDate, modified
         ) VALUES (
-            :userId, :ticketId, :date, :hours, :description, :kind
+            :userId, :ticketId, :date, :hours, :description, :kind,
+            :invoicedEmpl, :invoicedComp, :invoicedEmplDate, :invoicedCompDate,
+            :rate, :paid, :paidDate, :modified
         )';
 
         $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':userId', $values['userId'], PDO::PARAM_INT);
-        $stmn->bindValue(':ticketId', $values['ticketId']);
-        $stmn->bindValue(':date', $values['workDate']->format('Y-m-d H:i:s'));
-        $stmn->bindValue(':hours', $values['hours']);
-        $stmn->bindValue(':description', $values['description']);
-        $stmn->bindValue(':kind', $values['kind']);
+        $stmn->bindValue(':userId', $worklogDTO->userId, PDO::PARAM_INT);
+        $stmn->bindValue(':ticketId', $worklogDTO->ticketId);
+        $stmn->bindValue(':date', $worklogDTO->workDate);
+        $stmn->bindValue(':hours', $worklogDTO->hours);
+        $stmn->bindValue(':description', $worklogDTO->description);
+        $stmn->bindValue(':kind', $worklogDTO->kind);
+        $stmn->bindValue(':invoicedEmpl', $worklogDTO->invoicedEmpl, PDO::PARAM_INT);
+        $stmn->bindValue(':invoicedComp', $worklogDTO->invoicedComp, PDO::PARAM_INT);
+        $stmn->bindValue(':invoicedEmplDate', $worklogDTO->invoicedEmplDate);
+        $stmn->bindValue(':invoicedCompDate', $worklogDTO->invoicedCompDate);
+        $stmn->bindValue(':rate', $worklogDTO->rate);
+        $stmn->bindValue(':paid', $worklogDTO->paid, PDO::PARAM_INT);
+        $stmn->bindValue(':paidDate', $worklogDTO->paidDate);
+        $stmn->bindValue(':modified', $worklogDTO->modified);
         $stmn->execute();
         $stmn->closeCursor();
     }
@@ -253,15 +283,24 @@ class TimeTable
     /**
      * getAllStateLabels - Retrieves all state labels for projects based on a seed list of statuses and stored settings.
      *
-     * @param  array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
-    public function getAllStateLabels(array $statusListSeed): array
+    public function getAllStateLabels(int $projectId = null): array
     {
+        // Default status object defined in app/Domain/Tickets/Repositories/Tickets.php:25
         $statusListSeed = $this->ticketRepo->statusListSeed;
-        $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':keyPattern', 'projectsettings.%.ticketlabels', PDO::PARAM_STR);
+
+        if ($projectId) {
+            $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` = :key';
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':key', 'projectsettings.' . $projectId . '.ticketlabels', PDO::PARAM_STR);
+        } else {
+            $sql = 'SELECT `key`, `value` FROM zp_settings WHERE `key` LIKE :keyPattern';
+            $stmn = $this->db->database->prepare($sql);
+            $stmn->bindValue(':keyPattern', 'projectsettings.%.ticketlabels', PDO::PARAM_STR);
+        }
+
+
         $stmn->execute();
         $results = $stmn->fetchAll(PDO::FETCH_ASSOC);
         $stmn->closeCursor();
@@ -300,16 +339,18 @@ class TimeTable
             }
         }
 
-        // Ensure every project has a state list
-
-        // Fetch all project IDs separately
-        $projectIds = $this->getAllProjectIds();
-        foreach ($projectIds as $projectId) {
-            if (! isset($allStatusLabels[$projectId])) {
-                // Default to $statusListSeed if no state list exists
-                $allStatusLabels[$projectId] = $statusListSeed;
+        if (!empty($allStatusLabels)) {
+            // Ensure every project has a state list
+            // Fetch all project IDs separately
+            $projectIds = $this->getAllProjectIds();
+            foreach ($projectIds as $projectId) {
+                if (!isset($allStatusLabels[$projectId])) {
+                    // Default to $statusListSeed if no state list exists
+                    $allStatusLabels[$projectId] = $statusListSeed;
+                }
             }
         }
+
 
         return $allStatusLabels;
     }
@@ -364,7 +405,7 @@ class TimeTable
         $userId = session('userdata.id');
         $clientId = session('userdata.clientId') ?? '';
 
-        $allStateLabels = $this->getAllStateLabels($this->statusListSeed);
+        $allStateLabels = $this->getAllStateLabels();
 
         $sql = 'SELECT
                 t.id,

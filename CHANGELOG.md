@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [4.1.7] - 2025-12-08
+
+* [PR-77](https://github.com/ITK-Leantime/leantime-timetable/pull/77)
+  Use DTO when copying worklog forward.
+
+## [4.1.6] - 2025-12-05
+
+* [PR-74](https://github.com/ITK-Leantime/leantime-timetable/pull/74)
+  Saving all values from worklogDTO in database.
+
+## [4.1.5] - 2025-07-28
+
+* [PR-70](https://github.com/ITK-Leantime/leantime-timetable/pull/70)
+  New ticket status based on project config
+
+## [4.1.4] - 2025-07-02
+
+* [PR-63](https://github.com/ITK-Leantime/leantime-timetable/pull/63)
+  Hotfix: parse hoursLeft as float
+  
+## [4.1.3] - 2025-06-27
+
+* [PR-61](https://github.com/ITK-Leantime/leantime-timetable/pull/61)
+  Correct hours-remaining value
+
+## [4.1.2] - 2025-06-27
+
+* [PR-59](https://github.com/ITK-Leantime/leantime-timetable/pull/59)
+  Fixed how hours-remaining is displayed
+
 ## [4.1.1] - 2025-05-07
 
 * [PR-55](https://github.com/ITK-Leantime/leantime-timetable/pull/55)
@@ -179,7 +209,13 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.1...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.7...HEAD
+[4.1.7]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.6...4.1.7
+[4.1.6]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.5...4.1.6
+[4.1.5]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.4...4.1.5
+[4.1.4]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.3...4.1.4
+[4.1.3]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.2...4.1.3
+[4.1.2]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.1...4.1.2
 [4.1.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.1...4.1.0
 [4.0.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.0.0...4.0.1

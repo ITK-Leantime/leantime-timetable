@@ -37,6 +37,10 @@ class TimeTable extends Controller
 
     private TicketRepository $ticketRepository;
 
+    // Default "New" status id, as per
+    // app/Domain/Tickets/Repositories/Tickets.php:25
+    private const LEANTIME_DEFAULT_NEW_STATUS = 3;
+
     /**
      * constructor
      */
@@ -351,6 +355,7 @@ class TimeTable extends Controller
                     $timesheetsSortedByWeekdate['tags'] = $timesheetsByTicketAndDate[0]['tags'];
                     $timesheetsSortedByWeekdate['tagsIsSet'] = $timesheetsByTicketAndDate[0]['tags'] !== '';
                     $timesheetsSortedByWeekdate['status'] = $timesheetsByTicketAndDate[0]['status'];
+                    $timesheetsSortedByWeekdate['hourRemaining'] = (float) $timesheetsByTicketAndDate[0]['planHours'] - (float) $timesheetsByTicketAndDate[0]['hoursSum'];
                 }
             }
 
