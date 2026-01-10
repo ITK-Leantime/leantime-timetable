@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-52](https://github.com/ITK-Leantime/leantime-timetable/pull/52)
+  Context menu and various improvements.
+
 ## [4.1.7] - 2025-12-08
 
 * [PR-77](https://github.com/ITK-Leantime/leantime-timetable/pull/77)
