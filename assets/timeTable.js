@@ -922,8 +922,18 @@ jQuery(document).ready(function ($) {
 </div>`;
                     },
                     option: function (item, escape) {
-                        // We only display to-do type if it is not "task", to reduce clutter.
-                        return `<div><span>${escape(item.text)} <span><i class="fa fa-angle-right fa-xs"></i> ${escape(item.projectName)} <small>(${escape(item.value)})</small> <small style="float: right;">${parseInt(item.editorId) === parseInt(pluginSettings.userId) ? '<i class="your-task far fa-user" title="To-do is assigned to you"></i>' : ""}${item.type.toLowerCase() !== "task" ? `(${escape(item.type)})` : ""}</small></span></span></div>`;
+                        // Style to match table rows - padding: 6px 12px to match .table td
+                        return `<div style="padding: 6px 12px;">
+                            <div style="display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 14px;">
+                                ${escape(item.text)}
+                            </div>
+                            <div style="color: #666; font-size: 12px; display: block;">
+                                ${escape(item.projectName)}
+                                <small style="margin-left: 4px;">(${escape(item.value)})</small>
+                                ${parseInt(item.editorId) === parseInt(pluginSettings.userId) ? '<i class="your-task far fa-user" title="To-do is assigned to you" style="margin-left: 4px;"></i>' : ""}
+                                ${item.type.toLowerCase() !== "task" ? `<small style="margin-left: 4px;">(${escape(item.type)})</small>` : ""}
+                            </div>
+                        </div>`;
                     },
                     option_create: function (data, escape) {
                         return `<option data-value="add-new-ticket" class="create">+ Create new ticket with title: <strong>${escape(data.input)}</strong>&hellip;</option>`;
