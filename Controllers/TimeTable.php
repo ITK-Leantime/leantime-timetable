@@ -122,9 +122,9 @@ class TimeTable extends Controller
     /**
      * Creates a new ticket with the provided input values and saves it.
      *
-     * @param  string[]  $input  The input data for creating the new ticket, which should contain:
-     *                           - 'headline' (string): The title of the ticket.
-     *                           - 'projectId' (int): The project to which the ticket belongs.
+     * @param  string[] $input The input data for creating the new ticket, which should contain:
+     *                         - 'headline' (string): The title of the ticket.
+     *                         - 'projectId' (int): The project to which the ticket belongs.
      * @return JsonResponse Returns a JSON response containing the result of the ticket creation.
      */
     public function createNewTicket(array $input): JsonResponse
@@ -191,8 +191,8 @@ class TimeTable extends Controller
     /**
      * Saves the user's timetable sort preference
      *
-     * @param  array  $input  The input data containing:
-     *                        - 'sortOrder' (string): The sort order ('ticket-name' or 'project-name')
+     * @param  array $input The input data containing:
+     *                      - 'sortOrder' (string): The sort order ('ticket-name' or 'project-name')
      * @return JsonResponse Returns a JSON response indicating success or failure
      */
     public function saveSortOrder(array $input): JsonResponse
@@ -244,7 +244,7 @@ class TimeTable extends Controller
         if (! AuthService::userIsAtLeast(Roles::$editor)) {
             return $this->template->displayJson(['Error' => 'Not Authorized'], 403);
         }
-        $redirectUrl = BASE_URL.'/TimeTable/TimeTable';
+        $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
         $actionHandler = new TimeTableActionHandler($this->timeTableService, $this->timesheetRepository);
 
         if (isset($_POST['action'])) {
@@ -341,7 +341,7 @@ class TimeTable extends Controller
                 $timesheetsSortedByWeekdate[$weekDate->format('Y-m-d')] = $timesheetsByTicketAndDate;
                 if (count($timesheetsByTicketAndDate) > 0) {
                     $timesheetsSortedByWeekdate['ticketTitle'] = $timesheetsByTicketAndDate[0]['headline'];
-                    $timesheetsSortedByWeekdate['ticketLink'] = '?showTicketModal='.$timesheetsByTicketAndDate[0]['ticketId'].'&fromDate='.$fromDate->format('Y-m-d').'&toDate='.$toDate->format('Y-m-d').'#/tickets/showTicket/'.$timesheetsByTicketAndDate[0]['ticketId'];
+                    $timesheetsSortedByWeekdate['ticketLink'] = '?showTicketModal=' . $timesheetsByTicketAndDate[0]['ticketId'] . '&fromDate=' . $fromDate->format('Y-m-d') . '&toDate=' . $toDate->format('Y-m-d') . '#/tickets/showTicket/' . $timesheetsByTicketAndDate[0]['ticketId'];
                     $timesheetsSortedByWeekdate['projectId'] = $timesheetsByTicketAndDate[0]['projectId'];
                     $timesheetsSortedByWeekdate['projectName'] = $timesheetsByTicketAndDate[0]['name'];
                     $timesheetsSortedByWeekdate['ticketType'] = $timesheetsByTicketAndDate[0]['ticketType'];

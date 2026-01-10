@@ -59,7 +59,7 @@
                     <table id="timetable" class="table">
                         <thead>
                             <tr>
-                                <th class="th-ticket-title" scope="col" >{{ __('timeTable.title_table_header') }}
+                                <th class="th-ticket-title" scope="col">{{ __('timeTable.title_table_header') }}
                                 </th>
                                 @if (isset($weekDays, $weekDates) && count($weekDates))
                                     <input type="hidden" name="timetable-current-week-first-day"
@@ -95,28 +95,32 @@
                             @if (!empty($timesheetsByTicket))
                                 @foreach ($timesheetsByTicket as $ticketId => $timesheet)
                                     <tr data-ticketId="{{ $ticketId }}">
-                                        <td class="ticket-title" scope="row" data-status="{{ $timesheet['status'] ?? '' }}"
+                                        <td class="ticket-title" scope="row"
+                                            data-status="{{ $timesheet['status'] ?? '' }}"
                                             data-datetofinish="{{ $timesheet['dateToFinish'] ?? '' }}"
                                             data-tags="{{ $timesheet['tags'] ?? '' }}">
                                             <div>
-                                            <a href="{{ $timesheet['ticketLink'] }}"
-                                                data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
-                                                data-tippy-placement="top">
-                                                {{ $timesheet['ticketTitle'] }}
-                                                @if(isset($timesheet['isFavorite']) && $timesheet['isFavorite'])
-                                                    <i class="fa-regular fa-star" style="font-size: 12px; margin-left: 4px;" title="Favorite"></i>
-                                                @endif
-                                            </a>
-                                            <span>{{ $timesheet['projectName'] }}</span>
-                                        </div>
-                                            <div class="ticket-context-menu" data-projectId="{{ $timesheet['projectId'] }}">
+                                                <a href="{{ $timesheet['ticketLink'] }}"
+                                                    data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
+                                                    data-tippy-placement="top">
+                                                    {{ $timesheet['ticketTitle'] }}
+                                                    @if (isset($timesheet['isFavorite']) && $timesheet['isFavorite'])
+                                                        <i class="fa-regular fa-star"
+                                                            style="font-size: 12px; margin-left: 4px;" title="Favorite"></i>
+                                                    @endif
+                                                </a>
+                                                <span>{{ $timesheet['projectName'] }}</span>
+                                            </div>
+                                            <div class="ticket-context-menu"
+                                                data-projectId="{{ $timesheet['projectId'] }}">
                                                 <span
                                                     style="opacity: {{ !$timesheet['dateToFinishIsSet'] ? '1' : '0' }};"><i
                                                         class="fa-solid fa-calendar"></i></span>
                                                 <span style="opacity: {{ !$timesheet['tagsIsSet'] ? '1' : '0' }};"><i
                                                         class="fa-solid fa-tags"></i></span>
 
-                                                <span class="context-menu-trigger"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                                                <span class="context-menu-trigger"><i
+                                                        class="fa-solid fa-ellipsis-vertical"></i></span>
                                             </div>
                                         </td>
                                         <?php $rowTotal = 0; ?>
@@ -132,7 +136,7 @@
                                             $description = $timesheetDate[0]['description'] ?? null;
                                             $requireTimeRegistrationComment = $requireTimeRegistrationComment ?? 0;
                                             $isMissingDescription = isset($hours) & (trim($description) === '') && $requireTimeRegistrationComment !== 0;
-
+                                            
                                             // accumulate hours
                                             if ($hours) {
                                                 if (isset($totalHours[$weekDateAccessor])) {
@@ -142,7 +146,7 @@
                                                 }
                                                 $rowTotal += $hours; // add to row total
                                             }
-
+                                            
                                             $weekendClass = isset($weekDate) && $weekDate->isWeekend() ? 'weekend' : '';
                                             $todayClass = isset($weekDate) && $weekDate->isToday() ? 'today' : '';
                                             $newWeekClass = isset($weekDate) && $weekDate->isMonday() ? 'new-week' : ''; // Add new-week class for Mondays
@@ -306,7 +310,8 @@
                 <div class="context-menu-icon">
                     <i class="fa-solid fa-calendar-day"></i>
                 </div>
-                <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish" name="dateToFinish"/>
+                <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish"
+                    name="dateToFinish" />
             </div>
 
             <div class="context-menu-field">
@@ -329,9 +334,9 @@
 
             <div class="buttons flex-container gap-1">
                 <button type="button"
-                        class="ticket-context-menu-cancel btn btn-default ml-auto">{{ __('timeTable.ticket_context_discard_changes') }}</button>
+                    class="ticket-context-menu-cancel btn btn-default ml-auto">{{ __('timeTable.ticket_context_discard_changes') }}</button>
                 <button type="submit"
-                        class="ticket-context-menu-apply btn btn-primary">{{ __('timeTable.ticket_context_apply_changes') }}</button>
+                    class="ticket-context-menu-apply btn btn-primary">{{ __('timeTable.ticket_context_apply_changes') }}</button>
             </div>
 
         </form>

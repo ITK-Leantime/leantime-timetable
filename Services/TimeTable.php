@@ -19,8 +19,8 @@ class TimeTable
      */
     private static array $assets = [
         // source => target
-        __DIR__.'/../dist/js/timeTable.js' => APP_ROOT.'/public/dist/js/plugin-timeTable.js',
-        __DIR__.'/../dist/css/timeTable.css' => APP_ROOT.'/public/dist/css/plugin-timeTable.css',
+        __DIR__ . '/../dist/js/timeTable.js' => APP_ROOT . '/public/dist/js/plugin-timeTable.js',
+        __DIR__ . '/../dist/css/timeTable.css' => APP_ROOT . '/public/dist/css/plugin-timeTable.css',
     ];
 
     /**
@@ -95,7 +95,7 @@ class TimeTable
     /**
      * Adds a timelog to a ticket.
      *
-     * @param  array<string, mixed>  $values  The data required to add the timelog on the ticket.
+     * @param  array<string, mixed> $values The data required to add the timelog on the ticket.
      * @return void
      */
     public function addTimelogOnTicket(array $values)
@@ -151,8 +151,8 @@ class TimeTable
     /**
      * Retrieves all projects that the user has access to from the timetable repository.
      *
-     * @param  int  $userId  The user ID to check project access for
-     * @param  string  $clientId  The client ID of the user
+     * @param  int    $userId   The user ID to check project access for
+     * @param  string $clientId The client ID of the user
      * @return string[] the list of projects or an empty array.
      */
     public function getAllProjects(int $userId, string $clientId): array
@@ -198,7 +198,7 @@ class TimeTable
      * Get recently viewed ticket IDs for a user from tickethistory
      *
      * @param int $userId The user ID
-     * @param int $limit Maximum number of tickets to return
+     * @param int $limit  Maximum number of tickets to return
      * @return array Array of ticket IDs ordered by most recent first
      */
     public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array

@@ -63,10 +63,10 @@ class TimeTable
      * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date,
      * optionally filtering by a search term.
      *
-     * @param  string  $ticketId  The ticket ID to filter the timesheet data.
-     * @param  CarbonInterface  $workDate  The specific work date to filter the timesheet data.
-     * @param  int  $userId  The id of the user to grab data for.
-     * @param  string|null  $searchTerm  An optional search term to further filter results by ticket ID or headline.
+     * @param  string          $ticketId   The ticket ID to filter the timesheet data.
+     * @param  CarbonInterface $workDate   The specific work date to filter the timesheet data.
+     * @param  int             $userId     The id of the user to grab data for.
+     * @param  string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
     public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
@@ -96,7 +96,7 @@ class TimeTable
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
         LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)'.$searchTermQuery;
+        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery;
 
         $stmn = $this->db->database->prepare($sql);
 
@@ -121,8 +121,8 @@ class TimeTable
     /**
      * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param  WorklogDTO  $worklog  Worklog DTO
-     * @param  int|null  $originalId  (Optional) The original timelog id to check for updates or deletion
+     * @param  WorklogDTO $worklog    Worklog DTO
+     * @param  int|null   $originalId (Optional) The original timelog id to check for updates or deletion
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, ?int $originalId = null): void
     {
@@ -195,14 +195,14 @@ class TimeTable
      * If an entry for the same date, ticket, and user already exists, it checks
      * whether the entry should be overwritten or prevents duplicate insertion.
      *
-     * @param  array<string, mixed>  $values  An associative array containing the following keys:
-     *                                        - 'userId' (int): The ID of the user creating the timelog.
-     *                                        - 'ticketId' (int): The ID of the ticket associated with the timelog.
-     *                                        - 'workDate' (DateTime): The date and time the timelog is being created for.
-     *                                        - 'hours' (float): The number of hours being logged.
-     *                                        - 'description' (string): The description of the work done.
-     *                                        - 'kind' (string): The type of work being logged.
-     *                                        - 'entryCopyOverwrite' (string|null, optional): A flag to indicate if existing entries should be overwritten.
+     * @param  array<string, mixed> $values An associative array containing the following keys:
+     *                                      - 'userId' (int): The ID of the user creating the timelog.
+     *                                      - 'ticketId' (int): The ID of the ticket associated with the timelog.
+     *                                      - 'workDate' (DateTime): The date and time the timelog is being created for.
+     *                                      - 'hours' (float): The number of hours being logged.
+     *                                      - 'description' (string): The description of the work done.
+     *                                      - 'kind' (string): The type of work being logged.
+     *                                      - 'entryCopyOverwrite' (string|null, optional): A flag to indicate if existing entries should be overwritten.
      * @return void
      */
     public function addTimelogOnTicket(array $values)
@@ -253,7 +253,7 @@ class TimeTable
     /**
      * getAllStateLabels - Retrieves all state labels for projects based on a seed list of statuses and stored settings.
      *
-     * @param  array<int|string, mixed>  $statusListSeed  An array of default status definitions to seed the state labels.
+     * @param  array<int|string, mixed> $statusListSeed An array of default status definitions to seed the state labels.
      * @return array<string, array<int|string, mixed>> An associative array where keys are project IDs and values are arrays of state labels.
      */
     public function getAllStateLabels(array $statusListSeed): array
@@ -347,7 +347,7 @@ class TimeTable
         return array_map(function ($user) {
             return [
                 'id' => $user['id'],
-                'fullName' => $user['firstname'].' '.$user['lastname'],
+                'fullName' => $user['firstname'] . ' ' . $user['lastname'],
                 'role' => $user['role'],
             ];
         }, $users);
@@ -420,8 +420,8 @@ class TimeTable
     /**
      * getAllProjects - Retrieves all projects that the user has access to
      *
-     * @param  int  $userId  The user ID to check project access for
-     * @param  string  $clientId  The client ID of the user
+     * @param  int    $userId   The user ID to check project access for
+     * @param  string $clientId The client ID of the user
      * @return array<array<string, mixed>> An array of projects with their associated details.
      */
     public function getAllProjects(int $userId, string $clientId): array
@@ -509,7 +509,7 @@ class TimeTable
      * Get recently viewed ticket IDs for a user from tickethistory
      *
      * @param int $userId The user ID
-     * @param int $limit Maximum number of tickets to return
+     * @param int $limit  Maximum number of tickets to return
      * @return array Array of ticket IDs ordered by most recent first
      */
     public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
