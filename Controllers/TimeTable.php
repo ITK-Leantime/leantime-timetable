@@ -91,6 +91,19 @@ class TimeTable extends Controller
             return response()->json(['error' => 'Unauthorized: You do not have access to this project'], 403);
         }
 
+        // Get the correct "NEW" status for this project
+        $allStateLabels = $this->timeTableService->getAllStateLabels();
+        $newStatus = 3; // Default fallback
+
+        if (isset($allStateLabels[$projectId])) {
+            foreach ($allStateLabels[$projectId] as $statusKey => $statusData) {
+                if (isset($statusData['statusType']) && $statusData['statusType'] === 'NEW') {
+                    $newStatus = $statusKey;
+                    break;
+                }
+            }
+        }
+
         $ticketValues = [
             'headline' => $input['headline'],
             'type' => 'task',
@@ -100,7 +113,7 @@ class TimeTable extends Controller
             'description' => '',
             'date' => date('Y-m-d H:i:s'),
             'dateToFinish' => '',
-            'status' => '',
+            'status' => $newStatus,
             'storypoints' => '',
             'hourRemaining' => '',
             'planHours' => '',
