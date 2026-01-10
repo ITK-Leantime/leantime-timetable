@@ -114,13 +114,6 @@ class TimeTable
         return $this->timeTableRepo->getAllUsers();
     }
 
-    public function getAllStateLabels(): array
-    {
-        $statusListSeed = $this->timeTableRepo->statusListSeed;
-
-        return $this->timeTableRepo->getAllStateLabels($statusListSeed);
-    }
-
     /**
      * Retrieves all tickets from the timetable service and returns them as a JSON response.
      *
