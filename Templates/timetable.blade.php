@@ -101,7 +101,12 @@
                                             <div>
                                             <a href="{{ $timesheet['ticketLink'] }}"
                                                 data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
-                                                data-tippy-placement="top">{{ $timesheet['ticketTitle'] }}</a>
+                                                data-tippy-placement="top">
+                                                @if(isset($timesheet['isFavorite']) && $timesheet['isFavorite'])
+                                                    <i class="fa-regular fa-star" style="font-size: 12px; margin-right: 4px;" title="Favorite"></i>
+                                                @endif
+                                                {{ $timesheet['ticketTitle'] }}
+                                            </a>
                                             <span>{{ $timesheet['projectName'] }}</span>
                                         </div>
                                             <div class="ticket-context-menu" data-projectId="{{ $timesheet['projectId'] }}">

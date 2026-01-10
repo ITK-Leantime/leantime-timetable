@@ -890,6 +890,8 @@ jQuery(document).ready(function ($) {
                         type: child.type,
                         projectName: child.projectName,
                         editorId: child.editorId,
+                        isFavorite: child.isFavorite || false,
+                        relevanceScore: child.relevanceScore || 0,
                     };
                 });
 
@@ -923,9 +925,10 @@ jQuery(document).ready(function ($) {
                     },
                     option: function (item, escape) {
                         // Style to match table rows - padding: 6px 12px to match .table td
+                        const favoriteIcon = item.isFavorite ? ' <i class="fa-regular fa-star" style="font-size: 12px; margin-left: 4px;" title="Favorite"></i>' : '';
                         return `<div style="padding: 6px 12px;">
                             <div style="display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 14px;">
-                                ${escape(item.text)}
+                                ${escape(item.text)}${favoriteIcon}
                             </div>
                             <div style="color: #666; font-size: 12px; display: block;">
                                 ${escape(item.projectName)}

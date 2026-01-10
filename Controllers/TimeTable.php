@@ -57,9 +57,66 @@ class TimeTable extends Controller
      */
     public function getAllTickets(): JsonResponse
     {
-        $allTickets = $this->timeTableService->getAllTickets();
+        $userId = session('userdata.id');
+        $allTicketsData = $this->timeTableService->getAllTickets();
 
-        return response()->json(['result' => $allTickets]);
+        // Extract children array from the service response
+        $tickets = $allTicketsData['children'] ?? [];
+
+        // Get user's favorite tickets
+        $favoriteTicketIds = [];
+        if (class_exists('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks')) {
+            $favoriteService = app()->make('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks');
+            $favorites = $favoriteService->getUserFavouriteIssues();
+            $favoriteTicketIds = array_column($favorites, 'id');
+        }
+
+        // Get recently viewed tickets from tickethistory
+        $recentlyViewedIds = $this->timeTableService->getRecentlyViewedTicketIds($userId, 20);
+
+        // Add relevance scoring to tickets
+        foreach ($tickets as &$ticket) {
+            $score = 0;
+            $ticket['isFavorite'] = false;
+
+            // Use 'id' field for ticket ID (from service format)
+            $ticketId = $ticket['id'] ?? null;
+            if (!$ticketId) {
+                $ticket['relevanceScore'] = 0;
+                continue;
+            }
+
+            // Highest priority: Favorites
+            if (in_array($ticketId, $favoriteTicketIds)) {
+                $score += 1000;
+                $ticket['isFavorite'] = true;
+            }
+
+            // High priority: Recently viewed
+            $recentIndex = array_search($ticketId, $recentlyViewedIds);
+            if ($recentIndex !== false) {
+                // More recent = higher score (100 - index * 5)
+                $score += (100 - ($recentIndex * 5));
+            }
+
+            // Medium-low priority: Assigned to user
+            if (isset($ticket['editorId']) && $ticket['editorId'] == $userId) {
+                $score += 50;
+            }
+
+            $ticket['relevanceScore'] = $score;
+        }
+
+        // Sort by relevance score (desc), then alphabetically by text
+        usort($tickets, function ($a, $b) {
+            if ($a['relevanceScore'] !== $b['relevanceScore']) {
+                return $b['relevanceScore'] - $a['relevanceScore'];
+            }
+            return strcasecmp($a['text'] ?? '', $b['text'] ?? '');
+        });
+
+        // Return with the same structure as the service
+        return response()->json(['result' => ['children' => $tickets]]);
     }
 
     /**
@@ -298,6 +355,19 @@ class TimeTable extends Controller
             }
 
             $timesheetsByTicket[$ticket['ticketId']] = $timesheetsSortedByWeekdate;
+        }
+
+        // Get user's favorite tickets and mark them
+        $favoriteTicketIds = [];
+        if (class_exists('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks')) {
+            $favoriteService = app()->make('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks');
+            $favorites = $favoriteService->getUserFavouriteIssues();
+            $favoriteTicketIds = array_column($favorites, 'id');
+        }
+
+        // Add favorite status to timesheets
+        foreach ($timesheetsByTicket as $ticketId => &$timesheet) {
+            $timesheet['isFavorite'] = in_array($ticketId, $favoriteTicketIds);
         }
 
         // Get user's sort preference and sort the timesheets accordingly

@@ -504,4 +504,33 @@ class TimeTable
 
         return $uniqueTags;
     }
+
+    /**
+     * Get recently viewed ticket IDs for a user from tickethistory
+     *
+     * @param int $userId The user ID
+     * @param int $limit Maximum number of tickets to return
+     * @return array Array of ticket IDs ordered by most recent first
+     */
+    public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
+    {
+        $sql = <<<SQL
+            SELECT DISTINCT ticketId
+            FROM zp_tickethistory
+            WHERE userId = :userId
+              AND ticketId IS NOT NULL
+            ORDER BY dateModified DESC
+            LIMIT :limit
+        SQL;
+
+        $stmn = $this->db->database->prepare($sql);
+        $stmn->bindValue(':userId', $userId, \PDO::PARAM_INT);
+        $stmn->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmn->execute();
+
+        $results = $stmn->fetchAll(\PDO::FETCH_COLUMN);
+        $stmn->closeCursor();
+
+        return $results ?: [];
+    }
 }

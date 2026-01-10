@@ -193,4 +193,16 @@ class TimeTable
     {
         return $this->timeTableRepo->getAllUniqueTags();
     }
+
+    /**
+     * Get recently viewed ticket IDs for a user from tickethistory
+     *
+     * @param int $userId The user ID
+     * @param int $limit Maximum number of tickets to return
+     * @return array Array of ticket IDs ordered by most recent first
+     */
+    public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
+    {
+        return $this->timeTableRepo->getRecentlyViewedTicketIds($userId, $limit);
+    }
 }
