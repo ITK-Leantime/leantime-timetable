@@ -387,22 +387,24 @@ jQuery(document).ready(function ($) {
           this.ticketContextDatePicker.setDate(parsedDate);
 
           // Add project status options to ticket context menu
-          const statusTranslations =
-            timetableSettings.settings.statusTranslations || {};
-          const statusOptions = Object.entries(stateLabels).map(
-            ([value, { name, class: className }]) => ({
-              value,
-              text: statusTranslations[name] || name,
-              className,
-              selected: String(value) === String(ticketStatus),
-            }),
-          );
+          if (stateLabels) {
+            const statusTranslations =
+              timetableSettings.settings.statusTranslations || {};
+            const statusOptions = Object.entries(stateLabels).map(
+              ([value, { name, class: className }]) => ({
+                value,
+                text: statusTranslations[name] || name,
+                className,
+                selected: String(value) === String(ticketStatus),
+              }),
+            );
 
-          this.ticketContextStatus.clearOptions();
-          this.ticketContextStatus.addOptions(statusOptions);
+            this.ticketContextStatus.clearOptions();
+            this.ticketContextStatus.addOptions(statusOptions);
 
-          if (stateLabels[ticketStatus]) {
-            this.ticketContextStatus.setValue(ticketStatus);
+            if (stateLabels[ticketStatus]) {
+              this.ticketContextStatus.setValue(ticketStatus);
+            }
           }
 
           // Handle tags

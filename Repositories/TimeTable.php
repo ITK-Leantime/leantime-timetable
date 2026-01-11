@@ -339,18 +339,15 @@ class TimeTable
             }
         }
 
-        if (!empty($allStatusLabels)) {
-            // Ensure every project has a state list
-            // Fetch all project IDs separately
-            $projectIds = $this->getAllProjectIds();
-            foreach ($projectIds as $projectId) {
-                if (!isset($allStatusLabels[$projectId])) {
-                    // Default to $statusListSeed if no state list exists
-                    $allStatusLabels[$projectId] = $statusListSeed;
-                }
+        // Ensure every project has a state list
+        // Fetch all project IDs separately
+        $projectIds = $this->getAllProjectIds();
+        foreach ($projectIds as $projectId) {
+            if (!isset($allStatusLabels[$projectId])) {
+                // Default to $statusListSeed if no state list exists
+                $allStatusLabels[$projectId] = $statusListSeed;
             }
         }
-
 
         return $allStatusLabels;
     }
