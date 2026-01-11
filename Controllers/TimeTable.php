@@ -286,19 +286,39 @@ class TimeTable extends Controller
         $errorMessage = isset($_GET['errorMessage']) ? urldecode($_GET['errorMessage']) : null;
         try {
             if (isset($_GET['fromDate']) && $_GET['fromDate'] !== '') {
-                if ($_GET['fromDate'][0] === '+' || $_GET['fromDate'][0] === '-') {
-                    $fromDate = CarbonImmutable::now()->startOfDay()->modify($_GET['fromDate']);
+                $fromDateParam = trim($_GET['fromDate']);
+                // Check if it's a relative date (starts with + or - or contains 'day', 'week', 'month', etc.)
+                if (
+                    $fromDateParam[0] === '+' ||
+                    $fromDateParam[0] === '-' ||
+                    preg_match('/\b(day|week|month|year)s?\b/i', $fromDateParam)
+                ) {
+                    // Ensure + is present for positive relative dates
+                    if ($fromDateParam[0] !== '+' && $fromDateParam[0] !== '-') {
+                        $fromDateParam = '+' . $fromDateParam;
+                    }
+                    $fromDate = CarbonImmutable::now()->startOfDay()->modify($fromDateParam);
                 } else {
-                    $fromDate = CarbonImmutable::createFromFormat('Y-m-d', $_GET['fromDate']);
+                    $fromDate = CarbonImmutable::createFromFormat('Y-m-d', $fromDateParam);
                     $fromDate = $fromDate->startOfDay();
                 }
             }
 
             if (isset($_GET['toDate']) && $_GET['toDate'] !== '') {
-                if ($_GET['toDate'][0] === '+' || $_GET['toDate'][0] === '-') {
-                    $toDate = CarbonImmutable::now()->startOfDay()->modify($_GET['toDate']);
+                $toDateParam = trim($_GET['toDate']);
+                // Check if it's a relative date (starts with + or - or contains 'day', 'week', 'month', etc.)
+                if (
+                    $toDateParam[0] === '+' ||
+                    $toDateParam[0] === '-' ||
+                    preg_match('/\b(day|week|month|year)s?\b/i', $toDateParam)
+                ) {
+                    // Ensure + is present for positive relative dates
+                    if ($toDateParam[0] !== '+' && $toDateParam[0] !== '-') {
+                        $toDateParam = '+' . $toDateParam;
+                    }
+                    $toDate = CarbonImmutable::now()->startOfDay()->modify($toDateParam);
                 } else {
-                    $toDate = CarbonImmutable::createFromFormat('Y-m-d', $_GET['toDate']);
+                    $toDate = CarbonImmutable::createFromFormat('Y-m-d', $toDateParam);
                     $toDate = $toDate->startOfDay();
                 }
             }
