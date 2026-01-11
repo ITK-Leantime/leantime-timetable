@@ -839,18 +839,56 @@ jQuery(document).ready(function ($) {
         .then((response) => response.json())
         .then((data) => {
           if (data.status === "success") {
-            $('td.timetable-edit-entry[data-id="' + timesheetId + '"]')
+            const $cell = $('td.timetable-edit-entry[data-id="' + timesheetId + '"]');
+            const $row = $cell.closest("tr");
+
+            // Clear the cell data and content
+            $cell
               .children("span")
               .text("")
               .end()
               .attr("data-id", "")
               .attr("data-hours", "")
               .attr("data-description", "")
-              .attr("data-hoursleft", "")
-              .end()
-              .find("div.entry-copy-button")
-              .remove();
-            $(".recently-deleted-timelog-info").removeClass("hidden");
+              .attr("data-hoursleft", "");
+
+            // Ensure entry-copy-button exists (recreate if removed)
+            if ($cell.find("div.entry-copy-button").length === 0) {
+              $cell.append(
+                '<div class="entry-copy-button"><i class="fa-solid fa-angle-right"></i></div>',
+              );
+            }
+
+            // Update row total
+            let rowTotal = 0;
+            $row.find("td.timetable-edit-entry span").each(function () {
+              const hours = parseFloat($(this).text()) || 0;
+              rowTotal += hours;
+            });
+            $row.find("td:last").text(rowTotal || "");
+
+            // Update column totals
+            const cellIndex = $cell.index();
+            let columnTotal = 0;
+            $('table.timetable tbody tr:not(:last)')
+              .find("td:eq(" + cellIndex + ") span")
+              .each(function () {
+                const hours = parseFloat($(this).text()) || 0;
+                columnTotal += hours;
+              });
+            $('table.timetable tbody tr:last td:eq(' + cellIndex + ')').text(
+              columnTotal || "",
+            );
+
+            // Update grand total (last cell of last row)
+            let grandTotal = 0;
+            $('table.timetable tbody tr:last td:not(:first)')
+              .each(function () {
+                const total = parseFloat($(this).text()) || 0;
+                grandTotal += total;
+              });
+            $('table.timetable tbody tr:last td:last').text(grandTotal || "");
+
             this.closeEditTimeLogModal();
           } else {
             alert("An error has occurred");
