@@ -104,10 +104,6 @@
                                                     data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
                                                     data-tippy-placement="top">
                                                     {{ $timesheet['ticketTitle'] }}
-                                                    @if (isset($timesheet['isFavorite']) && $timesheet['isFavorite'])
-                                                        <i class="fa-regular fa-star"
-                                                            style="font-size: 12px; margin-left: 4px;" title="Favorite"></i>
-                                                    @endif
                                                 </a>
                                                 <span>{{ $timesheet['projectName'] }}</span>
                                             </div>
