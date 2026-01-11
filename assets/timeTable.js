@@ -839,9 +839,7 @@ jQuery(document).ready(function ($) {
         .then((response) => response.json())
         .then((data) => {
           if (data.status === "success") {
-            const $cell = $(
-              'td.timetable-edit-entry[data-id="' + timesheetId + '"]',
-            );
+            const $cell = $('td.timetable-edit-entry[data-id="' + timesheetId + '"]');
             const $row = $cell.closest("tr");
 
             // Clear the cell data and content
@@ -872,23 +870,24 @@ jQuery(document).ready(function ($) {
             // Update column totals
             const cellIndex = $cell.index();
             let columnTotal = 0;
-            $("table.timetable tbody tr:not(:last)")
+            $('table.timetable tbody tr:not(:last)')
               .find("td:eq(" + cellIndex + ") span")
               .each(function () {
                 const hours = parseFloat($(this).text()) || 0;
                 columnTotal += hours;
               });
-            $("table.timetable tbody tr:last td:eq(" + cellIndex + ")").text(
+            $('table.timetable tbody tr:last td:eq(' + cellIndex + ')').text(
               columnTotal || "",
             );
 
             // Update grand total (last cell of last row)
             let grandTotal = 0;
-            $("table.timetable tbody tr:last td:not(:first)").each(function () {
-              const total = parseFloat($(this).text()) || 0;
-              grandTotal += total;
-            });
-            $("table.timetable tbody tr:last td:last").text(grandTotal || "");
+            $('table.timetable tbody tr:last td:not(:first)')
+              .each(function () {
+                const total = parseFloat($(this).text()) || 0;
+                grandTotal += total;
+              });
+            $('table.timetable tbody tr:last td:last').text(grandTotal || "");
 
             this.closeEditTimeLogModal();
           } else {

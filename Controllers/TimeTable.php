@@ -37,12 +37,10 @@ class TimeTable extends Controller
 
     private TicketRepository $ticketRepository;
 
-    // Default "New" status id, as per
-    // app/Domain/Tickets/Repositories/Tickets.php:25
-    private const LEANTIME_DEFAULT_NEW_STATUS = 3;
-
     /**
      * constructor
+     *
+     * @return void
      */
     public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository): void
     {
@@ -141,7 +139,7 @@ class TimeTable extends Controller
         $accessibleProjects = $this->timeTableService->getAllProjects($userId, $clientId);
         $hasAccess = false;
 
-        foreach ($accessibleProjects['children'] ?? [] as $project) {
+        foreach ($accessibleProjects['children'] as $project) {
             if ((int) $project['id'] === $projectId) {
                 $hasAccess = true;
                 break;
@@ -195,8 +193,8 @@ class TimeTable extends Controller
     /**
      * Saves the user's timetable sort preference
      *
-     * @param  array $input The input data containing:
-     *                      - 'sortOrder' (string): The sort order ('ticket-name' or 'project-name')
+     * @param  array<string, mixed> $input The input data containing:
+     *                                     - 'sortOrder' (string): The sort order ('ticket-name' or 'project-name')
      * @return JsonResponse Returns a JSON response indicating success or failure
      */
     public function saveSortOrder(array $input): JsonResponse
@@ -241,6 +239,7 @@ class TimeTable extends Controller
     }
 
     /**
+     * @return Response
      * @throws \Exception
      */
     public function post(): Response
@@ -271,7 +270,7 @@ class TimeTable extends Controller
     /**
      * get
      *
-     *
+     * @return Response
      * @throws \Exception
      * @throws BindingResolutionException
      */

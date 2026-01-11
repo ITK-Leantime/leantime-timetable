@@ -20,6 +20,9 @@ class TimeTable
 
     private TicketRepository $ticketRepo;
 
+    /**
+     * @var array<int|string, array<string, mixed>>
+     */
     public array $statusListSeed;
 
     /**
@@ -129,6 +132,7 @@ class TimeTable
      *
      * @param  WorklogDTO $worklog    Worklog DTO
      * @param  int|null   $originalId (Optional) The original timelog id to check for updates or deletion
+     * @return void
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, ?int $originalId = null): void
     {
@@ -492,6 +496,12 @@ class TimeTable
         }, $projects);
     }
 
+    /**
+     * modifyTicketDetails - Modifies ticket details (status, dateToFinish, tags)
+     *
+     * @param  \Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO DTO containing ticket details to modify
+     * @return void
+     */
     public function modifyTicketDetails(\Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO)
     {
         $sql = 'UPDATE zp_tickets
@@ -513,7 +523,7 @@ class TimeTable
     /**
      * Get all unique tags from tickets in the system
      *
-     * @return array Array of unique tag strings
+     * @return array<int, string> Array of unique tag strings
      */
     public function getAllUniqueTags(): array
     {
@@ -548,7 +558,7 @@ class TimeTable
      *
      * @param int $userId The user ID
      * @param int $limit  Maximum number of tickets to return
-     * @return array Array of ticket IDs ordered by most recent first
+     * @return array<int, int> Array of ticket IDs ordered by most recent first
      */
     public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
     {

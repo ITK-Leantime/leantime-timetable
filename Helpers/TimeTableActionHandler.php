@@ -261,6 +261,13 @@ class TimeTableActionHandler
         return $this->appendQueryParams($postData, $redirectUrl);
     }
 
+    /**
+     * ticketContextMenu - Handles the ticket context menu action to modify ticket details
+     *
+     * @param  array<string, mixed> $postData    The POST data containing ticket details
+     * @param  string               $redirectUrl The URL to redirect to after the action
+     * @return string The redirect URL with appended query parameters
+     */
     public function ticketContextMenu(array $postData, string $redirectUrl)
     {
         $dateToFinish = $postData['dateToFinish'] ?? null;

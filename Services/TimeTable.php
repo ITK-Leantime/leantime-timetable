@@ -35,6 +35,8 @@ class TimeTable
 
     /**
      * Install plugin.
+     *
+     * @return void
      */
     public function install(): void
     {
@@ -48,6 +50,8 @@ class TimeTable
 
     /**
      * Uninstall plugin.
+     *
+     * @return void
      */
     public function uninstall(): void
     {
@@ -86,6 +90,8 @@ class TimeTable
 
     /**
      * updateTime - update specific time entry
+     *
+     * @return void
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, int $originalId): void
     {
@@ -147,7 +153,7 @@ class TimeTable
      *
      * @param  int    $userId   The user ID to check project access for
      * @param  string $clientId The client ID of the user
-     * @return string[] the list of projects or an empty array.
+     * @return array{id: string, text: string, children: array<int, array{id: int, text: string, type: string, client: string|null}>, index: int} Project group with children array
      */
     public function getAllProjects(int $userId, string $clientId): array
     {
@@ -171,6 +177,12 @@ class TimeTable
         return $projectGroup;
     }
 
+    /**
+     * modifyTicketDetails - Modifies ticket details via the context menu
+     *
+     * @param  TicketContextMenuDTO $ticketContextMenuDTO DTO containing ticket details to modify
+     * @return void
+     */
     public function modifyTicketDetails(TicketContextMenuDTO $ticketContextMenuDTO)
     {
         $this->timeTableRepo->modifyTicketDetails($ticketContextMenuDTO);
@@ -179,7 +191,7 @@ class TimeTable
     /**
      * Get all unique tags from the system
      *
-     * @return array Array of unique tag strings
+     * @return array<int, string> Array of unique tag strings
      *
      * @api
      */
@@ -193,7 +205,7 @@ class TimeTable
      *
      * @param int $userId The user ID
      * @param int $limit  Maximum number of tickets to return
-     * @return array Array of ticket IDs ordered by most recent first
+     * @return array<int, int> Array of ticket IDs ordered by most recent first
      */
     public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
     {
