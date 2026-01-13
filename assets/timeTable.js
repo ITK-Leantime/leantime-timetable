@@ -485,7 +485,17 @@ jQuery(document).ready(function ($) {
 
         const eventTarget = e.target;
 
-        const targetCount = this.handleHighlighting(eventTarget);
+        // Get initial targets (without weekends by default)
+        const includeWeekends = false;
+        const overwrite = false;
+        const targets = this.getEntryCopyTargets(
+          eventTarget,
+          overwrite,
+          includeWeekends,
+        );
+        const targetCount = targets.length;
+
+        this.handleHighlighting(eventTarget, overwrite, includeWeekends);
 
         const rect = eventTarget.getBoundingClientRect();
 
@@ -512,7 +522,26 @@ jQuery(document).ready(function ($) {
           'input[name="timetable-current-week-last-day"]',
         ).val();
 
-        const formattedCopyToDate = new Date(copyToDate)
+        // Calculate the actual last target date based on filtered targets
+        let actualCopyToDate = copyToDate;
+        if (targets.length > 0) {
+          const lastTarget = targets.last();
+          actualCopyToDate = lastTarget.data("date");
+        } else {
+          // If no targets initially (all filled and overwrite=false),
+          // calculate the last non-weekend date
+          const parentElement = $(eventTarget).parent();
+          const allElements = parentElement.nextAll(".timetable-edit-entry");
+          const nonWeekendElements = allElements.filter(function () {
+            return !$(this).hasClass("weekend");
+          });
+          if (nonWeekendElements.length > 0) {
+            const lastNonWeekend = nonWeekendElements.last();
+            actualCopyToDate = lastNonWeekend.data("date");
+          }
+        }
+
+        const formattedCopyToDate = new Date(actualCopyToDate)
           .toLocaleDateString("da-DK", {
             day: "numeric",
             month: "numeric",
@@ -550,9 +579,34 @@ jQuery(document).ready(function ($) {
           );
           const targetCount = targets.length;
 
+          // Recalculate the actual last target date
+          let updatedCopyToDate = copyToDate;
+          if (targets.length > 0) {
+            const lastTarget = targets.last();
+            updatedCopyToDate = lastTarget.data("date");
+          } else if (!includeWeekends) {
+            // If no targets and weekends not included, use last non-weekend
+            const parentElement = $(eventTarget).parent();
+            const allElements = parentElement.nextAll(".timetable-edit-entry");
+            const nonWeekendElements = allElements.filter(function () {
+              return !$(this).hasClass("weekend");
+            });
+            if (nonWeekendElements.length > 0) {
+              const lastNonWeekend = nonWeekendElements.last();
+              updatedCopyToDate = lastNonWeekend.data("date");
+            }
+          }
+
+          const updatedFormattedCopyToDate = new Date(updatedCopyToDate)
+            .toLocaleDateString("da-DK", {
+              day: "numeric",
+              month: "numeric",
+            })
+            .replace(".", "/");
+
           this.setEntryCopyText({
             formattedCopyFromDate,
-            formattedCopyToDate,
+            formattedCopyToDate: updatedFormattedCopyToDate,
             targetCount,
           });
 
@@ -570,9 +624,34 @@ jQuery(document).ready(function ($) {
           );
           const targetCount = targets.length;
 
+          // Recalculate the actual last target date
+          let updatedCopyToDate = copyToDate;
+          if (targets.length > 0) {
+            const lastTarget = targets.last();
+            updatedCopyToDate = lastTarget.data("date");
+          } else if (!includeWeekends) {
+            // If no targets and weekends not included, use last non-weekend
+            const parentElement = $(eventTarget).parent();
+            const allElements = parentElement.nextAll(".timetable-edit-entry");
+            const nonWeekendElements = allElements.filter(function () {
+              return !$(this).hasClass("weekend");
+            });
+            if (nonWeekendElements.length > 0) {
+              const lastNonWeekend = nonWeekendElements.last();
+              updatedCopyToDate = lastNonWeekend.data("date");
+            }
+          }
+
+          const updatedFormattedCopyToDate = new Date(updatedCopyToDate)
+            .toLocaleDateString("da-DK", {
+              day: "numeric",
+              month: "numeric",
+            })
+            .replace(".", "/");
+
           this.setEntryCopyText({
             formattedCopyFromDate,
-            formattedCopyToDate,
+            formattedCopyToDate: updatedFormattedCopyToDate,
             targetCount,
           });
 
