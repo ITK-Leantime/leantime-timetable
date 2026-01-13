@@ -18,10 +18,10 @@ function addTimeTableItemToMenu(array $menuStructure): array
         'type' => 'item',
         'title' => '<span class="fas fa-fw fa-table"></span> Timetable',
         'icon' => 'fa fa-fw fa-table',
-        'tooltip' => 'View TimeTable',
+        'tooltip' => __('timeTable.menu_tooltip'),
         'href' => '/TimeTable/TimeTable',
         'active' => ['TimeTable'],
-        'module' => 'TimeTable', // First part of the path when visiting your plugin e.g. leantime.dk/{this part}/TimeTable
+        'module' => 'TimeTable',
     ];
 
     return $menuStructure;
