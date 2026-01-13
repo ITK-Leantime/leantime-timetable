@@ -140,6 +140,15 @@ jQuery(document).ready(function ($) {
         }
       }
 
+      // Weekend visibility elements
+      this.weekendVisibilityToggle = $("#show-weekends-toggle");
+
+      // Get initial weekend visibility state from checkbox
+      this.showWeekends = this.weekendVisibilityToggle.is(":checked");
+
+      // Apply initial weekend visibility
+      this.applyWeekendVisibility();
+
       flatpickr("#dateRange", {
         mode: "range",
         dateFormat: "d-m-Y",
@@ -346,85 +355,83 @@ jQuery(document).ready(function ($) {
         }.bind(this),
       );
 
-      $(document)
-        .on("click", "div.ticket-context-menu", (event) => {
-          const target = event.target;
-          const rect = target.getBoundingClientRect();
+      $(document).on("click", "div.ticket-context-menu", (event) => {
+        const target = event.target;
+        const rect = target.getBoundingClientRect();
 
-          // Find the ticket-context-menu div (in case a child span was clicked)
-          const $contextMenuDiv = $(target).closest("div.ticket-context-menu");
+        // Find the ticket-context-menu div (in case a child span was clicked)
+        const $contextMenuDiv = $(target).closest("div.ticket-context-menu");
 
-          // Get the parent td which contains all the data attributes
-          const $ticketTd = $contextMenuDiv.parent();
+        // Get the parent td which contains all the data attributes
+        const $ticketTd = $contextMenuDiv.parent();
 
-          // Get the tr which contains the ticketId
-          const $ticketTr = $ticketTd.parent();
+        // Get the tr which contains the ticketId
+        const $ticketTr = $ticketTd.parent();
 
-          this.ticketContextMenuModal
-            .css({
-              left: `${rect.left + window.scrollX - 215}px`,
-              top: `${rect.top + window.scrollY + rect.height - 50}px`,
-            })
-            .addClass("shown");
+        this.ticketContextMenuModal
+          .css({
+            left: `${rect.left + window.scrollX - 215}px`,
+            top: `${rect.top + window.scrollY + rect.height - 50}px`,
+          })
+          .addClass("shown");
 
-          const projectId = $contextMenuDiv.data("projectid");
-          const stateLabels = allStateLabels[projectId];
-          const ticketStatus = $ticketTd.data("status");
-          const ticketId = $ticketTr.data("ticketid");
-          const ticketDateToFinish = $ticketTd.data("datetofinish");
-          const ticketTags = $ticketTd.data("tags") || "";
+        const projectId = $contextMenuDiv.data("projectid");
+        const stateLabels = allStateLabels[projectId];
+        const ticketStatus = $ticketTd.data("status");
+        const ticketId = $ticketTr.data("ticketid");
+        const ticketDateToFinish = $ticketTd.data("datetofinish");
+        const ticketTags = $ticketTd.data("tags") || "";
 
-          this.contextMenuTicketId.val(ticketId);
+        this.contextMenuTicketId.val(ticketId);
 
-          // Set date
-          const dateToFinish =
-            ticketDateToFinish === "0000-00-00 00:00:00"
-              ? null
-              : ticketDateToFinish?.split(" ")[0];
-          const parsedDate = dateToFinish
-            ? new Date(dateToFinish + "T00:00:00")
-            : null;
-          this.ticketContextDatePicker.setDate(parsedDate);
+        // Set date
+        const dateToFinish =
+          ticketDateToFinish === "0000-00-00 00:00:00"
+            ? null
+            : ticketDateToFinish?.split(" ")[0];
+        const parsedDate = dateToFinish
+          ? new Date(dateToFinish + "T00:00:00")
+          : null;
+        this.ticketContextDatePicker.setDate(parsedDate);
 
-          // Add project status options to ticket context menu
-          if (stateLabels) {
-            const statusTranslations =
-              timetableSettings.settings.statusTranslations || {};
-            const statusOptions = Object.entries(stateLabels).map(
-              ([value, { name, class: className }]) => ({
-                value,
-                text: statusTranslations[name] || name,
-                className,
-                selected: String(value) === String(ticketStatus),
-              }),
-            );
+        // Add project status options to ticket context menu
+        if (stateLabels) {
+          const statusTranslations =
+            timetableSettings.settings.statusTranslations || {};
+          const statusOptions = Object.entries(stateLabels).map(
+            ([value, { name, class: className }]) => ({
+              value,
+              text: statusTranslations[name] || name,
+              className,
+              selected: String(value) === String(ticketStatus),
+            }),
+          );
 
-            this.ticketContextStatus.clearOptions();
-            this.ticketContextStatus.addOptions(statusOptions);
+          this.ticketContextStatus.clearOptions();
+          this.ticketContextStatus.addOptions(statusOptions);
 
-            if (stateLabels[ticketStatus]) {
-              this.ticketContextStatus.setValue(ticketStatus);
+          if (stateLabels[ticketStatus]) {
+            this.ticketContextStatus.setValue(ticketStatus);
+          }
+        }
+
+        // Handle tags
+        this.ticketContextTags.clear();
+
+        if (ticketTags) {
+          const tagsArray = ticketTags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag);
+          // Add any tags that aren't already in the options
+          tagsArray.forEach((tag) => {
+            if (!this.ticketContextTags.options[tag]) {
+              this.ticketContextTags.addOption({ value: tag, text: tag });
             }
-          }
-
-          // Handle tags
-          this.ticketContextTags.clear();
-
-          if (ticketTags) {
-            const tagsArray = ticketTags
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter((tag) => tag);
-            // Add any tags that aren't already in the options
-            tagsArray.forEach((tag) => {
-              if (!this.ticketContextTags.options[tag]) {
-                this.ticketContextTags.addOption({ value: tag, text: tag });
-              }
-            });
-            this.ticketContextTags.setValue(tagsArray);
-          }
-        })
-        .bind(this);
+          });
+          this.ticketContextTags.setValue(tagsArray);
+        }
+      });
 
       // Close modal
       this.modalCancelButton.click(() => this.closeEditTimeLogModal());
@@ -660,36 +667,50 @@ jQuery(document).ready(function ($) {
         $(e.currentTarget).addClass("active");
       });
 
+      // Handle weekend visibility toggle
+      this.weekendVisibilityToggle.change((e) => {
+        this.showWeekends = $(e.target).is(":checked");
+      });
+
       // Handle save button
       this.sortMenuSaveBtn.click((e) => {
         e.stopPropagation();
 
-        if (!this.sortState.field) {
-          this.closeSortMenuModal();
-          return;
+        // Prepare settings to save
+        const settings = {};
+
+        // Add sort order if a field is selected
+        if (this.sortState.field) {
+          settings.sortOrder = `${this.sortState.field}-${this.sortState.direction}`;
         }
 
-        // Build the sort order string: field-direction (e.g., "ticket-name-asc")
-        const sortOrder = `${this.sortState.field}-${this.sortState.direction}`;
+        // Add weekend visibility setting
+        settings.showWeekends = this.showWeekends;
 
         // Save to backend
-        fetch("/TimeTable/TimeTable/saveSortOrder", {
+        fetch("/TimeTable/TimeTable/saveSettings", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
           },
-          body: JSON.stringify({ sortOrder: sortOrder }),
+          credentials: "include",
+          body: JSON.stringify(settings),
         })
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
-              // Reload the page to apply the sort on the backend
-              window.location.reload();
+              // Apply weekend visibility immediately
+              this.applyWeekendVisibility();
+              this.closeSortMenuModal();
+
+              // Only reload if sort order changed
+              if (settings.sortOrder) {
+                window.location.reload();
+              }
             }
           })
-          .catch((error) => console.error("Error saving sort order:", error));
-
-        this.closeSortMenuModal();
+          .catch((error) => console.error("Error saving settings:", error));
       });
 
       // Handle close button
@@ -929,6 +950,20 @@ jQuery(document).ready(function ($) {
 
     closeSortMenuModal() {
       this.sortMenuModal.removeClass("shown");
+    }
+
+    /**
+     * Applies weekend visibility based on the current setting
+     *
+     * @returns {void}
+     */
+    applyWeekendVisibility() {
+      const $timetable = $(".timetable");
+      if (this.showWeekends) {
+        $timetable.removeClass("hide-weekends");
+      } else {
+        $timetable.addClass("hide-weekends");
+      }
     }
 
     /**

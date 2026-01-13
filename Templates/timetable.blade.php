@@ -26,7 +26,7 @@
     <!-- page header -->
     <div class="maincontent">
         <div class="maincontentinner">
-            <div class="timetable">
+            <div class="timetable {{ !$showWeekends ? 'hide-weekends' : '' }}">
                 <div class="error-message {{ is_null($errorMessage) ? 'hidden' : '' }}">
                     <p data-tippy-content="{{ $errorMessage }}"><i class="fas fa-exclamation-circle"></i>
                         {{ __('timeTable.general-error-message') }}</p>
@@ -171,7 +171,12 @@
                                         <span>{{ __('timeTable.syncing_data') }}</span>
                                     </td>
                                     @foreach ($weekDates as $date)
-                                        <td class="{{ $date->isMonday() ? 'new-week' : '' }}">—</td>
+                                        @php
+                                            $weekendClass = $date->isWeekend() ? 'weekend' : '';
+                                            $newWeekClass = $date->isMonday() ? 'new-week' : '';
+                                            $classes = trim("$weekendClass $newWeekClass");
+                                        @endphp
+                                        <td @if ($classes) class="{{ $classes }}" @endif>—</td>
                                     @endforeach
                                     <td>—</td>
                                 </tr>
@@ -188,7 +193,12 @@
                                         <span>{{ __('timeTable.syncing_data') }}</span>
                                     </td>
                                     @foreach ($weekDates as $date)
-                                        <td>—</td>
+                                        @php
+                                            $weekendClass = $date->isWeekend() ? 'weekend' : '';
+                                            $newWeekClass = $date->isMonday() ? 'new-week' : '';
+                                            $classes = trim("$weekendClass $newWeekClass");
+                                        @endphp
+                                        <td @if ($classes) class="{{ $classes }}" @endif>—</td>
                                     @endforeach
                                     <td>—</td>
                                 </tr>
@@ -197,7 +207,12 @@
                             <tr class="tr-total">
                                 <td scope="row">{{ __('timeTable.total') }}</td>
                                 @foreach ($weekDates as $weekDate)
-                                    <td class="{{ $weekDate->isMonday() ? 'new-week' : '' }}">
+                                    @php
+                                        $weekendClass = $weekDate->isWeekend() ? 'weekend' : '';
+                                        $newWeekClass = $weekDate->isMonday() ? 'new-week' : '';
+                                        $classes = trim("$weekendClass $newWeekClass");
+                                    @endphp
+                                    <td @if ($classes) class="{{ $classes }}" @endif>
                                         {{ $totalHours[$weekDate->format('Y-m-d')] ?? 0 }}
                                     </td>
                                 @endforeach
@@ -339,33 +354,63 @@
     </div>
     <div id="sort-menu-modal">
         <div class="sort-menu-header">
-            <span>{{ __('timeTable.sort_options') }}</span>
+            <span>{{ __('timeTable.table_settings') }}</span>
         </div>
-        <div class="sort-menu-options">
-            <div class="sort-option" data-sort="ticket-name">
-                <span>{{ __('timeTable.sort_by_ticket_name') }}</span>
+
+        <!-- Sorting Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <i class="fa-solid fa-arrow-down-a-z"></i>
+                <span>{{ __('timeTable.sort_options') }}</span>
             </div>
-            <div class="sort-option" data-sort="project-name">
-                <span>{{ __('timeTable.sort_by_project_name') }}</span>
+            <div class="sort-menu-options">
+                <div class="sort-option" data-sort="ticket-name">
+                    <span>{{ __('timeTable.sort_by_ticket_name') }}</span>
+                </div>
+                <div class="sort-option" data-sort="project-name">
+                    <span>{{ __('timeTable.sort_by_project_name') }}</span>
+                </div>
+            </div>
+            <div class="sort-menu-direction">
+                <span>{{ __('timeTable.sort_direction') }}</span>
+                <div class="sort-direction-toggle">
+                    <button class="sort-direction-btn" data-direction="asc">
+                        <i class="fa-solid fa-arrow-down-a-z"></i>
+                    </button>
+                    <button class="sort-direction-btn" data-direction="desc">
+                        <i class="fa-solid fa-arrow-up-z-a"></i>
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="sort-menu-direction">
-            <span>{{ __('timeTable.sort_direction') }}</span>
-            <div class="sort-direction-toggle">
-                <button class="sort-direction-btn" data-direction="asc">
-                    <i class="fa-solid fa-arrow-down-a-z"></i>
-                </button>
-                <button class="sort-direction-btn" data-direction="desc">
-                    <i class="fa-solid fa-arrow-up-z-a"></i>
-                </button>
+
+        <!-- Display Options Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <i class="fa-solid fa-eye"></i>
+                <span>{{ __('timeTable.display_options') }}</span>
+            </div>
+            <div class="display-options">
+                <div class="display-option">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="show-weekends-toggle" class="weekend-visibility-toggle"
+                               {{ ($showWeekends ?? true) ? 'checked' : '' }}>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">{{ __('timeTable.show_weekends') }}</span>
+                    </label>
+                </div>
             </div>
         </div>
+
         <div class="sort-menu-actions">
             <button class="btn btn-default sort-menu-close">{{ __('buttons.close') }}</button>
             <button class="btn btn-primary sort-menu-save">{{ __('buttons.save') }}</button>
         </div>
     </div>
 
-    <!-- Store sort order in a data attribute to avoid jQuery conflicts -->
-    <div id="timetable-sort-data" data-sort-order="{{ $sortOrder ?? '' }}" style="display: none;"></div>
+    <!-- Store sort order and display settings in data attributes to avoid jQuery conflicts -->
+    <div id="timetable-sort-data"
+         data-sort-order="{{ $sortOrder ?? '' }}"
+         data-show-weekends="{{ $showWeekends ? 'true' : 'false' }}"
+         style="display: none;"></div>
 @endsection

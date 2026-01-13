@@ -225,6 +225,49 @@ class TimeTable extends Controller
     }
 
     /**
+     * Saves the user's timetable settings (sort order and display preferences)
+     *
+     * @param  array<string, mixed> $input The input data containing:
+     *                                     - 'sortOrder' (string|null): The sort order ('ticket-name-asc', etc.)
+     *                                     - 'showWeekends' (bool): Whether to show weekend columns
+     * @return JsonResponse Returns a JSON response indicating success or failure
+     */
+    public function saveSettings(array $input): JsonResponse
+    {
+        $userId = session('userdata.id');
+        $userService = app()->make(\Leantime\Domain\Users\Services\Users::class);
+
+        // Validate and save sort order if provided
+        if (isset($input['sortOrder']) && $input['sortOrder'] !== '') {
+            $sortOrder = $input['sortOrder'];
+            $validFields = ['ticket-name', 'project-name'];
+            $validDirections = ['asc', 'desc'];
+
+            $parts = explode('-', $sortOrder);
+            if (count($parts) >= 2) {
+                $direction = array_pop($parts);
+                $field = implode('-', $parts);
+
+                if (in_array($field, $validFields) && in_array($direction, $validDirections)) {
+                    $userService->updateUserSettings('timetable', 'sortOrder', $sortOrder);
+                } else {
+                    return response()->json(['error' => 'Invalid sort order'], 400);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid sort order format'], 400);
+            }
+        }
+
+        // Save weekend visibility preference
+        if (isset($input['showWeekends'])) {
+            $showWeekends = (bool) $input['showWeekends'];
+            $userService->updateUserSettings('timetable', 'showWeekends', $showWeekends);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Retrieves all projects that the user has access to from the timetable service and returns them as a JSON response.
      *
      * @return JsonResponse The JSON response containing the list of projects or an empty array.
@@ -394,9 +437,14 @@ class TimeTable extends Controller
             $timesheet['isFavorite'] = in_array($ticketId, $favoriteTicketIds);
         }
 
-        // Get user's sort preference and sort the timesheets accordingly
+        // Get user's preferences and sort the timesheets accordingly
         $userRepository = app()->make(\Leantime\Domain\Users\Repositories\Users::class);
         $sortOrder = $userRepository->getUserSettings($userId, 'timetable.sortOrder') ?? '';
+
+        // Get showWeekends setting and convert to boolean properly
+        $showWeekendsRaw = $userRepository->getUserSettings($userId, 'timetable.showWeekends');
+        // If setting doesn't exist (null), default to true. Otherwise convert to boolean
+        $showWeekends = $showWeekendsRaw === null ? true : (bool) $showWeekendsRaw;
 
         if ($sortOrder && !empty($timesheetsByTicket)) {
             // Parse sort order to extract field and direction (e.g., "ticket-name-asc")
@@ -447,6 +495,7 @@ class TimeTable extends Controller
         $this->template->assign('allTags', $allTags);
         $this->template->assign('allStateLabels', $allStateLabels);
         $this->template->assign('sortOrder', $sortOrder);
+        $this->template->assign('showWeekends', $showWeekends);
 
         return $this->template->display('TimeTable.timetable');
     }
