@@ -357,6 +357,24 @@
             <span>{{ __('timeTable.table_settings') }}</span>
         </div>
 
+        <!-- Display Options Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <i class="fa-solid fa-eye"></i>
+                <span>{{ __('timeTable.display_options') }}</span>
+            </div>
+            <div class="display-options">
+                <div class="display-option">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="show-weekends-toggle" class="weekend-visibility-toggle"
+                               {{ ($showWeekends ?? true) ? 'checked' : '' }}>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">{{ __('timeTable.show_weekends') }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <!-- Sorting Section -->
         <div class="settings-section">
             <div class="settings-section-header">
@@ -380,24 +398,6 @@
                     <button class="sort-direction-btn" data-direction="desc">
                         <i class="fa-solid fa-arrow-up-z-a"></i>
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Display Options Section -->
-        <div class="settings-section">
-            <div class="settings-section-header">
-                <i class="fa-solid fa-eye"></i>
-                <span>{{ __('timeTable.display_options') }}</span>
-            </div>
-            <div class="display-options">
-                <div class="display-option">
-                    <label class="toggle-label">
-                        <input type="checkbox" id="show-weekends-toggle" class="weekend-visibility-toggle"
-                               {{ ($showWeekends ?? true) ? 'checked' : '' }}>
-                        <span class="toggle-slider"></span>
-                        <span class="toggle-text">{{ __('timeTable.show_weekends') }}</span>
-                    </label>
                 </div>
             </div>
         </div>
