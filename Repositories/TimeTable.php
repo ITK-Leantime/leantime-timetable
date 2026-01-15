@@ -3,6 +3,7 @@
 namespace Leantime\Plugins\TimeTable\Repositories;
 
 use Carbon\CarbonInterface;
+use Illuminate\Database\Query\Builder;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
@@ -38,31 +39,35 @@ class TimeTable
     }
 
     /**
+     * Executes a database query using the specified database connection.
+     *
+     * @return Builder Returns an instance of the query builder.
+     */
+    private function query(): Builder
+    {
+        return app('db')->connection()->query();
+    }
+
+    /**
      * @return array<array<string, string>>
      */
     public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
-        $sql = 'SELECT DISTINCT
-        timesheet.ticketId,
-        zp_tickets.headline
-        FROM zp_timesheets AS timesheet
-        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
-        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo
-        ORDER BY zp_tickets.headline ASC';
-        $stmn = $this->db->database->prepare($sql);
-
-        if ($userId !== '') {
-            $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        }
-
-        $stmn->bindValue(':dateFrom', $dateFrom, PDO::PARAM_STR);
-        $stmn->bindValue(':dateTo', $dateTo, PDO::PARAM_STR);
-
-        $stmn->execute();
-        $values = $stmn->fetchAll();
-        $stmn->closeCursor();
-
-        return $values;
+        return $this->query()
+            ->from('zp_timesheets as timesheet')
+            ->select([
+                'timesheet.ticketId',
+                'zp_tickets.headline',
+            ])
+            ->leftJoin('zp_tickets', 'timesheet.ticketId', '=', 'zp_tickets.id')
+            ->where('timesheet.userId', '=', $userId)
+            ->where('timesheet.workDate', '>=', $dateFrom)
+            ->where('timesheet.workDate', '<=', $dateTo)
+            ->orderBy('zp_tickets.headline', 'ASC')
+            ->distinct()
+            ->get()
+            ->map(fn($item) => (array)$item)
+            ->toArray();
     }
 
     /**
@@ -75,44 +80,46 @@ class TimeTable
      */
     public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId): array
     {
-        $sql = 'SELECT
-        timesheet.id,
-        CAST(timesheet.workDate AS DATE) as workDate,
-        timesheet.hours,
-        timesheet.description,
-        timesheet.ticketId,
-        (SELECT SUM(hours) FROM zp_timesheets WHERE ticketId = zp_tickets.id) as hoursSum,
-        zp_tickets.headline,
-        zp_tickets.id as ticketId,
-        zp_tickets.type as ticketType,
-        zp_tickets.planHours,
-        zp_tickets.hourRemaining,
-        zp_tickets.tags,
-        zp_tickets.dateToFinish,
-        zp_tickets.status,
-        zp_projects.id as projectId,
-        zp_projects.name
-        FROM zp_timesheets AS timesheet
-        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
-        LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)
-        GROUP BY timesheet.id, workDate, timesheet.description, timesheet.ticketId, zp_tickets.headline, zp_tickets.id, zp_tickets.type, zp_tickets.planHours, zp_tickets.hourRemaining, zp_projects.name';
-
-        $stmn = $this->db->database->prepare($sql);
-
-        if ($userId) {
-            $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        }
-
-        $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);
-        $stmn->bindValue(':dateFrom', $workDate->startOfDay(), PDO::PARAM_STR);
-        $stmn->bindValue(':dateTo', $workDate->endOfDay(), PDO::PARAM_STR);
-
-        $stmn->execute();
-        $values = $stmn->fetchAll();
-        $stmn->closeCursor();
-
-        return $values;
+        return $this->query()
+            ->from('zp_timesheets as timesheet')
+            ->select([
+                'timesheet.id',
+                app('db')->connection()->raw('CAST(timesheet.workDate AS DATE) as workDate'),
+                'timesheet.hours',
+                'timesheet.description',
+                'timesheet.ticketId',
+                app('db')->connection()->raw('(SELECT SUM(hours) FROM zp_timesheets WHERE ticketId = zp_tickets.id) as hoursSum'),
+                'zp_tickets.headline',
+                'zp_tickets.id as ticketId',
+                'zp_tickets.type as ticketType',
+                'zp_tickets.planHours',
+                'zp_tickets.hourRemaining',
+                'zp_tickets.tags',
+                'zp_tickets.dateToFinish',
+                'zp_tickets.status',
+                'zp_projects.id as projectId',
+                'zp_projects.name',
+            ])
+            ->leftJoin('zp_tickets', 'timesheet.ticketId', '=', 'zp_tickets.id')
+            ->leftJoin('zp_projects', 'zp_tickets.projectId', '=', 'zp_projects.id')
+            ->where('timesheet.userId', '=', $userId)
+            ->where('timesheet.ticketId', '=', $ticketId)
+            ->whereBetween('timesheet.workDate', [$workDate->startOfDay(), $workDate->endOfDay()])
+            ->groupBy([
+                'timesheet.id',
+                'workDate',
+                'timesheet.description',
+                'timesheet.ticketId',
+                'zp_tickets.headline',
+                'zp_tickets.id',
+                'zp_tickets.type',
+                'zp_tickets.planHours',
+                'zp_tickets.hourRemaining',
+                'zp_projects.name',
+            ])
+            ->get()
+            ->map(fn($item) => (array)$item)
+            ->toArray();
     }
 
     /**
@@ -351,14 +358,12 @@ class TimeTable
      */
     private function getAllProjectIds(): array
     {
-        $sql = 'SELECT id FROM zp_projects';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->execute();
-        // Fetch all project IDs as a 1-dimensional array
-        $projectIds = $stmn->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmn->closeCursor();
-
-        return $projectIds;
+        return $this->query()
+            ->from('zp_projects')
+            ->select('id')
+            ->get()
+            ->pluck('id')
+            ->toArray();
     }
 
     /**
@@ -368,19 +373,22 @@ class TimeTable
      */
     public function getAllUsers(): array
     {
-        $sql = 'SELECT * FROM zp_user WHERE status = "a" AND (source IS NULL OR source != "api")';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->execute();
-        $users = $stmn->fetchAll(PDO::FETCH_ASSOC);
-        $stmn->closeCursor();
-
-        return array_map(function ($user) {
-            return [
-                'id' => $user['id'],
-                'fullName' => $user['firstname'] . ' ' . $user['lastname'],
-                'role' => $user['role'],
-            ];
-        }, $users);
+        return $this->query()
+            ->from('zp_user')
+            ->where('status', '=', 'a')
+            ->where(function ($query) {
+                $query->whereNull('source')
+                    ->orWhere('source', '!=', 'api');
+            })
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'fullName' => $user->firstname . ' ' . $user->lastname,
+                    'role' => $user->role,
+                ];
+            })
+            ->toArray();
     }
 
     /**
@@ -396,38 +404,50 @@ class TimeTable
 
         $allStateLabels = $this->getAllStateLabels();
 
-        $sql = 'SELECT
-                t.id,
-                t.headline,
-                LOWER(t.type) as type,
-                t.tags,
-                t.projectId,
-                p.name as projectName,
-                t.editorId,
-                t.hourRemaining,
-                t.date
-            FROM zp_tickets t
-            LEFT JOIN zp_projects p ON t.projectId = p.id
-            LEFT JOIN zp_relationuserproject relation ON p.id = relation.projectId
-            LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
-            WHERE t.type NOT IN (:story, :milestone)
-              AND (
-                  relation.userId = :userId
-                  OR p.psettings = \'all\'
-                  OR (p.psettings = \'clients\' AND p.clientId = :clientId)
-              )
-              AND (p.active > \'-1\' OR p.active IS NULL)
-              AND (p.state <> \'-1\' OR p.state IS NULL)
-            GROUP BY t.id
-            ORDER BY (t.editorId = :userId) DESC, t.date DESC, id DESC';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
-        $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
-        $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        $stmn->bindValue(':clientId', $clientId, PDO::PARAM_STR);
-        $stmn->execute();
-        $tickets = $stmn->fetchAll(PDO::FETCH_ASSOC);
-        $stmn->closeCursor();
+        $tickets = $this->query()
+            ->from('zp_tickets as t')
+            ->select([
+                't.id',
+                't.headline',
+                app('db')->connection()->raw('LOWER(t.type) as type'),
+                't.tags',
+                't.projectId',
+                'p.name as projectName',
+                't.editorId',
+                't.hourRemaining',
+                't.date',
+                't.status',
+            ])
+            ->leftJoin('zp_projects as p', 't.projectId', '=', 'p.id')
+            ->leftJoin('zp_relationuserproject as relation', 'p.id', '=', 'relation.projectId')
+            ->leftJoin('zp_timesheets as ts', function ($join) use ($userId) {
+                $join->on('t.id', '=', 'ts.ticketId')
+                    ->where('ts.userId', '=', $userId);
+            })
+            ->whereNotIn('t.type', ['story', 'milestone'])
+            ->where(function ($query) use ($userId, $clientId) {
+                $query->where('relation.userId', '=', $userId)
+                    ->orWhere('p.psettings', '=', 'all')
+                    ->orWhere(function ($q) use ($clientId) {
+                        $q->where('p.psettings', '=', 'clients')
+                            ->where('p.clientId', '=', $clientId);
+                    });
+            })
+            ->where(function ($query) {
+                $query->where('p.active', '>', '-1')
+                    ->orWhereNull('p.active');
+            })
+            ->where(function ($query) {
+                $query->where('p.state', '<>', '-1')
+                    ->orWhereNull('p.state');
+            })
+            ->groupBy('t.id')
+            ->orderByRaw('(t.editorId = ?) DESC', [$userId])
+            ->orderBy('t.date', 'DESC')
+            ->orderBy('t.id', 'DESC')
+            ->get()
+            ->map(fn($item) => (array)$item)
+            ->toArray();
 
         // Pre-compute status label mappings
         $stateLabelMappings = array_map(function ($labels) {
@@ -456,32 +476,40 @@ class TimeTable
      */
     public function getAllProjects(int $userId, string $clientId): array
     {
-        $sql = 'SELECT DISTINCT project.id, project.name
-                FROM zp_projects AS project
-                LEFT JOIN zp_relationuserproject as relation ON project.id = relation.projectId
-                WHERE
-                    (   relation.userId = :userId
-                        OR project.psettings = \'all\'
-                        OR (project.psettings = \'clients\' AND project.clientId = :clientId)
-                    )
-                  AND (project.active > \'-1\' OR project.active IS NULL)
-                  AND (project.state <> \'-1\' OR project.state IS NULL)
-                ORDER BY project.name';
-
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        $stmn->bindValue(':clientId', $clientId, PDO::PARAM_STR);
-        $stmn->execute();
-        $projects = $stmn->fetchAll(PDO::FETCH_ASSOC);
-        $stmn->closeCursor();
-
-        return array_map(function ($project) {
-            return [
-                'id' => $project['id'],
-                'name' => $project['name'],
-                'type' => 'project',
-            ];
-        }, $projects);
+        return $this->query()
+            ->from('zp_projects as project')
+            ->select([
+                'project.id',
+                'project.name',
+            ])
+            ->leftJoin('zp_relationuserproject as relation', 'project.id', '=', 'relation.projectId')
+            ->where(function ($query) use ($userId, $clientId) {
+                $query->where('relation.userId', '=', $userId)
+                    ->orWhere('project.psettings', '=', 'all')
+                    ->orWhere(function ($q) use ($clientId) {
+                        $q->where('project.psettings', '=', 'clients')
+                            ->where('project.clientId', '=', $clientId);
+                    });
+            })
+            ->where(function ($query) {
+                $query->where('project.active', '>', '-1')
+                    ->orWhereNull('project.active');
+            })
+            ->where(function ($query) {
+                $query->where('project.state', '<>', '-1')
+                    ->orWhereNull('project.state');
+            })
+            ->distinct()
+            ->orderBy('project.name')
+            ->get()
+            ->map(function ($project) {
+                return [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'type' => 'project',
+                ];
+            })
+            ->toArray();
     }
 
     /**
@@ -490,22 +518,16 @@ class TimeTable
      * @param  \Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO DTO containing ticket details to modify
      * @return void
      */
-    public function modifyTicketDetails(\Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO)
+    public function modifyTicketDetails(\Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO): void
     {
-        $sql = 'UPDATE zp_tickets
-            SET status = :status,
-                dateToFinish = :dateToFinish,
-                tags = :tags
-            WHERE id = :ticketId';
-
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':status', $ticketContextMenuDTO->status, PDO::PARAM_INT);
-        $stmn->bindValue(':dateToFinish', $ticketContextMenuDTO->dateToFinish, PDO::PARAM_STR);
-        $stmn->bindValue(':tags', $ticketContextMenuDTO->tags, PDO::PARAM_STR);
-        $stmn->bindValue(':ticketId', $ticketContextMenuDTO->ticketId, PDO::PARAM_INT);
-
-        $stmn->execute();
-        $stmn->closeCursor();
+        $this->query()
+            ->from('zp_tickets')
+            ->where('id', '=', $ticketContextMenuDTO->ticketId)
+            ->update([
+                'status' => $ticketContextMenuDTO->status,
+                'dateToFinish' => $ticketContextMenuDTO->dateToFinish,
+                'tags' => $ticketContextMenuDTO->tags,
+            ]);
     }
 
     /**
@@ -515,13 +537,15 @@ class TimeTable
      */
     public function getAllUniqueTags(): array
     {
-        $sql = "SELECT DISTINCT tags FROM zp_tickets WHERE tags IS NOT NULL AND tags != ''";
-
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->execute();
-
-        $results = $stmn->fetchAll(PDO::FETCH_COLUMN);
-        $stmn->closeCursor();
+        $results = $this->query()
+            ->from('zp_tickets')
+            ->select('tags')
+            ->whereNotNull('tags')
+            ->where('tags', '!=', '')
+            ->distinct()
+            ->get()
+            ->pluck('tags')
+            ->toArray();
 
         // Split comma-separated tags and collect unique values
         $uniqueTags = [];
@@ -550,23 +574,16 @@ class TimeTable
      */
     public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
     {
-        $sql = <<<SQL
-            SELECT DISTINCT ticketId
-            FROM zp_tickethistory
-            WHERE userId = :userId
-              AND ticketId IS NOT NULL
-            ORDER BY dateModified DESC
-            LIMIT :limit
-        SQL;
-
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':userId', $userId, \PDO::PARAM_INT);
-        $stmn->bindValue(':limit', $limit, \PDO::PARAM_INT);
-        $stmn->execute();
-
-        $results = $stmn->fetchAll(\PDO::FETCH_COLUMN);
-        $stmn->closeCursor();
-
-        return $results ?: [];
+        return $this->query()
+            ->from('zp_tickethistory')
+            ->select('ticketId')
+            ->where('userId', '=', $userId)
+            ->whereNotNull('ticketId')
+            ->orderBy('dateModified', 'DESC')
+            ->limit($limit)
+            ->distinct()
+            ->get()
+            ->pluck('ticketId')
+            ->toArray();
     }
 }
