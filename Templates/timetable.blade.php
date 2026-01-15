@@ -367,7 +367,7 @@
                 <div class="display-option">
                     <label class="toggle-label">
                         <input type="checkbox" id="show-weekends-toggle" class="weekend-visibility-toggle"
-                               {{ ($showWeekends ?? true) ? 'checked' : '' }}>
+                            {{ $showWeekends ?? true ? 'checked' : '' }}>
                         <span class="toggle-slider"></span>
                         <span class="toggle-text">{{ __('timeTable.show_weekends') }}</span>
                     </label>
@@ -409,8 +409,6 @@
     </div>
 
     <!-- Store sort order and display settings in data attributes to avoid jQuery conflicts -->
-    <div id="timetable-sort-data"
-         data-sort-order="{{ $sortOrder ?? '' }}"
-         data-show-weekends="{{ $showWeekends ? 'true' : 'false' }}"
-         style="display: none;"></div>
+    <div id="timetable-sort-data" data-sort-order="{{ $sortOrder ?? '' }}"
+        data-show-weekends="{{ $showWeekends ? 'true' : 'false' }}" style="display: none;"></div>
 @endsection
