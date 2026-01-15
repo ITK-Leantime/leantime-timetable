@@ -66,24 +66,15 @@ class TimeTable
     }
 
     /**
-     * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date,
-     * optionally filtering by a search term.
+     * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date.
      *
      * @param  string          $ticketId   The ticket ID to filter the timesheet data.
      * @param  CarbonInterface $workDate   The specific work date to filter the timesheet data.
      * @param  int             $userId     The id of the user to grab data for.
-     * @param  string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
-    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
+    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId): array
     {
-
-        $searchTermQuery = isset($searchTerm)
-            ? " AND
-        (zp_tickets.id LIKE CONCAT( '%', :searchTerm, '%') OR
-        zp_tickets.headline LIKE CONCAT( '%', :searchTerm, '%')) "
-            : '';
-
         $sql = 'SELECT
         timesheet.id,
         CAST(timesheet.workDate AS DATE) as workDate,
@@ -104,16 +95,13 @@ class TimeTable
         FROM zp_timesheets AS timesheet
         LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
         LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery . '
+        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)
         GROUP BY timesheet.id, workDate, timesheet.description, timesheet.ticketId, zp_tickets.headline, zp_tickets.id, zp_tickets.type, zp_tickets.planHours, zp_tickets.hourRemaining, zp_projects.name';
 
         $stmn = $this->db->database->prepare($sql);
 
         if ($userId) {
             $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        }
-        if ($searchTerm !== null) {
-            $stmn->bindValue(':searchTerm', $searchTerm, PDO::PARAM_STR);
         }
 
         $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);

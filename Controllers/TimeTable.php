@@ -17,6 +17,7 @@ use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
+use Leantime\Plugins\TimeTable\Helpers\TimeTableHelper;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -37,12 +38,14 @@ class TimeTable extends Controller
 
     private TicketRepository $ticketRepository;
 
+    private TimeTableHelper $timeTableHelper;
+
     /**
      * constructor
      *
      * @return void
      */
-    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository): void
+    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository, TimeTableHelper $timeTableHelper): void
     {
         $this->timeTableService = $timeTableService;
         $this->language = $language;
@@ -50,6 +53,7 @@ class TimeTable extends Controller
         $this->template = $template;
         $this->timesheetRepository = $timesheetRepository;
         $this->ticketRepository = $ticketRepository;
+        $this->timeTableHelper = $timeTableHelper;
     }
 
     /**
@@ -319,51 +323,30 @@ class TimeTable extends Controller
      */
     public function get(): Response
     {
-        $searchTermForFilter = null;
         // Explicitly define first and last day of week to avoid timezone issues across environments.
         $fromDate = CarbonImmutable::now()->startOfWeek(CarbonImmutable::MONDAY)->startOfDay();
         $toDate = CarbonImmutable::now()->endOfWeek(CarbonImmutable::SUNDAY)->startOfDay();
+
+        // Get all users
         $allUsers = $this->timeTableService->getAllUsers();
+
+        // Determine if the user can manage other users' timesheets.'
         $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
+
+        // Get userId, either from the URL parameter or from session (if cross-user management is not allowed)
         $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
+
+        // Get eventual error message
         $errorMessage = isset($_GET['errorMessage']) ? urldecode($_GET['errorMessage']) : null;
+
+        // Try to parse dates from URL parameters
         try {
             if (isset($_GET['fromDate']) && $_GET['fromDate'] !== '') {
-                $fromDateParam = trim($_GET['fromDate']);
-                // Check if it's a relative date (starts with + or - or contains 'day', 'week', 'month', etc.)
-                if (
-                    $fromDateParam[0] === '+' ||
-                    $fromDateParam[0] === '-' ||
-                    preg_match('/\b(day|week|month|year)s?\b/i', $fromDateParam)
-                ) {
-                    // Ensure + is present for positive relative dates
-                    if ($fromDateParam[0] !== '+' && $fromDateParam[0] !== '-') {
-                        $fromDateParam = '+' . $fromDateParam;
-                    }
-                    $fromDate = CarbonImmutable::now()->startOfDay()->modify($fromDateParam);
-                } else {
-                    $fromDate = CarbonImmutable::createFromFormat('Y-m-d', $fromDateParam);
-                    $fromDate = $fromDate->startOfDay();
-                }
+                $fromDate = $this->timeTableHelper->parseDate($_GET['fromDate']);
             }
 
             if (isset($_GET['toDate']) && $_GET['toDate'] !== '') {
-                $toDateParam = trim($_GET['toDate']);
-                // Check if it's a relative date (starts with + or - or contains 'day', 'week', 'month', etc.)
-                if (
-                    $toDateParam[0] === '+' ||
-                    $toDateParam[0] === '-' ||
-                    preg_match('/\b(day|week|month|year)s?\b/i', $toDateParam)
-                ) {
-                    // Ensure + is present for positive relative dates
-                    if ($toDateParam[0] !== '+' && $toDateParam[0] !== '-') {
-                        $toDateParam = '+' . $toDateParam;
-                    }
-                    $toDate = CarbonImmutable::now()->startOfDay()->modify($toDateParam);
-                } else {
-                    $toDate = CarbonImmutable::createFromFormat('Y-m-d', $toDateParam);
-                    $toDate = $toDate->startOfDay();
-                }
+                $toDate = $this->timeTableHelper->parseDate($_GET['toDate']);
             }
         } catch (\Exception $e) {
             Log::error($e);
@@ -371,73 +354,31 @@ class TimeTable extends Controller
             $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         }
 
+        // Convert dates to UTC timezone for the database
         $weekStartDateDb = $fromDate->setToDbTimezone();
-
         $weekEndDateDb = $toDate->setToDbTimezone();
-
-        $this->template->assign('currentSearchTerm', $searchTermForFilter);
 
         $days = explode(',', mb_strtolower($this->language->__('language.dayNames')));
         $days[] = array_shift($days);
 
-        $weekDates = [];
-        $dateIterator = $fromDate->setToUserTimezone()->copy();
+        // Generate week dates using helper
+        $weekDates = $this->timeTableHelper->generateWeekDates($fromDate, $toDate);
 
-        while ($dateIterator <= $toDate) {
-            $dayOfWeek = strtolower($dateIterator->locale(session('usersettings.language'))->dayName);
-
-            // If the day is a part of the week
-            if (in_array($dayOfWeek, $days)) {
-                $weekDates[$dateIterator->format('d-m-Y')] = $dateIterator->copy();
-            }
-
-            // Move on to the next day
-            $dateIterator = $dateIterator->addDay();
-        }
         $relevantTicketIds = $this->timeTableService->getUniqueTicketIds($weekStartDateDb, $weekEndDateDb, $userId);
 
-        $timesheetsByTicket = [];
-        foreach ($relevantTicketIds as $ticket) {
-            if (! $ticket['ticketId']) {
-                continue;
-            }
-            $timesheetsSortedByWeekdate = [];
-            foreach ($weekDates as $weekDate) {
-                $timesheetsByTicketAndDate = $this->timeTableService->getTimesheetByTicketIdAndWorkDate($ticket['ticketId'], $weekDate->setToDbTimezone(), $userId, $searchTermForFilter);
-                $timesheetsSortedByWeekdate[$weekDate->format('Y-m-d')] = $timesheetsByTicketAndDate;
-                if (count($timesheetsByTicketAndDate) > 0) {
-                    $timesheetsSortedByWeekdate['ticketTitle'] = $timesheetsByTicketAndDate[0]['headline'];
-                    $timesheetsSortedByWeekdate['ticketLink'] = '?showTicketModal=' . $timesheetsByTicketAndDate[0]['ticketId'] . '&fromDate=' . $fromDate->format('Y-m-d') . '&toDate=' . $toDate->format('Y-m-d') . '#/tickets/showTicket/' . $timesheetsByTicketAndDate[0]['ticketId'];
-                    $timesheetsSortedByWeekdate['projectId'] = $timesheetsByTicketAndDate[0]['projectId'];
-                    $timesheetsSortedByWeekdate['projectName'] = $timesheetsByTicketAndDate[0]['name'];
-                    $timesheetsSortedByWeekdate['ticketType'] = $timesheetsByTicketAndDate[0]['ticketType'];
-                    $timesheetsSortedByWeekdate['ticketId'] = $timesheetsByTicketAndDate[0]['ticketId'];
-                    $timesheetsSortedByWeekdate['dateToFinish'] = $timesheetsByTicketAndDate[0]['dateToFinish'];
-                    $timesheetsSortedByWeekdate['dateToFinishIsSet'] = $timesheetsByTicketAndDate[0]['dateToFinish'] !== '0000-00-00 00:00:00';
-                    $timesheetsSortedByWeekdate['tags'] = $timesheetsByTicketAndDate[0]['tags'];
-                    $timesheetsSortedByWeekdate['tagsIsSet'] = $timesheetsByTicketAndDate[0]['tags'] !== '';
-                    $timesheetsSortedByWeekdate['status'] = $timesheetsByTicketAndDate[0]['status'];
-                    $timesheetsSortedByWeekdate['hourRemaining'] = (float) $timesheetsByTicketAndDate[0]['planHours'] - (float) $timesheetsByTicketAndDate[0]['hoursSum'];
-                }
-            }
-
-            $timesheetsByTicket[$ticket['ticketId']] = $timesheetsSortedByWeekdate;
-        }
-
-        // Get user's favorite tickets and mark them
-        $favoriteTicketIds = [];
-        if (class_exists('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks')) {
-            $favoriteService = app()->make('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks');
-            $favorites = $favoriteService->getUserFavouriteIssues();
-            $favoriteTicketIds = array_column($favorites, 'id');
-        }
+        // Aggregate timesheets by ticket using helper
+        $timesheetsByTicket = $this->timeTableHelper->aggregateTimesheetsByTicket(
+            $relevantTicketIds,
+            $weekDates,
+            $userId,
+            $fromDate,
+            $toDate
+        );
 
         // Add favorite status to timesheets
-        foreach ($timesheetsByTicket as $ticketId => &$timesheet) {
-            $timesheet['isFavorite'] = in_array($ticketId, $favoriteTicketIds);
-        }
+        $timesheetsByTicket = $this->timeTableHelper->addFavoriteStatus($timesheetsByTicket);
 
-        // Get user's preferences and sort the timesheets accordingly
+        // Get user's preferences
         $userRepository = app()->make(\Leantime\Domain\Users\Repositories\Users::class);
         $sortOrder = $userRepository->getUserSettings($userId, 'timetable.sortOrder') ?? '';
 
@@ -446,35 +387,8 @@ class TimeTable extends Controller
         // If setting doesn't exist (null), default to true. Otherwise convert to boolean
         $showWeekends = $showWeekendsRaw === null ? true : (bool) $showWeekendsRaw;
 
-        if ($sortOrder && !empty($timesheetsByTicket)) {
-            // Parse sort order to extract field and direction (e.g., "ticket-name-asc")
-            $parts = explode('-', $sortOrder);
-            $direction = 'asc'; // default
-            $sortField = $sortOrder;
-
-            // Check if last part is a direction indicator
-            if (count($parts) > 1 && in_array(end($parts), ['asc', 'desc'])) {
-                $direction = array_pop($parts);
-                $sortField = implode('-', $parts);
-            }
-
-            uasort($timesheetsByTicket, function ($a, $b) use ($sortField, $direction) {
-                if ($sortField === 'ticket-name') {
-                    $aValue = strtolower($a['ticketTitle'] ?? '');
-                    $bValue = strtolower($b['ticketTitle'] ?? '');
-                } elseif ($sortField === 'project-name') {
-                    $aValue = strtolower($a['projectName'] ?? '');
-                    $bValue = strtolower($b['projectName'] ?? '');
-                } else {
-                    return 0;
-                }
-
-                $comparison = strcmp($aValue, $bValue);
-
-                // Reverse comparison for descending order
-                return $direction === 'desc' ? -$comparison : $comparison;
-            });
-        }
+        // Sort timesheets using helper
+        $timesheetsByTicket = $this->timeTableHelper->sortTimesheets($timesheetsByTicket, $sortOrder);
 
         // All tickets assigned to the template
         $this->template->assign('errorMessage', $errorMessage);
