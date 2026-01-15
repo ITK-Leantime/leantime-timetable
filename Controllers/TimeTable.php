@@ -16,7 +16,7 @@ use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
-use Leantime\Domain\Users\Services\Users;
+use Leantime\Domain\Users\Repositories\Users;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableHelper;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
@@ -41,12 +41,14 @@ class TimeTable extends Controller
 
     private TimeTableHelper $timeTableHelper;
 
+    private TimeTableActionHandler $actionHandler;
+
     /**
      * constructor
      *
      * @return void
      */
-    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository, TimeTableHelper $timeTableHelper): void
+    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository, TimeTableHelper $timeTableHelper, TimeTableActionHandler $actionHandler): void
     {
         $this->timeTableService = $timeTableService;
         $this->language = $language;
@@ -55,6 +57,7 @@ class TimeTable extends Controller
         $this->timesheetRepository = $timesheetRepository;
         $this->ticketRepository = $ticketRepository;
         $this->timeTableHelper = $timeTableHelper;
+        $this->actionHandler = $actionHandler;
     }
 
     /**
@@ -296,20 +299,28 @@ class TimeTable extends Controller
             return $this->template->displayJson(['Error' => 'Not Authorized'], 403);
         }
         $redirectUrl = BASE_URL . '/TimeTable/TimeTable';
-        $actionHandler = new TimeTableActionHandler($this->timeTableService, $this->timesheetRepository);
 
-        if (isset($_POST['action'])) {
-            $redirectUrl = match ($_POST['action']) {
-                'adjustPeriod' => $actionHandler->adjustPeriod($_POST, $redirectUrl),
-                'saveTicket' => $actionHandler->saveTicket($_POST, $redirectUrl),
-                'deleteTicket' => tap(function () use ($actionHandler, $redirectUrl) {
-                    $actionHandler->deleteTicket($_POST, $redirectUrl);
-                }, fn () => $redirectUrl)(),
-                'copyEntryForward' => $actionHandler->copyEntryForward($_POST, $redirectUrl),
-                'manageAs' => $actionHandler->manageAs($_POST, $redirectUrl),
-                'ticketContextMenu' => $actionHandler->ticketContextMenu($_POST, $redirectUrl),
-                default => $redirectUrl,
-            };
+        $action = $_POST['action'] ?? null;
+
+        switch ($action) {
+            case 'adjustPeriod':
+                $redirectUrl = $this->actionHandler->adjustPeriod($_POST, $redirectUrl);
+                break;
+            case 'saveTicket':
+                $redirectUrl = $this->actionHandler->saveTicket($_POST, $redirectUrl);
+                break;
+            case 'deleteTicket':
+                $this->actionHandler->deleteTicket($_POST, $redirectUrl);
+                break;
+            case 'copyEntryForward':
+                $redirectUrl = $this->actionHandler->copyEntryForward($_POST, $redirectUrl);
+                break;
+            case 'manageAs':
+                $redirectUrl = $this->actionHandler->manageAs($_POST, $redirectUrl);
+                break;
+            case 'ticketContextMenu':
+                $redirectUrl = $this->actionHandler->ticketContextMenu($_POST, $redirectUrl);
+                break;
         }
 
         return Frontcontroller::redirect($redirectUrl);
@@ -385,6 +396,7 @@ class TimeTable extends Controller
 
         // Get showWeekends setting and convert to boolean properly
         $showWeekendsRaw = $userRepository->getUserSettings($userId, 'timetable.showWeekends');
+
         // If the setting doesn't exist (null), default to true, otherwise convert to boolean
         $showWeekends = $showWeekendsRaw === null || $showWeekendsRaw;
 
@@ -393,9 +405,11 @@ class TimeTable extends Controller
 
         // All tickets assigned to the template
         $this->template->assign('errorMessage', $errorMessage);
+
         // Get all unique tags for autocomplete
         $allTags = $this->timeTableService->getAllUniqueTags();
-        // Get all state labels for context menu
+
+        // Get all state labels for the context menu
         $allStateLabels = $this->timeTableService->getAllStateLabels();
 
         $this->template->assign('timesheetsByTicket', $timesheetsByTicket);
