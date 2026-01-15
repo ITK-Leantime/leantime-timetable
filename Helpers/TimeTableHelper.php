@@ -23,10 +23,10 @@ class TimeTableHelper
     /**
      * Parses a date string that can be either relative (e.g., "+1 week", "-2 days") or absolute (e.g., "2025-01-15")
      *
-     * @param string $dateParam The date parameter to parse
-     * @param bool $isStartOfDay Whether to set the time to start of day
+     * @param string $dateParam    The date parameter to parse
+     * @param bool   $isStartOfDay Whether to set the time to start of day
      * @return CarbonImmutable The parsed date
-     * @throws \Exception If the date format is invalid
+     * @throws \Exception If the date format is invalid.
      */
     public function parseDate(string $dateParam, bool $isStartOfDay = true): CarbonImmutable
     {
@@ -58,7 +58,7 @@ class TimeTableHelper
      * Generates an array of dates between fromDate and toDate, filtered by the configured week days
      *
      * @param CarbonImmutable $fromDate Start date
-     * @param CarbonImmutable $toDate End date
+     * @param CarbonImmutable $toDate   End date
      * @return array<string, CarbonImmutable> Array of dates indexed by 'd-m-Y' format
      */
     public function generateWeekDates(CarbonImmutable $fromDate, CarbonImmutable $toDate): array
@@ -88,10 +88,10 @@ class TimeTableHelper
      * Aggregates timesheets by ticket for the given date range
      *
      * @param array<int, array<string, mixed>> $relevantTicketIds Array of ticket IDs to process
-     * @param array<string, CarbonImmutable> $weekDates Array of dates to process
-     * @param int $userId User ID to fetch timesheets for
-     * @param CarbonImmutable $fromDate Start date for generating ticket links
-     * @param CarbonImmutable $toDate End date for generating ticket links
+     * @param array<string, CarbonImmutable>   $weekDates         Array of dates to process
+     * @param int                              $userId            User ID to fetch timesheets for
+     * @param CarbonImmutable                  $fromDate          Start date for generating ticket links
+     * @param CarbonImmutable                  $toDate            End date for generating ticket links
      * @return array<int, array<string, mixed>> Timesheets organized by ticket ID
      */
     public function aggregateTimesheetsByTicket(
@@ -172,7 +172,7 @@ class TimeTableHelper
      * Sorts timesheets by the given sort order
      *
      * @param array<int, array<string, mixed>> $timesheetsByTicket Timesheets to sort
-     * @param string $sortOrder Sort order string (e.g., "ticket-name-asc", "project-name-desc")
+     * @param string                           $sortOrder          Sort order string (e.g., "ticket-name-asc", "project-name-desc")
      * @return array<int, array<string, mixed>> Sorted timesheets
      */
     public function sortTimesheets(array $timesheetsByTicket, string $sortOrder): array

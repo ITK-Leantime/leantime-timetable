@@ -73,9 +73,9 @@ class TimeTable
     /**
      * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date.
      *
-     * @param  string          $ticketId   The ticket ID to filter the timesheet data.
-     * @param  CarbonInterface $workDate   The specific work date to filter the timesheet data.
-     * @param  int             $userId     The id of the user to grab data for.
+     * @param  string          $ticketId The ticket ID to filter the timesheet data.
+     * @param  CarbonInterface $workDate The specific work date to filter the timesheet data.
+     * @param  int             $userId   The id of the user to grab data for.
      * @return array<string, mixed> Returns an array of matching timesheet data.
      */
     public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId): array

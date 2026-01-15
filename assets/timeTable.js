@@ -22,84 +22,41 @@ jQuery(document).ready(function ($) {
       this.entryCopyButton = $("div.entry-copy-button");
 
       // Modal selectors
-      this.timeEditModal = $("#edit-time-log-modal");
-      this.entryCopyModal = $("#entry-copy-modal");
-      this.ticketContextMenuModal = $("#ticket-context-menu-modal");
-      this.ticketContextDateToFinish =
-        this.ticketContextMenuModal.find(".date-to-finish");
-      this.ticketContextStatus =
-        this.ticketContextMenuModal.find(".ticket-status");
-      this.ticketContextForm = this.ticketContextMenuModal.find(
-        ".ticket-context-menu-form",
-      );
-      this.ticketContextButtonCancel = this.ticketContextMenuModal.find(
-        ".ticket-context-menu-cancel",
-      );
-      this.ticketContextButtonApply = this.ticketContextMenuModal.find(
-        ".ticket-context-menu-apply",
-      );
-      this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
-      this.entryCopyButtonClose = this.entryCopyModal.find(
-        ".entry-copy-modal-cancel",
-      );
-      this.entryCopyButtonApply = this.entryCopyModal.find(
-        ".entry-copy-modal-apply",
-      );
-      this.entryCopyCheckboxOverwrite = this.entryCopyModal.find(
-        "#entry-copy-overwrite",
-      );
-      this.entryCopyCheckboxWeekend = this.entryCopyModal.find(
-        "#entry-copy-weekend",
-      );
-      this.timeEditForm = this.timeEditModal.find(".edit-time-log-form");
-      this.modalInputTimesheetId = this.timeEditModal.find(
-        'input[name="timesheet-id"]',
-      );
-      this.modalInputTicketId = this.timeEditModal.find(
-        'input[name="timesheet-ticket-id"]',
-      );
-      this.modalInputTicketName = this.timeEditModal.find(
-        "input.timetable-ticket-input",
-      );
-      this.modalInputHours = this.timeEditModal.find(
-        'input[name="timesheet-hours"]',
-      );
-      this.modalInputHoursLeft = this.timeEditModal.find(
-        'input[name="timesheet-hours-left"]',
-      );
-      this.modalTextareaDescription = this.timeEditModal.find(
-        'textarea[name="timesheet-description"]',
-      );
-      this.modalInputDate = this.timeEditModal.find(
-        'input[name="timesheet-date"]',
-      );
-      this.modalInputDateMove = this.timeEditModal.find(
-        'input[name="timesheet-date-move"]',
-      );
-      this.modalInputDateMoveNotifier = this.timeEditModal.find(
-        ".timesheet-date-move-notifier",
-      );
-      this.modalTicketIdInput = this.timeEditModal.find(
-        'input[name="timesheet-ticket-id"]',
-      );
-      this.modalDeleteButton = this.timeEditModal.find(
-        ".timetable-modal-delete",
-      );
-      this.modalCancelButton = this.timeEditModal.find(
-        ".timetable-modal-cancel",
-      );
-      this.modalSubmitButton = this.timeEditModal.find(
-        ".timetable-modal-submit",
-      );
-      this.modalInputDate = this.timeEditModal.find(
-        'input[name="timesheet-date"]',
-      );
-      this.modalTicketInput = this.timeEditModal.find(
-        ".timetable-ticket-input",
-      );
-      this.contextMenuTicketId = this.ticketContextMenuModal.find(
-        ".ticket-context-menu-ticketId",
-      );
+        this.timeEditModal = $("#edit-time-log-modal");
+        this.entryCopyModal = $("#entry-copy-modal");
+        this.ticketContextMenuModal = $("#ticket-context-menu-modal");
+
+        // Ticket context menu elements
+        this.ticketContextDateToFinish = this.ticketContextMenuModal.find(".date-to-finish");
+        this.ticketContextStatus = this.ticketContextMenuModal.find(".ticket-status");
+        this.ticketContextForm = this.ticketContextMenuModal.find(".ticket-context-menu-form");
+        this.ticketContextButtonCancel = this.ticketContextMenuModal.find(".ticket-context-menu-cancel");
+        this.ticketContextButtonApply = this.ticketContextMenuModal.find(".ticket-context-menu-apply");
+        this.contextMenuTicketId = this.ticketContextMenuModal.find(".ticket-context-menu-ticketId");
+
+        // Entry copy modal elements
+        this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
+        this.entryCopyButtonClose = this.entryCopyModal.find(".entry-copy-modal-cancel");
+        this.entryCopyButtonApply = this.entryCopyModal.find(".entry-copy-modal-apply");
+        this.entryCopyCheckboxOverwrite = this.entryCopyModal.find("#entry-copy-overwrite");
+        this.entryCopyCheckboxWeekend = this.entryCopyModal.find("#entry-copy-weekend");
+
+        // Time edit modal elements
+        this.timeEditForm = this.timeEditModal.find(".edit-time-log-form");
+        this.modalInputTimesheetId = this.timeEditModal.find('input[name="timesheet-id"]');
+        this.modalInputTicketId = this.timeEditModal.find('input[name="timesheet-ticket-id"]');
+        this.modalInputTicketName = this.timeEditModal.find("input.timetable-ticket-input");
+        this.modalInputHours = this.timeEditModal.find('input[name="timesheet-hours"]');
+        this.modalInputHoursLeft = this.timeEditModal.find('input[name="timesheet-hours-left"]');
+        this.modalTextareaDescription = this.timeEditModal.find('textarea[name="timesheet-description"]');
+        this.modalInputDate = this.timeEditModal.find('input[name="timesheet-date"]');
+        this.modalInputDateMove = this.timeEditModal.find('input[name="timesheet-date-move"]');
+        this.modalInputDateMoveNotifier = this.timeEditModal.find(".timesheet-date-move-notifier");
+        this.modalTicketIdInput = this.timeEditModal.find('input[name="timesheet-ticket-id"]');
+        this.modalDeleteButton = this.timeEditModal.find(".timetable-modal-delete");
+        this.modalCancelButton = this.timeEditModal.find(".timetable-modal-cancel");
+      this.modalSubmitButton = this.timeEditModal.find(".timetable-modal-submit");
+      this.modalTicketInput = this.timeEditModal.find(".timetable-ticket-input");
 
       // Sort menu elements
       this.sortMenuModal = $("#sort-menu-modal");
@@ -149,6 +106,7 @@ jQuery(document).ready(function ($) {
       // Apply initial weekend visibility
       this.applyWeekendVisibility();
 
+      // Init date range flatpickr select.
       flatpickr("#dateRange", {
         mode: "range",
         dateFormat: "d-m-Y",
@@ -163,6 +121,7 @@ jQuery(document).ready(function ($) {
         },
       });
 
+      // Init context menu datepicker.
       this.ticketContextDatePicker = flatpickr(this.ticketContextDateToFinish, {
         dateFormat: "d-m-Y",
         weekNumbers: true,
@@ -171,6 +130,7 @@ jQuery(document).ready(function ($) {
         readonly: false,
       });
 
+      // Init context menu status select.
       this.ticketContextStatus = new TomSelect(this.ticketContextStatus, {
         closeAfterSelect: true,
         controlInput: null,
@@ -181,6 +141,7 @@ jQuery(document).ready(function ($) {
 
       this.ticketContextTags = this.ticketContextMenuModal.find(".ticket-tags");
 
+      // Init context menu tags select.
       this.ticketContextTags = new TomSelect(this.ticketContextTags, {
         plugins: ["remove_button"],
         maxItems: 3,
@@ -213,6 +174,7 @@ jQuery(document).ready(function ($) {
         },
       });
 
+      // Init date changer flatpickr select.
       this.timelogDateChanger = flatpickr(this.modalInputDateMove, {
         dateFormat: "d-m-Y",
         weekNumbers: true,
@@ -243,23 +205,11 @@ jQuery(document).ready(function ($) {
           }
         },
       });
-      $(".timesheet-date-wrapper")
-        .off("click")
-        .on("click", (event) => {
-          const $wrapper = $(event.currentTarget);
-
-          if ($wrapper.hasClass("open")) {
-            this.timelogDateChanger.close();
-            $wrapper.removeClass("open");
-          } else {
-            this.timelogDateChanger.open();
-            $wrapper.addClass("open");
-          }
-        });
 
       // Register event handlers
       this.registerEventHandlers();
 
+      // Fetch ticket data
       TimeTableApiHandler.fetchTicketData().then((data) => {
         this.removeLoadingClasses();
         let {
@@ -797,8 +747,32 @@ jQuery(document).ready(function ($) {
         e.stopPropagation();
         this.closeSortMenuModal();
       });
+
+        // Date changer wrapper
+        $(".timesheet-date-wrapper")
+            .off("click")
+            .on("click", (event) => {
+                const $wrapper = $(event.currentTarget);
+
+                if ($wrapper.hasClass("open")) {
+                    this.timelogDateChanger.close();
+                    $wrapper.removeClass("open");
+                } else {
+                    this.timelogDateChanger.open();
+                    $wrapper.addClass("open");
+                }
+            });
     }
 
+    /**
+     * Highlights a set of target elements based on the given parameters.
+     * Used when previewing dates to be affected by timelog copying.
+     *
+     * @param {HTMLElement} element The element used as the reference for highlighting.
+     * @param {boolean} [overwrite=false] Indicates whether existing highlights should be overwritten.
+     * @param {boolean} [includeWeekends=false] Determines whether the operation should include weekends.
+     * @return {number} The number of target elements that were highlighted.
+     */
     handleHighlighting(element, overwrite = false, includeWeekends = false) {
       this.clearHighlighting();
       const parentElement = $(element).parent();
@@ -821,6 +795,14 @@ jQuery(document).ready(function ($) {
       return targetCount;
     }
 
+    /**
+     * Retrieves a collection of elements that can be used as target destinations for copying an entry.
+     *
+     * @param {Element} element The HTML element whose parent and siblings are to be analyzed.
+     * @param {boolean} overwrite Determines whether targets with existing values can be included.
+     * @param {boolean} includeWeekends Specifies whether weekend elements should be included as targets.
+     * @return {jQuery} A jQuery object containing the filtered target elements.
+     */
     getEntryCopyTargets(element, overwrite, includeWeekends) {
       const parentElement = $(element).parent();
       const elements = parentElement.nextAll(".timetable-edit-entry");
@@ -834,6 +816,16 @@ jQuery(document).ready(function ($) {
       });
     }
 
+    /**
+     * Updates the text content of the entry copy form with specified date and count information.
+     *
+     * @param {Object} params - An object containing the parameters for updating the text.
+     * @param {string} params.formattedCopyFromDate - The formatted start date of the copy range.
+     * @param {string} params.formattedCopyToDate - The formatted end date of the copy range.
+     * @param {number} params.targetCount - The number of days to be changed.
+     *
+     * @return {void} No return value.
+     */
     setEntryCopyText({
       formattedCopyFromDate,
       formattedCopyToDate,
@@ -855,26 +847,9 @@ jQuery(document).ready(function ($) {
     }
 
     /**
-     * Opens the Edit Time Log modal for editing an entry.
-     *
-     * @param {HTMLElement} target - The HTML element representing the ticket being selected.
-     * @returns {void}
-     */
-    selectTicket({
-      innerText: taskName,
-      dataset: { value: taskId, hoursleft: hoursLeft },
-    }) {
-      // Set values from selected ticket
-      this.modalTicketInput.val(taskName);
-      this.modalTicketIdInput.val(taskId);
-      this.modalInputHoursLeft
-        .val(parseInt(hoursLeft) < 0 ? 0 : hoursLeft)
-        .attr("data-value", hoursLeft);
-    }
-
-    /**
      * Updates a time entry.
      *
+     * @param headline
      * @param {number} id - Time entry ID.
      * @param {string} ticketId - Ticket ID.
      * @param {number} hours - Hours spent.
