@@ -16,6 +16,7 @@ use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
+use Leantime\Domain\Users\Services\Users;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableHelper;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
@@ -379,13 +380,13 @@ class TimeTable extends Controller
         $timesheetsByTicket = $this->timeTableHelper->addFavoriteStatus($timesheetsByTicket);
 
         // Get user's preferences
-        $userRepository = app()->make(\Leantime\Domain\Users\Repositories\Users::class);
+        $userRepository = app()->make(Users::class);
         $sortOrder = $userRepository->getUserSettings($userId, 'timetable.sortOrder') ?? '';
 
         // Get showWeekends setting and convert to boolean properly
         $showWeekendsRaw = $userRepository->getUserSettings($userId, 'timetable.showWeekends');
-        // If setting doesn't exist (null), default to true. Otherwise convert to boolean
-        $showWeekends = $showWeekendsRaw === null ? true : (bool) $showWeekendsRaw;
+        // If the setting doesn't exist (null), default to true, otherwise convert to boolean
+        $showWeekends = $showWeekendsRaw === null || $showWeekendsRaw;
 
         // Sort timesheets using helper
         $timesheetsByTicket = $this->timeTableHelper->sortTimesheets($timesheetsByTicket, $sortOrder);
