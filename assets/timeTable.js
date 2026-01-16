@@ -516,12 +516,10 @@ jQuery(document).ready(function ($) {
         const parent = $(eventTarget).parent();
         const ticketId = parent.data("ticketid");
         const copyFromDate = parent.data("date");
-        const formattedCopyFromDate = new Date(copyFromDate)
-          .toLocaleDateString("da-DK", {
-            day: "numeric",
-            month: "numeric",
-          })
-          .replace(".", "/");
+          const formattedCopyFromDate = flatpickr.formatDate(
+              new Date(copyFromDate),
+          "d/m"
+        );
 
         const hours = parent.data("hours");
         const description = parent.data("description");
@@ -548,12 +546,10 @@ jQuery(document).ready(function ($) {
           }
         }
 
-        const formattedCopyToDate = new Date(actualCopyToDate)
-          .toLocaleDateString("da-DK", {
-            day: "numeric",
-            month: "numeric",
-          })
-          .replace(".", "/");
+          const formattedCopyToDate = flatpickr.formatDate(
+              new Date(actualCopyToDate),
+          "d/m"
+        );
 
         this.entryCopyForm
           .find('input[name="entryCopyTicketId"]')
@@ -604,12 +600,10 @@ jQuery(document).ready(function ($) {
             }
           }
 
-          const updatedFormattedCopyToDate = new Date(updatedCopyToDate)
-            .toLocaleDateString("da-DK", {
-              day: "numeric",
-              month: "numeric",
-            })
-            .replace(".", "/");
+            const updatedFormattedCopyToDate = flatpickr.formatDate(
+                new Date(updatedCopyToDate),
+                "d/m"
+            );
 
           this.setEntryCopyText({
             formattedCopyFromDate,
@@ -649,12 +643,10 @@ jQuery(document).ready(function ($) {
             }
           }
 
-          const updatedFormattedCopyToDate = new Date(updatedCopyToDate)
-            .toLocaleDateString("da-DK", {
-              day: "numeric",
-              month: "numeric",
-            })
-            .replace(".", "/");
+            const updatedFormattedCopyToDate = flatpickr.formatDate(
+                new Date(updatedCopyToDate),
+              "d/m"
+          );
 
           this.setEntryCopyText({
             formattedCopyFromDate,
