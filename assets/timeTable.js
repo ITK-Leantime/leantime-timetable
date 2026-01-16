@@ -516,9 +516,9 @@ jQuery(document).ready(function ($) {
         const parent = $(eventTarget).parent();
         const ticketId = parent.data("ticketid");
         const copyFromDate = parent.data("date");
-          const formattedCopyFromDate = flatpickr.formatDate(
-              new Date(copyFromDate),
-          "d/m"
+        const formattedCopyFromDate = flatpickr.formatDate(
+          new Date(copyFromDate),
+          "d/m",
         );
 
         const hours = parent.data("hours");
@@ -546,9 +546,9 @@ jQuery(document).ready(function ($) {
           }
         }
 
-          const formattedCopyToDate = flatpickr.formatDate(
-              new Date(actualCopyToDate),
-          "d/m"
+        const formattedCopyToDate = flatpickr.formatDate(
+          new Date(actualCopyToDate),
+          "d/m",
         );
 
         this.entryCopyForm
@@ -600,10 +600,10 @@ jQuery(document).ready(function ($) {
             }
           }
 
-            const updatedFormattedCopyToDate = flatpickr.formatDate(
-                new Date(updatedCopyToDate),
-                "d/m"
-            );
+          const updatedFormattedCopyToDate = flatpickr.formatDate(
+            new Date(updatedCopyToDate),
+            "d/m",
+          );
 
           this.setEntryCopyText({
             formattedCopyFromDate,
@@ -643,9 +643,9 @@ jQuery(document).ready(function ($) {
             }
           }
 
-            const updatedFormattedCopyToDate = flatpickr.formatDate(
-                new Date(updatedCopyToDate),
-              "d/m"
+          const updatedFormattedCopyToDate = flatpickr.formatDate(
+            new Date(updatedCopyToDate),
+            "d/m",
           );
 
           this.setEntryCopyText({

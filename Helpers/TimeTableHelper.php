@@ -11,6 +11,17 @@ use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
  */
 class TimeTableHelper
 {
+    private const VALID_SORT_FIELDS = [
+        'ticket-name',
+        'project-name',
+    ];
+
+    private const VALID_SORT_DIRECTIONS = [
+        'asc',
+        'desc',
+    ];
+
+
     /**
      * Constructor
      */
@@ -20,38 +31,18 @@ class TimeTableHelper
     ) {
     }
 
+
     /**
      * Parses a date string that can be either relative (e.g., "+1 week", "-2 days") or absolute (e.g., "2025-01-15")
      *
-     * @param string $dateParam    The date parameter to parse
-     * @param bool   $isStartOfDay Whether to set the time to start of day
+     * @param string $dateParam The date parameter to parse
      * @return CarbonImmutable The parsed date
      * @throws \Exception If the date format is invalid.
      */
-    public function parseDate(string $dateParam, bool $isStartOfDay = true): CarbonImmutable
+    public function parseDate(string $dateParam): CarbonImmutable
     {
         $dateParam = trim($dateParam);
-
-        // Check if it's a relative date (starts with + or - or contains 'day', 'week', 'month', etc.)
-        if (
-            $dateParam[0] === '+' ||
-            $dateParam[0] === '-' ||
-            preg_match('/\b(day|week|month|year)s?\b/i', $dateParam)
-        ) {
-            // Ensure + is present for positive relative dates
-            if ($dateParam[0] !== '+' && $dateParam[0] !== '-') {
-                $dateParam = '+' . $dateParam;
-            }
-            $date = CarbonImmutable::now()->startOfDay()->modify($dateParam);
-        } else {
-            // Try to parse as absolute date
-            $date = CarbonImmutable::createFromFormat('Y-m-d', $dateParam);
-            if ($isStartOfDay) {
-                $date = $date->startOfDay();
-            }
-        }
-
-        return $date;
+        return CarbonImmutable::parse($dateParam);
     }
 
     /**
@@ -130,7 +121,7 @@ class TimeTableHelper
                     $timesheetsSortedByWeekdate['projectName'] = $firstTimesheet['name'];
                     $timesheetsSortedByWeekdate['ticketType'] = $firstTimesheet['ticketType'];
                     $timesheetsSortedByWeekdate['ticketId'] = $firstTimesheet['ticketId'];
-                    $timesheetsSortedByWeekdate['dateToFinish'] = (new CarbonImmutable($firstTimesheet['dateToFinish'], "UTC"))->setToUserTimezone();
+                    $timesheetsSortedByWeekdate['dateToFinish'] = (new CarbonImmutable($firstTimesheet['dateToFinish'], 'UTC'))->setToUserTimezone();
                     $timesheetsSortedByWeekdate['dateToFinishIsSet'] = $firstTimesheet['dateToFinish'] !== '0000-00-00 00:00:00';
                     $timesheetsSortedByWeekdate['tags'] = $firstTimesheet['tags'];
                     $timesheetsSortedByWeekdate['tagsIsSet'] = $firstTimesheet['tags'] !== '';
@@ -210,5 +201,42 @@ class TimeTableHelper
         });
 
         return $timesheetsByTicket;
+    }
+
+
+    /**
+     * Validates and parses a timetable sort order string.
+     *
+     * Expected format: "<field>-<direction>" (e.g. "ticket-name-asc")
+     *
+     * @return array{field: string, direction: string, raw: string}|null
+     */
+    public static function parseSortOrder(?string $sortOrder): ?array
+    {
+        if (empty($sortOrder)) {
+            return null;
+        }
+
+        $parts = explode('-', $sortOrder);
+
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $direction = array_pop($parts);
+        $field = implode('-', $parts);
+
+        if (
+            !in_array($field, self::VALID_SORT_FIELDS, true) ||
+            !in_array($direction, self::VALID_SORT_DIRECTIONS, true)
+        ) {
+            return null;
+        }
+
+        return [
+            'field' => $field,
+            'direction' => $direction,
+            'raw' => $sortOrder,
+        ];
     }
 }

@@ -11,12 +11,11 @@ use Leantime\Core\Controller\Frontcontroller;
 use Leantime\Core\Language as LanguageCore;
 use Leantime\Core\UI\Template;
 use Leantime\Domain\Auth\Models\Roles;
-use Leantime\Domain\Auth\Services\Auth;
 use Leantime\Domain\Auth\Services\Auth as AuthService;
 use Leantime\Domain\Setting\Repositories\Setting as SettingRepository;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
-use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
-use Leantime\Domain\Users\Repositories\Users;
+use Leantime\Domain\Users\Services\Users as UsersService;
+use Leantime\Domain\Users\Repositories\Users as UsersRepository;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableActionHandler;
 use Leantime\Plugins\TimeTable\Helpers\TimeTableHelper;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
@@ -30,34 +29,36 @@ class TimeTable extends Controller
     private TimeTableService $timeTableService;
 
     protected LanguageCore $language;
-
     private SettingRepository $settings;
 
     protected Template $template;
-
-    private TimesheetRepository $timesheetRepository;
-
     private TicketRepository $ticketRepository;
 
     private TimeTableHelper $timeTableHelper;
 
     private TimeTableActionHandler $actionHandler;
 
+    private UsersService $userService;
+    private UsersRepository $userRepository;
+
+    private const FAVIOURITE_TASKS_PLUGIN = '\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks';
+
     /**
      * constructor
      *
      * @return void
      */
-    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TimesheetRepository $timesheetRepository, TicketRepository $ticketRepository, TimeTableHelper $timeTableHelper, TimeTableActionHandler $actionHandler): void
+    public function init(TimeTableService $timeTableService, LanguageCore $language, SettingRepository $settings, Template $template, TicketRepository $ticketRepository, TimeTableHelper $timeTableHelper, TimeTableActionHandler $actionHandler, UsersService $userService, UsersRepository $userRepository): void
     {
         $this->timeTableService = $timeTableService;
         $this->language = $language;
         $this->settings = $settings;
         $this->template = $template;
-        $this->timesheetRepository = $timesheetRepository;
         $this->ticketRepository = $ticketRepository;
         $this->timeTableHelper = $timeTableHelper;
         $this->actionHandler = $actionHandler;
+        $this->userService = $userService;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -75,8 +76,8 @@ class TimeTable extends Controller
 
         // Get user's favorite tickets
         $favoriteTicketIds = [];
-        if (class_exists('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks')) {
-            $favoriteService = app()->make('\Leantime\Plugins\FavoriteTasks\Services\FavoriteTasks');
+        if (class_exists(self::FAVIOURITE_TASKS_PLUGIN)) {
+            $favoriteService = app()->make(self::FAVIOURITE_TASKS_PLUGIN);
             $favorites = $favoriteService->getUserFavouriteIssues();
             $favoriteTicketIds = array_column($favorites, 'id');
         }
@@ -86,15 +87,15 @@ class TimeTable extends Controller
 
         // Add relevance scoring to tickets
         foreach ($tickets as &$ticket) {
-            $score = 0;
-            $ticket['isFavorite'] = false;
-
             // Use 'id' field for ticket ID (from service format)
             $ticketId = $ticket['id'] ?? null;
             if (!$ticketId) {
                 $ticket['relevanceScore'] = 0;
                 continue;
             }
+
+            $score = 0;
+            $ticket['isFavorite'] = false;
 
             // Highest priority: Favorites
             if (in_array($ticketId, $favoriteTicketIds)) {
@@ -199,81 +200,38 @@ class TimeTable extends Controller
     }
 
     /**
-     * Saves the user's timetable sort preference
+     * Saves the user's timetable settings
      *
-     * @param  array<string, mixed> $input The input data containing:
-     *                                     - 'sortOrder' (string): The sort order ('ticket-name' or 'project-name')
-     * @return JsonResponse Returns a JSON response indicating success or failure
-     */
-    public function saveSortOrder(array $input): JsonResponse
-    {
-        $userId = session('userdata.id');
-        $sortOrder = $input['sortOrder'] ?? '';
-
-        // Validate sort order format: field-direction (e.g., "ticket-name-asc")
-        $validFields = ['ticket-name', 'project-name'];
-        $validDirections = ['asc', 'desc'];
-
-        $parts = explode('-', $sortOrder);
-        if (count($parts) < 2) {
-            return response()->json(['error' => 'Invalid sort order format'], 400);
-        }
-
-        $direction = array_pop($parts);
-        $field = implode('-', $parts);
-
-        if (!in_array($field, $validFields) || !in_array($direction, $validDirections)) {
-            return response()->json(['error' => 'Invalid sort order'], 400);
-        }
-
-        $userService = app()->make(\Leantime\Domain\Users\Services\Users::class);
-        $userService->updateUserSettings('timetable', 'sortOrder', $sortOrder);
-
-        return response()->json(['success' => true]);
-    }
-
-    /**
-     * Saves the user's timetable settings (sort order and display preferences)
-     *
-     * @param  array<string, mixed> $input The input data containing:
-     *                                     - 'sortOrder' (string|null): The sort order ('ticket-name-asc', etc.)
-     *                                     - 'showWeekends' (bool): Whether to show weekend columns
+     * @param  array<string, mixed> $input The input data
      * @return JsonResponse Returns a JSON response indicating success or failure
      */
     public function saveSettings(array $input): JsonResponse
     {
-        $userId = session('userdata.id');
-        $userService = app()->make(\Leantime\Domain\Users\Services\Users::class);
+        if (array_key_exists('sortOrder', $input)) {
+            $parsed = TimeTableHelper::parseSortOrder($input['sortOrder']);
 
-        // Validate and save sort order if provided
-        if (isset($input['sortOrder']) && $input['sortOrder'] !== '') {
-            $sortOrder = $input['sortOrder'];
-            $validFields = ['ticket-name', 'project-name'];
-            $validDirections = ['asc', 'desc'];
-
-            $parts = explode('-', $sortOrder);
-            if (count($parts) >= 2) {
-                $direction = array_pop($parts);
-                $field = implode('-', $parts);
-
-                if (in_array($field, $validFields) && in_array($direction, $validDirections)) {
-                    $userService->updateUserSettings('timetable', 'sortOrder', $sortOrder);
-                } else {
-                    return response()->json(['error' => 'Invalid sort order'], 400);
-                }
-            } else {
-                return response()->json(['error' => 'Invalid sort order format'], 400);
+            if ($parsed === null) {
+                return response()->json(['error' => 'Invalid sort order'], 400);
             }
+
+            $this->userService->updateUserSettings(
+                'timetable',
+                'sortOrder',
+                $parsed['raw']
+            );
         }
 
-        // Save weekend visibility preference
-        if (isset($input['showWeekends'])) {
-            $showWeekends = (bool) $input['showWeekends'];
-            $userService->updateUserSettings('timetable', 'showWeekends', $showWeekends);
+        if (array_key_exists('showWeekends', $input)) {
+            $this->userService->updateUserSettings(
+                'timetable',
+                'showWeekends',
+                (bool) $input['showWeekends']
+            );
         }
 
         return response()->json(['success' => true]);
     }
+
 
     /**
      * Retrieves all projects that the user has access to from the timetable service and returns them as a JSON response.
@@ -343,7 +301,7 @@ class TimeTable extends Controller
         $allUsers = $this->timeTableService->getAllUsers();
 
         // Determine if the user can manage other users' timesheets.'
-        $canCrossManage = Auth::userIsAtLeast(Roles::$admin, true);
+        $canCrossManage = AuthService::userIsAtLeast(Roles::$admin, true);
 
         // Get userId, either from the URL parameter or from session (if cross-user management is not allowed)
         $userId = $canCrossManage && isset($_GET['manageAsUserId']) ? $_GET['manageAsUserId'] : session('userdata.id');
@@ -365,6 +323,7 @@ class TimeTable extends Controller
             $fromDate = CarbonImmutable::now()->startOfWeek()->startOfDay();
             $toDate = CarbonImmutable::now()->endOfWeek()->startOfDay();
         }
+
 
         // Convert dates to UTC timezone for the database
         $weekStartDateDb = $fromDate->setToDbTimezone();
@@ -391,11 +350,10 @@ class TimeTable extends Controller
         $timesheetsByTicket = $this->timeTableHelper->addFavoriteStatus($timesheetsByTicket);
 
         // Get user's preferences
-        $userRepository = app()->make(Users::class);
-        $sortOrder = $userRepository->getUserSettings($userId, 'timetable.sortOrder') ?? '';
+        $sortOrder = $this->userRepository->getUserSettings($userId, 'timetable.sortOrder') ?: '';
 
         // Get showWeekends setting and convert to boolean properly
-        $showWeekendsRaw = $userRepository->getUserSettings($userId, 'timetable.showWeekends');
+        $showWeekendsRaw = $this->userRepository->getUserSettings($userId, 'timetable.showWeekends');
 
         // If the setting doesn't exist (null), default to true, otherwise convert to boolean
         $showWeekends = $showWeekendsRaw === null || $showWeekendsRaw;
