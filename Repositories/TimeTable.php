@@ -449,17 +449,12 @@ class TimeTable
             ->map(fn($item) => (array)$item)
             ->toArray();
 
-        // Pre-compute status label mappings
-        $stateLabelMappings = array_map(function ($labels) {
-            return array_column($labels, 'statusType');
-        }, $allStateLabels);
-
-        // Filter tickets using pre-computed mappings
+        // Filter tickets using status labels
         $filteredTickets = [];
         foreach ($tickets as $ticket) {
             $projectId = $ticket['projectId'] ?? null;
             $status = $ticket['status'] ?? null;
-            if (! isset($stateLabelMappings[$projectId][$status]) || $stateLabelMappings[$projectId][$status] !== 'DONE') {
+            if (!isset($allStateLabels[$projectId][$status]['statusType']) || $allStateLabels[$projectId][$status]['statusType'] !== 'DONE') {
                 $filteredTickets[] = $ticket;
             }
         }

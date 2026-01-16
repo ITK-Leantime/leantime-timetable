@@ -384,10 +384,21 @@ jQuery(document).ready(function ($) {
         const dateToFinish =
           ticketDateToFinish === "0000-00-00 00:00:00"
             ? null
-            : ticketDateToFinish?.split(" ")[0];
-        const parsedDate = dateToFinish
-          ? new Date(dateToFinish + "T00:00:00")
-          : null;
+            : ticketDateToFinish;
+
+        let parsedDate = null;
+
+        if (dateToFinish) {
+          const dateObj = new Date(dateToFinish);
+          if (!isNaN(dateObj.getTime())) {
+            parsedDate = new Date(
+              dateObj.getFullYear(),
+              dateObj.getMonth(),
+              dateObj.getDate(),
+            );
+          }
+        }
+
         this.ticketContextDatePicker.setDate(parsedDate);
 
         // Add project status options to ticket context menu

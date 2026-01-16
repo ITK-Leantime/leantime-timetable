@@ -130,7 +130,7 @@ class TimeTableHelper
                     $timesheetsSortedByWeekdate['projectName'] = $firstTimesheet['name'];
                     $timesheetsSortedByWeekdate['ticketType'] = $firstTimesheet['ticketType'];
                     $timesheetsSortedByWeekdate['ticketId'] = $firstTimesheet['ticketId'];
-                    $timesheetsSortedByWeekdate['dateToFinish'] = $firstTimesheet['dateToFinish'];
+                    $timesheetsSortedByWeekdate['dateToFinish'] = (new CarbonImmutable($firstTimesheet['dateToFinish'], "UTC"))->setToUserTimezone();
                     $timesheetsSortedByWeekdate['dateToFinishIsSet'] = $firstTimesheet['dateToFinish'] !== '0000-00-00 00:00:00';
                     $timesheetsSortedByWeekdate['tags'] = $firstTimesheet['tags'];
                     $timesheetsSortedByWeekdate['tagsIsSet'] = $firstTimesheet['tags'] !== '';
