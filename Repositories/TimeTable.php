@@ -76,7 +76,7 @@ class TimeTable
      * @param  string          $ticketId The ticket ID to filter the timesheet data.
      * @param  CarbonInterface $workDate The specific work date to filter the timesheet data.
      * @param  int             $userId   The id of the user to grab data for.
-     * @return array<string, mixed> Returns an array of matching timesheet data.
+     * @return array<int, mixed> Returns an array of matching timesheet data.
      */
     public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId): array
     {
@@ -369,7 +369,7 @@ class TimeTable
     /**
      * getAllUsers - Retrieves a list of all users from the database
      *
-     * @return array<string, mixed> An array containing user details, including ID, full name, and role
+     * @return array<int, mixed> An array containing user details, including ID, full name, and role
      */
     public function getAllUsers(): array
     {
@@ -544,6 +544,7 @@ class TimeTable
 
         // Split comma-separated tags and collect unique values
         $uniqueTags = [];
+
         foreach ($results as $tagString) {
             $tags = explode(',', $tagString);
             foreach ($tags as $tag) {
