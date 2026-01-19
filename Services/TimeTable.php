@@ -113,7 +113,7 @@ class TimeTable
     /**
      * Retrieves all users from the repository.
      *
-     * @return array<string, string> List of users.
+     * @return array<int, array<string, mixed>> List of users.
      */
     public function getAllUsers(): array
     {
