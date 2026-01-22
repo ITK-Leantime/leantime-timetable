@@ -1,10 +1,8 @@
+
 *.tar.gz
 .DS_Store
 .editorconfig
 .git*
-bin/create-release
-bin/local.create-release
-bin/release-exclude.txt
 .markdownlint.jsonc
 .php-cs-fixer.dist.php
 .twig-cs-fixer.dist.php
@@ -13,10 +11,8 @@ checksum.txt
 compose.yaml
 composer.lock
 package.json
-package-lock.json
 node_modules
 phpcs.xml
-assets
 phpstan.dist.neon
 vendor
 webpack.config.js

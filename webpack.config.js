@@ -1,42 +1,45 @@
 const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require("terser-webpack-plugin");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin'); // Added import
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
-    optimization: {
-        minimize: true,
-        minimizer: [
-            new TerserPlugin({
-                terserOptions: {
-                    format: {
-                        comments: false,
-                    },
-                },
-                extractComments: false,
-            }),
-        ],
+    entry: {
+        timeTable: ['./assets/timeTable.js', './assets/timeTableApiHandler.js', './assets/timeTable.css']
     },
-    entry: ['./assets/timeTable.css', './assets/timeTable.js', './assets/timeTableApiHandler.js'],
     output: {
-        path: path.resolve(__dirname, './dist/js/'),
-        filename: 'timeTable.js',
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'js/[name].js',
+        clean: true,  // optional but recommended
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/i,
+                use: [
+                    { loader: MiniCssExtractPlugin.loader, options: { esModule: true } },
+                    { loader: 'css-loader', options: { sourceMap: false } },
+                ],
+            },
+        ],
     },
     plugins: [
         new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery',
         }),
-        new MiniCssExtractPlugin({ filename: '../css/timeTable.css' }), // Added plugin configuration
+        new MiniCssExtractPlugin({
+            filename: 'css/[name].css',
+        }),
     ],
-module: {
-    rules: [
-        {
-            test: /\.css$/,
-            use: [MiniCssExtractPlugin.loader, 'css-loader'],  // updated rule to handle CSS files
-    },
-        // add additional rules for your project as needed
-    ],
+    optimization: {
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                terserOptions: { format: { comments: false } },
+                extractComments: false,
+            }),
+        ],
     },
     mode: 'production',
 };
