@@ -5,7 +5,6 @@ namespace Leantime\Plugins\TimeTable\Helpers;
 use Carbon\CarbonImmutable;
 use Leantime\Core\Language as LanguageCore;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
-use Ramsey\Collection\Sort;
 
 /**
  * Helper class for TimeTable operations including date parsing, data aggregation, and sorting
@@ -26,7 +25,6 @@ class TimeTableHelper
     public function __construct(
         private LanguageCore $language,
         private TimeTableService $timeTableService,
-        private Sort $sort,
     ) {
     }
 
