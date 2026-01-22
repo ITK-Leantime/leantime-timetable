@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-81](https://github.com/ITK-Leantime/leantime-timetable/pull/81)
+  Fix release scripts
+
 ## [4.2.0] - 2026-01-22
 
 * [PR-52](https://github.com/ITK-Leantime/leantime-timetable/pull/52)

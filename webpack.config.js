@@ -20,7 +20,7 @@ module.exports = {
                     { loader: MiniCssExtractPlugin.loader, options: { esModule: true } },
                     { loader: 'css-loader', options: { sourceMap: false } },
                 ],
-            },
+        },
         ],
     },
     plugins: [
@@ -32,14 +32,14 @@ module.exports = {
             filename: 'css/[name].css',
         }),
     ],
-    optimization: {
-        minimize: true,
-        minimizer: [
-            new TerserPlugin({
-                terserOptions: { format: { comments: false } },
-                extractComments: false,
+optimization: {
+    minimize: true,
+    minimizer: [
+        new TerserPlugin({
+            terserOptions: { format: { comments: false } },
+            extractComments: false,
             }),
-        ],
+    ],
     },
     mode: 'production',
 };
