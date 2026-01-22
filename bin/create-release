@@ -62,7 +62,7 @@ find "${target_dir}" -type f -exec sed -i "s/%%VERSION%%/${tag}/g" {} \;
 
 # Strip any leading `dev-` from tag name in package name.
 name="${plugin_name}-${tag#dev-}.tar.gz"
-tar --create --file "$name" -C "$release_dir" "$plugin_name"
+tar --gzip --create --file "$name" -C "$release_dir" "$plugin_name"
 sha256sum "$name" >| checksum.txt
 
 # Clean up
