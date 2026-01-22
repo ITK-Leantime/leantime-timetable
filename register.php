@@ -3,6 +3,7 @@
 use Leantime\Domain\Setting\Services\Setting;
 use Leantime\Plugins\TimeTable\Middleware\GetLanguageAssets;
 use Leantime\Core\Events\EventDispatcher;
+use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 
 /**
  * Adds a menu point for adding fixture data.
@@ -17,10 +18,10 @@ function addTimeTableItemToMenu(array $menuStructure): array
         'type' => 'item',
         'title' => '<span class="fas fa-fw fa-table"></span> Timetable',
         'icon' => 'fa fa-fw fa-table',
-        'tooltip' => 'View TimeTable',
+        'tooltip' => __('timeTable.menu_tooltip'),
         'href' => '/TimeTable/TimeTable',
         'active' => ['TimeTable'],
-        'module' => 'TimeTable', // First part of the path when visiting your plugin e.g. leantime.dk/{this part}/TimeTable
+        'module' => 'TimeTable',
     ];
 
     return $menuStructure;
@@ -59,12 +60,28 @@ if (class_exists(EventDispatcher::class)) {
                 echo '<link rel="stylesheet" href="' . htmlspecialchars($timeTableStyle) . '"></link>';
                 $userId = htmlspecialchars(session('userdata.id'), ENT_QUOTES, 'UTF-8');
                 $requireTimeRegistrationComment = app()->make(Setting::class)->getSetting('itk-leantime-timetable.requireTimeRegistrationComment') ?: '0';
+                $timeTableService = app()->make(TimeTableService::class);
+                $allStateLabels = $timeTableService->getAllStateLabels();
+                $allTags = $timeTableService->getAllUniqueTags();
+
+                // Get status translations
+                $statusTranslations = [
+                    'status.new' => __('status.new'),
+                    'status.blocked' => __('status.blocked'),
+                    'status.in_progress' => __('status.in_progress'),
+                    'status.waiting_for_approval' => __('status.waiting_for_approval'),
+                    'status.done' => __('status.done'),
+                    'status.archived' => __('status.archived'),
+                ];
 
                 echo '<script>';
                 echo 'const timetableSettings = ' . json_encode([
                         'settings' => [
                             'userId' => $userId,
                             'requireTimeRegistrationComment' => $requireTimeRegistrationComment,
+                            'allStateLabels' => $allStateLabels,
+                            'allTags' => $allTags,
+                            'statusTranslations' => $statusTranslations,
                         ],
                     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
                 echo '</script>';

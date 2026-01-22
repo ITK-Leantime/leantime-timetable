@@ -3,9 +3,9 @@
 namespace Leantime\Plugins\TimeTable\Services;
 
 use Carbon\CarbonInterface;
+use Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Repositories\TimeTable as TimeTableRepository;
-use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 
 /**
  * Time table services file.
@@ -26,7 +26,6 @@ class TimeTable
     /**
      * constructor
      *
-     * @param  TimeTableRepository $timeTableRepo
      * @return void
      */
     public function __construct(TimeTableRepository $timeTableRepo)
@@ -84,14 +83,14 @@ class TimeTable
     /**
      * @return array<array<string, string>>
      */
-    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
+    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId): array
     {
-        return $this->timeTableRepo->getTimesheetByTicketIdAndWorkDate($ticketId, $workDate, $userId, $searchTerm);
+        return $this->timeTableRepo->getTimesheetByTicketIdAndWorkDate($ticketId, $workDate, $userId);
     }
 
     /**
      * updateTime - update specific time entry
-     * @param WorklogDTO $worklog
+     *
      * @return void
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, int $originalId): void
@@ -114,7 +113,7 @@ class TimeTable
     /**
      * Retrieves all users from the repository.
      *
-     * @return array<string, string> List of users.
+     * @return array<int, array<string, mixed>> List of users.
      */
     public function getAllUsers(): array
     {
@@ -150,13 +149,15 @@ class TimeTable
     }
 
     /**
-     * Retrieves all projects from the timetable repository.
+     * Retrieves all projects that the user has access to from the timetable repository.
      *
-     * @return string[]  the list of pronjects or an empty array.
+     * @param  int    $userId   The user ID to check project access for
+     * @param  string $clientId The client ID of the user
+     * @return array{id: string, text: string, children: array<int, array{id: int, text: string, type: string, client: string|null}>, index: int} Project group with children array
      */
-    public function getAllProjects(): array
+    public function getAllProjects(int $userId, string $clientId): array
     {
-        $projects = $this->timeTableRepo->getAllProjects();
+        $projects = $this->timeTableRepo->getAllProjects($userId, $clientId);
         $projectGroup = [
             'id' => 'project',
             'text' => 'Projects',
@@ -174,6 +175,41 @@ class TimeTable
         }
 
         return $projectGroup;
+    }
+
+    /**
+     * modifyTicketDetails - Modifies ticket details via the context menu
+     *
+     * @param  TicketContextMenuDTO $ticketContextMenuDTO DTO containing ticket details to modify
+     * @return void
+     */
+    public function modifyTicketDetails(TicketContextMenuDTO $ticketContextMenuDTO)
+    {
+        $this->timeTableRepo->modifyTicketDetails($ticketContextMenuDTO);
+    }
+
+    /**
+     * Get all unique tags from the system
+     *
+     * @return array<int, string> Array of unique tag strings
+     *
+     * @api
+     */
+    public function getAllUniqueTags(): array
+    {
+        return $this->timeTableRepo->getAllUniqueTags();
+    }
+
+    /**
+     * Get recently viewed ticket IDs for a user from tickethistory
+     *
+     * @param int $userId The user ID
+     * @param int $limit  Maximum number of tickets to return
+     * @return array<int, int> Array of ticket IDs ordered by most recent first
+     */
+    public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
+    {
+        return $this->timeTableRepo->getRecentlyViewedTicketIds($userId, $limit);
     }
 
     /**

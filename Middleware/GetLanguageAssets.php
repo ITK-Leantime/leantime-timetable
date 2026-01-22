@@ -42,14 +42,18 @@ class GetLanguageAssets
 
         // @phpstan-ignore-next-line
         if (($language = session('usersettings.language') ?? $this->config->language) !== 'en-US') {
-            if (! Cache::store('installation')->has('timeTable.language.' . $language)) {
-                Cache::store('installation')->put(
-                    'timeTable.language.' . $language,
-                    parse_ini_file(__DIR__ . '/../Language/' . $language . '.ini', true)
-                );
-            }
+            $languageFile = __DIR__ . '/../Language/' . $language . '.ini';
 
-            $languageArray = array_merge($languageArray, Cache::store('installation')->get('timeTable.language.' . $language));
+            if (file_exists($languageFile)) {
+                if (! Cache::store('installation')->has('timeTable.language.' . $language)) {
+                    Cache::store('installation')->put(
+                        'timeTable.language.' . $language,
+                        parse_ini_file($languageFile, true)
+                    );
+                }
+
+                $languageArray = array_merge($languageArray, Cache::store('installation')->get('timeTable.language.' . $language));
+            }
         }
 
         Cache::put('timeTable.languageArray', $languageArray);

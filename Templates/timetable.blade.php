@@ -26,7 +26,7 @@
     <!-- page header -->
     <div class="maincontent">
         <div class="maincontentinner">
-            <div class="timetable">
+            <div class="timetable {{ !$showWeekends ? 'hide-weekends' : '' }}">
                 <div class="error-message {{ is_null($errorMessage) ? 'hidden' : '' }}">
                     <p data-tippy-content="{{ $errorMessage }}"><i class="fas fa-exclamation-circle"></i>
                         {{ __('timeTable.general-error-message') }}</p>
@@ -48,6 +48,9 @@
                             <p><i class="fas fa-info-circle"></i>
                                 {{ __('timeTable.update_to_show_correct_sums') }}</p>
                         </div>
+                        <div class="timetable-sort-menu">
+                            <span class="sort-menu-trigger"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                        </div>
                     </div>
 
                 </form>
@@ -56,7 +59,8 @@
                     <table id="timetable" class="table">
                         <thead>
                             <tr>
-                                <th class="th-ticket-title" scope="col">{{ __('timeTable.title_table_header') }}</th>
+                                <th class="th-ticket-title" scope="col">{{ __('timeTable.title_table_header') }}
+                                </th>
                                 @if (isset($weekDays, $weekDates) && count($weekDates))
                                     <input type="hidden" name="timetable-current-week-first-day"
                                         value="{{ reset($weekDates)->format('Y-m-d') }}" />
@@ -91,10 +95,29 @@
                             @if (!empty($timesheetsByTicket))
                                 @foreach ($timesheetsByTicket as $ticketId => $timesheet)
                                     <tr data-ticketId="{{ $ticketId }}">
-                                        <td class="ticket-title" scope="row"><a href="{{ $timesheet['ticketLink'] }}"
-                                                data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
-                                                data-tippy-placement="top">{{ $timesheet['ticketTitle'] }}</a>
-                                            <span>{{ $timesheet['projectName'] }}</span>
+                                        <td class="ticket-title" scope="row"
+                                            data-status="{{ $timesheet['status'] ?? '' }}"
+                                            data-datetofinish="{{ $timesheet['dateToFinish'] ?? '' }}"
+                                            data-tags="{{ $timesheet['tags'] ?? '' }}">
+                                            <div>
+                                                <a href="{{ $timesheet['ticketLink'] }}"
+                                                    data-tippy-content="#{{ $timesheet['ticketId'] }} - {{ $timesheet['ticketTitle'] }} {{ $timesheet['ticketType'] !== 'task' ? '[ ' . $timesheet['ticketType'] . ' ]' : '' }} "
+                                                    data-tippy-placement="top">
+                                                    {{ $timesheet['ticketTitle'] }}
+                                                </a>
+                                                <span>{{ $timesheet['projectName'] }}</span>
+                                            </div>
+                                            <div class="ticket-context-menu"
+                                                data-projectId="{{ $timesheet['projectId'] }}">
+                                                <span
+                                                    style="opacity: {{ !$timesheet['dateToFinishIsSet'] ? '1' : '0' }};"><i
+                                                        class="fa-solid fa-calendar"></i></span>
+                                                <span style="opacity: {{ !$timesheet['tagsIsSet'] ? '1' : '0' }};"><i
+                                                        class="fa-solid fa-tags"></i></span>
+
+                                                <span class="context-menu-trigger"><i
+                                                        class="fa-solid fa-ellipsis-vertical"></i></span>
+                                            </div>
                                         </td>
                                         <?php $rowTotal = 0; ?>
                                         <!-- initializing row total -->
@@ -143,10 +166,17 @@
                                     </tr>
                                 @endforeach
                                 <tr>
-                                    <td class="add-new"><input class="timetable-tomselect form-control-lg"
-                                            placeholder="Syncing data" /></td>
+                                    <td class="add-new"><input class="timetable-tomselect form-control-lg">
+                                        <i class='fa-regular fa-clock fa-spin'></i>
+                                        <span>{{ __('timeTable.syncing_data') }}</span>
+                                    </td>
                                     @foreach ($weekDates as $date)
-                                        <td class="{{ $date->isMonday() ? 'new-week' : '' }}">—</td>
+                                        @php
+                                            $weekendClass = $date->isWeekend() ? 'weekend' : '';
+                                            $newWeekClass = $date->isMonday() ? 'new-week' : '';
+                                            $classes = trim("$weekendClass $newWeekClass");
+                                        @endphp
+                                        <td @if ($classes) class="{{ $classes }}" @endif>—</td>
                                     @endforeach
                                     <td>—</td>
                                 </tr>
@@ -158,10 +188,17 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="add-new"><input class="timetable-tomselect form-control-lg"
-                                            placeholder="{{ __('timeTable.getting-data-for-you') }}" /></td>
+                                    <td class="add-new"><input class="timetable-tomselect form-control-lg">
+                                        <i class='fa-regular fa-clock fa-spin'></i>
+                                        <span>{{ __('timeTable.syncing_data') }}</span>
+                                    </td>
                                     @foreach ($weekDates as $date)
-                                        <td>—</td>
+                                        @php
+                                            $weekendClass = $date->isWeekend() ? 'weekend' : '';
+                                            $newWeekClass = $date->isMonday() ? 'new-week' : '';
+                                            $classes = trim("$weekendClass $newWeekClass");
+                                        @endphp
+                                        <td @if ($classes) class="{{ $classes }}" @endif>—</td>
                                     @endforeach
                                     <td>—</td>
                                 </tr>
@@ -170,7 +207,12 @@
                             <tr class="tr-total">
                                 <td scope="row">{{ __('timeTable.total') }}</td>
                                 @foreach ($weekDates as $weekDate)
-                                    <td class="{{ $weekDate->isMonday() ? 'new-week' : '' }}">
+                                    @php
+                                        $weekendClass = $weekDate->isWeekend() ? 'weekend' : '';
+                                        $newWeekClass = $weekDate->isMonday() ? 'new-week' : '';
+                                        $classes = trim("$weekendClass $newWeekClass");
+                                    @endphp
+                                    <td @if ($classes) class="{{ $classes }}" @endif>
                                         {{ $totalHours[$weekDate->format('Y-m-d')] ?? 0 }}
                                     </td>
                                 @endforeach
@@ -269,4 +311,104 @@
 
         </form>
     </div>
+    <div id="ticket-context-menu-modal" class="modal-syncing-loader">
+        <form method="POST" class="ticket-context-menu-form">
+            <input type="hidden" name="action" value="ticketContextMenu">
+            <input type="hidden" name="manageAsUserId" value="{{ $userId }}" />
+            <input type="hidden" name="ticketId" class="ticket-context-menu-ticketId" />
+
+            <div class="context-menu-field">
+                <div class="context-menu-icon">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <input class="date-to-finish flatpickr flatpickr-input" type="text" placeholder="dateToFinish"
+                    name="dateToFinish" />
+            </div>
+
+            <div class="context-menu-field">
+                <div class="context-menu-icon">
+                    <i class="fa-solid fa-circle-dot"></i>
+                </div>
+                <select class="ticket-status" name="status" autocomplete="off" readonly="readonly">
+
+                </select>
+            </div>
+
+            <div class="context-menu-field">
+                <div class="context-menu-icon">
+                    <i class="fa-solid fa-tags"></i>
+                </div>
+                <select class="ticket-tags" name="tags[]" multiple autocomplete="off">
+
+                </select>
+            </div>
+
+            <div class="buttons flex-container gap-1">
+                <button type="button"
+                    class="ticket-context-menu-cancel btn btn-default ml-auto">{{ __('timeTable.ticket_context_discard_changes') }}</button>
+                <button type="submit"
+                    class="ticket-context-menu-apply btn btn-primary">{{ __('timeTable.ticket_context_apply_changes') }}</button>
+            </div>
+
+        </form>
+    </div>
+    <div id="sort-menu-modal">
+        <div class="sort-menu-header">
+            <span>{{ __('timeTable.table_settings') }}</span>
+        </div>
+
+        <!-- Display Options Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <i class="fa-solid fa-eye"></i>
+                <span>{{ __('timeTable.display_options') }}</span>
+            </div>
+            <div class="display-options">
+                <div class="display-option">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="show-weekends-toggle" class="weekend-visibility-toggle"
+                            {{ $showWeekends ?? true ? 'checked' : '' }}>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">{{ __('timeTable.show_weekends') }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sorting Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <i class="fa-solid fa-arrow-down-a-z"></i>
+                <span>{{ __('timeTable.sort_options') }}</span>
+            </div>
+            <div class="sort-menu-options">
+                <div class="sort-option" data-sort="ticket-name">
+                    <span>{{ __('timeTable.sort_by_ticket_name') }}</span>
+                </div>
+                <div class="sort-option" data-sort="project-name">
+                    <span>{{ __('timeTable.sort_by_project_name') }}</span>
+                </div>
+            </div>
+            <div class="sort-menu-direction">
+                <span>{{ __('timeTable.sort_direction') }}</span>
+                <div class="sort-direction-toggle">
+                    <button class="sort-direction-btn" data-direction="asc">
+                        <i class="fa-solid fa-arrow-down-a-z"></i>
+                    </button>
+                    <button class="sort-direction-btn" data-direction="desc">
+                        <i class="fa-solid fa-arrow-up-z-a"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sort-menu-actions">
+            <button class="btn btn-default sort-menu-close">{{ __('buttons.close') }}</button>
+            <button class="btn btn-primary sort-menu-save">{{ __('buttons.save') }}</button>
+        </div>
+    </div>
+
+    <!-- Store sort order and display settings in data attributes to avoid jQuery conflicts -->
+    <div id="timetable-sort-data" data-sort-order="{{ $sortOrder ?? '' }}"
+        data-show-weekends="{{ $showWeekends ? 'true' : 'false' }}" style="display: none;"></div>
 @endsection

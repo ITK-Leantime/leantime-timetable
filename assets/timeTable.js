@@ -10,6 +10,9 @@ jQuery(document).ready(function ($) {
     userId: $("select[name='manageAsUserId'] > option:selected").val(),
   };
 
+  const allStateLabels = timetableSettings.settings.allStateLabels;
+  const allTags = timetableSettings.settings.allTags || [];
+
   class TimeTable {
     constructor() {
       this.tomselect = null;
@@ -21,6 +24,27 @@ jQuery(document).ready(function ($) {
       // Modal selectors
       this.timeEditModal = $("#edit-time-log-modal");
       this.entryCopyModal = $("#entry-copy-modal");
+      this.ticketContextMenuModal = $("#ticket-context-menu-modal");
+
+      // Ticket context menu elements
+      this.ticketContextDateToFinish =
+        this.ticketContextMenuModal.find(".date-to-finish");
+      this.ticketContextStatus =
+        this.ticketContextMenuModal.find(".ticket-status");
+      this.ticketContextForm = this.ticketContextMenuModal.find(
+        ".ticket-context-menu-form",
+      );
+      this.ticketContextButtonCancel = this.ticketContextMenuModal.find(
+        ".ticket-context-menu-cancel",
+      );
+      this.ticketContextButtonApply = this.ticketContextMenuModal.find(
+        ".ticket-context-menu-apply",
+      );
+      this.contextMenuTicketId = this.ticketContextMenuModal.find(
+        ".ticket-context-menu-ticketId",
+      );
+
+      // Entry copy modal elements
       this.entryCopyForm = this.entryCopyModal.find(".entry-copy-form");
       this.entryCopyButtonClose = this.entryCopyModal.find(
         ".entry-copy-modal-cancel",
@@ -34,6 +58,8 @@ jQuery(document).ready(function ($) {
       this.entryCopyCheckboxWeekend = this.entryCopyModal.find(
         "#entry-copy-weekend",
       );
+
+      // Time edit modal elements
       this.timeEditForm = this.timeEditModal.find(".edit-time-log-form");
       this.modalInputTimesheetId = this.timeEditModal.find(
         'input[name="timesheet-id"]',
@@ -74,13 +100,59 @@ jQuery(document).ready(function ($) {
       this.modalSubmitButton = this.timeEditModal.find(
         ".timetable-modal-submit",
       );
-      this.modalInputDate = this.timeEditModal.find(
-        'input[name="timesheet-date"]',
-      );
       this.modalTicketInput = this.timeEditModal.find(
         ".timetable-ticket-input",
       );
 
+      // Sort menu elements
+      this.sortMenuModal = $("#sort-menu-modal");
+      this.sortMenuTrigger = $(".timetable-sort-menu");
+      this.sortOptions = $(".sort-option");
+      this.sortDirectionBtns = $(".sort-direction-btn");
+      this.sortMenuSaveBtn = $(".sort-menu-save");
+      this.sortMenuCloseBtn = $(".sort-menu-close");
+
+      // Get sort order from data attribute to avoid jQuery conflicts
+      // Use an object to avoid jQuery trying to attach properties to strings
+      const sortDataElement = document.getElementById("timetable-sort-data");
+      const sortOrderValue = sortDataElement
+        ? sortDataElement.getAttribute("data-sort-order")
+        : "";
+
+      this.sortState = {
+        savedOrder:
+          sortOrderValue && sortOrderValue !== ""
+            ? String(sortOrderValue)
+            : null,
+        field: null,
+        direction: "asc",
+      };
+
+      // Parse saved sort to extract field and direction
+      if (this.sortState.savedOrder) {
+        const parts = this.sortState.savedOrder.split("-");
+        if (
+          parts.length > 2 &&
+          (parts[parts.length - 1] === "asc" ||
+            parts[parts.length - 1] === "desc")
+        ) {
+          this.sortState.direction = parts.pop();
+          this.sortState.field = parts.join("-");
+        } else {
+          this.sortState.field = this.sortState.savedOrder;
+        }
+      }
+
+      // Weekend visibility elements
+      this.weekendVisibilityToggle = $("#show-weekends-toggle");
+
+      // Get initial weekend visibility state from checkbox
+      this.showWeekends = this.weekendVisibilityToggle.is(":checked");
+
+      // Apply initial weekend visibility
+      this.applyWeekendVisibility();
+
+      // Init date range flatpickr select.
       flatpickr("#dateRange", {
         mode: "range",
         dateFormat: "d-m-Y",
@@ -95,6 +167,60 @@ jQuery(document).ready(function ($) {
         },
       });
 
+      // Init context menu datepicker.
+      this.ticketContextDatePicker = flatpickr(this.ticketContextDateToFinish, {
+        dateFormat: "d-m-Y",
+        weekNumbers: true,
+        locale: Danish,
+        allowInput: false,
+        readonly: false,
+      });
+
+      // Init context menu status select.
+      this.ticketContextStatus = new TomSelect(this.ticketContextStatus, {
+        closeAfterSelect: true,
+        controlInput: null,
+        onChange: () => {
+          this.ticketContextStatus.blur();
+        },
+      });
+
+      this.ticketContextTags = this.ticketContextMenuModal.find(".ticket-tags");
+
+      // Init context menu tags select.
+      this.ticketContextTags = new TomSelect(this.ticketContextTags, {
+        plugins: ["remove_button"],
+        maxItems: 3,
+        create: true,
+        persist: false,
+        openOnFocus: false,
+        loadThrottle: 300,
+        load: function (query, callback) {
+          if (!query.length) {
+            this.close();
+            return callback();
+          }
+
+          // Filter tags that match the search query
+          const filtered = allTags
+            .filter((tag) => tag.toLowerCase().includes(query.toLowerCase()))
+            .slice(0, 50) // Limit to 50 results
+            .map((tag) => ({ value: tag, text: tag }));
+
+          callback(filtered);
+        },
+        onItemAdd: function () {
+          this.setTextboxValue("");
+          this.close();
+        },
+        onType: function (str) {
+          if (!str || str.length === 0) {
+            this.close();
+          }
+        },
+      });
+
+      // Init date changer flatpickr select.
       this.timelogDateChanger = flatpickr(this.modalInputDateMove, {
         dateFormat: "d-m-Y",
         weekNumbers: true,
@@ -125,23 +251,11 @@ jQuery(document).ready(function ($) {
           }
         },
       });
-      $(".timesheet-date-wrapper")
-        .off("click")
-        .on("click", (event) => {
-          const $wrapper = $(event.currentTarget);
-
-          if ($wrapper.hasClass("open")) {
-            this.timelogDateChanger.close();
-            $wrapper.removeClass("open");
-          } else {
-            this.timelogDateChanger.open();
-            $wrapper.addClass("open");
-          }
-        });
 
       // Register event handlers
       this.registerEventHandlers();
 
+      // Fetch ticket data
       TimeTableApiHandler.fetchTicketData().then((data) => {
         this.removeLoadingClasses();
         let {
@@ -151,6 +265,9 @@ jQuery(document).ready(function ($) {
           value: { children: tickets },
         } = data[1];
 
+        this.projects = projects;
+        this.tickets = tickets;
+
         this.initTicketSearch(projects, tickets);
       });
     }
@@ -159,6 +276,7 @@ jQuery(document).ready(function ($) {
       this.timeEditModal.removeClass("modal-syncing-loader");
       this.entryCopyModal.removeClass("modal-syncing-loader");
     }
+
     /**
      * Registers event handlers for the timetable module.
      *
@@ -183,6 +301,14 @@ jQuery(document).ready(function ($) {
             !this.entryCopyModal[0].contains(event.target)
           ) {
             this.closeEntryCopyModal();
+          }
+
+          if (
+            $(this.ticketContextMenuModal).is(":visible") &&
+            !this.ticketContextMenuModal[0].contains(event.target) &&
+            !event.target.closest(".flatpickr-calendar")
+          ) {
+            this.closeTicketContextMenuModal();
           }
         }.bind(this),
       );
@@ -224,6 +350,95 @@ jQuery(document).ready(function ($) {
             .focus();
         }.bind(this),
       );
+
+      $(document).on("click", "div.ticket-context-menu", (event) => {
+        const target = event.target;
+        const rect = target.getBoundingClientRect();
+
+        // Find the ticket-context-menu div (in case a child span was clicked)
+        const $contextMenuDiv = $(target).closest("div.ticket-context-menu");
+
+        // Get the parent td which contains all the data attributes
+        const $ticketTd = $contextMenuDiv.parent();
+
+        // Get the tr which contains the ticketId
+        const $ticketTr = $ticketTd.parent();
+
+        this.ticketContextMenuModal
+          .css({
+            left: `${rect.left + window.scrollX - 215}px`,
+            top: `${rect.top + window.scrollY + rect.height - 50}px`,
+          })
+          .addClass("shown");
+
+        const projectId = $contextMenuDiv.data("projectid");
+        const stateLabels = allStateLabels[projectId];
+        const ticketStatus = $ticketTd.data("status");
+        const ticketId = $ticketTr.data("ticketid");
+        const ticketDateToFinish = $ticketTd.data("datetofinish");
+        const ticketTags = $ticketTd.data("tags") || "";
+
+        this.contextMenuTicketId.val(ticketId);
+
+        // Set date
+        const dateToFinish =
+          ticketDateToFinish === "0000-00-00 00:00:00"
+            ? null
+            : ticketDateToFinish;
+
+        let parsedDate = null;
+
+        if (dateToFinish) {
+          const dateObj = new Date(dateToFinish);
+          if (!isNaN(dateObj.getTime())) {
+            parsedDate = new Date(
+              dateObj.getFullYear(),
+              dateObj.getMonth(),
+              dateObj.getDate(),
+            );
+          }
+        }
+
+        this.ticketContextDatePicker.setDate(parsedDate);
+
+        // Add project status options to ticket context menu
+        if (stateLabels) {
+          const statusTranslations =
+            timetableSettings.settings.statusTranslations || {};
+          const statusOptions = Object.entries(stateLabels).map(
+            ([value, { name, class: className }]) => ({
+              value,
+              text: statusTranslations[name] || name,
+              className,
+              selected: String(value) === String(ticketStatus),
+            }),
+          );
+
+          this.ticketContextStatus.clearOptions();
+          this.ticketContextStatus.addOptions(statusOptions);
+
+          if (stateLabels[ticketStatus]) {
+            this.ticketContextStatus.setValue(ticketStatus);
+          }
+        }
+
+        // Handle tags
+        this.ticketContextTags.clear();
+
+        if (ticketTags) {
+          const tagsArray = ticketTags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag);
+          // Add any tags that aren't already in the options
+          tagsArray.forEach((tag) => {
+            if (!this.ticketContextTags.options[tag]) {
+              this.ticketContextTags.addOption({ value: tag, text: tag });
+            }
+          });
+          this.ticketContextTags.setValue(tagsArray);
+        }
+      });
 
       // Close modal
       this.modalCancelButton.click(() => this.closeEditTimeLogModal());
@@ -277,7 +492,17 @@ jQuery(document).ready(function ($) {
 
         const eventTarget = e.target;
 
-        const targetCount = this.handleHighlighting(eventTarget);
+        // Get initial targets (without weekends by default)
+        const includeWeekends = false;
+        const overwrite = false;
+        const targets = this.getEntryCopyTargets(
+          eventTarget,
+          overwrite,
+          includeWeekends,
+        );
+        const targetCount = targets.length;
+
+        this.handleHighlighting(eventTarget, overwrite, includeWeekends);
 
         const rect = eventTarget.getBoundingClientRect();
 
@@ -291,12 +516,10 @@ jQuery(document).ready(function ($) {
         const parent = $(eventTarget).parent();
         const ticketId = parent.data("ticketid");
         const copyFromDate = parent.data("date");
-        const formattedCopyFromDate = new Date(copyFromDate)
-          .toLocaleDateString("da-DK", {
-            day: "numeric",
-            month: "numeric",
-          })
-          .replace(".", "/");
+        const formattedCopyFromDate = flatpickr.formatDate(
+          new Date(copyFromDate),
+          "d/m",
+        );
 
         const hours = parent.data("hours");
         const description = parent.data("description");
@@ -304,12 +527,29 @@ jQuery(document).ready(function ($) {
           'input[name="timetable-current-week-last-day"]',
         ).val();
 
-        const formattedCopyToDate = new Date(copyToDate)
-          .toLocaleDateString("da-DK", {
-            day: "numeric",
-            month: "numeric",
-          })
-          .replace(".", "/");
+        // Calculate the actual last target date based on filtered targets
+        let actualCopyToDate = copyToDate;
+        if (targets.length > 0) {
+          const lastTarget = targets.last();
+          actualCopyToDate = lastTarget.data("date");
+        } else {
+          // If no targets initially (all filled and overwrite=false),
+          // calculate the last non-weekend date
+          const parentElement = $(eventTarget).parent();
+          const allElements = parentElement.nextAll(".timetable-edit-entry");
+          const nonWeekendElements = allElements.filter(function () {
+            return !$(this).hasClass("weekend");
+          });
+          if (nonWeekendElements.length > 0) {
+            const lastNonWeekend = nonWeekendElements.last();
+            actualCopyToDate = lastNonWeekend.data("date");
+          }
+        }
+
+        const formattedCopyToDate = flatpickr.formatDate(
+          new Date(actualCopyToDate),
+          "d/m",
+        );
 
         this.entryCopyForm
           .find('input[name="entryCopyTicketId"]')
@@ -342,9 +582,32 @@ jQuery(document).ready(function ($) {
           );
           const targetCount = targets.length;
 
+          // Recalculate the actual last target date
+          let updatedCopyToDate = copyToDate;
+          if (targets.length > 0) {
+            const lastTarget = targets.last();
+            updatedCopyToDate = lastTarget.data("date");
+          } else if (!includeWeekends) {
+            // If no targets and weekends not included, use last non-weekend
+            const parentElement = $(eventTarget).parent();
+            const allElements = parentElement.nextAll(".timetable-edit-entry");
+            const nonWeekendElements = allElements.filter(function () {
+              return !$(this).hasClass("weekend");
+            });
+            if (nonWeekendElements.length > 0) {
+              const lastNonWeekend = nonWeekendElements.last();
+              updatedCopyToDate = lastNonWeekend.data("date");
+            }
+          }
+
+          const updatedFormattedCopyToDate = flatpickr.formatDate(
+            new Date(updatedCopyToDate),
+            "d/m",
+          );
+
           this.setEntryCopyText({
             formattedCopyFromDate,
-            formattedCopyToDate,
+            formattedCopyToDate: updatedFormattedCopyToDate,
             targetCount,
           });
 
@@ -362,9 +625,32 @@ jQuery(document).ready(function ($) {
           );
           const targetCount = targets.length;
 
+          // Recalculate the actual last target date
+          let updatedCopyToDate = copyToDate;
+          if (targets.length > 0) {
+            const lastTarget = targets.last();
+            updatedCopyToDate = lastTarget.data("date");
+          } else if (!includeWeekends) {
+            // If no targets and weekends not included, use last non-weekend
+            const parentElement = $(eventTarget).parent();
+            const allElements = parentElement.nextAll(".timetable-edit-entry");
+            const nonWeekendElements = allElements.filter(function () {
+              return !$(this).hasClass("weekend");
+            });
+            if (nonWeekendElements.length > 0) {
+              const lastNonWeekend = nonWeekendElements.last();
+              updatedCopyToDate = lastNonWeekend.data("date");
+            }
+          }
+
+          const updatedFormattedCopyToDate = flatpickr.formatDate(
+            new Date(updatedCopyToDate),
+            "d/m",
+          );
+
           this.setEntryCopyText({
             formattedCopyFromDate,
-            formattedCopyToDate,
+            formattedCopyToDate: updatedFormattedCopyToDate,
             targetCount,
           });
 
@@ -382,8 +668,160 @@ jQuery(document).ready(function ($) {
         );
         this.entryCopyButtonApply.attr("disabled", "disabled");
       });
+
+      // Ticket context menu handlers
+      this.ticketContextButtonCancel.click(() => {
+        this.closeTicketContextMenuModal();
+      });
+
+      $(this.ticketContextForm).on("submit", () => {
+        this.ticketContextButtonApply.html(
+          '<i class="fa-solid fa-arrows-rotate fa-spin"></i>',
+        );
+        this.ticketContextButtonApply.attr("disabled", "disabled");
+      });
+
+      // Sort menu handlers
+      this.sortMenuTrigger.click((e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const rect = e.currentTarget.getBoundingClientRect();
+
+        // Position the menu below and aligned to the right of the button
+        this.sortMenuModal
+          .css({
+            right: `${window.innerWidth - rect.right - window.scrollX}px`,
+            top: `${rect.bottom + window.scrollY - 50}px`,
+            left: "auto",
+          })
+          .addClass("shown");
+
+        // Mark current sort field and direction as active
+        this.sortOptions.removeClass("active");
+        if (this.sortState.field) {
+          $(`.sort-option[data-sort="${this.sortState.field}"]`).addClass(
+            "active",
+          );
+        }
+
+        this.sortDirectionBtns.removeClass("active");
+        $(
+          `.sort-direction-btn[data-direction="${this.sortState.direction}"]`,
+        ).addClass("active");
+
+        // Close menu when clicking outside - delay to prevent immediate closure
+        setTimeout(() => {
+          $(document).one("click", () => {
+            this.closeSortMenuModal();
+          });
+        }, 100);
+      });
+
+      // Prevent modal from closing when clicking inside it
+      this.sortMenuModal.click((e) => {
+        e.stopPropagation();
+      });
+
+      // Handle sort option selection (just highlight, don't save yet)
+      this.sortOptions.click((e) => {
+        e.stopPropagation();
+        const sortField = $(e.currentTarget).data("sort");
+        this.sortState.field = sortField;
+
+        // Update active state
+        this.sortOptions.removeClass("active");
+        $(e.currentTarget).addClass("active");
+      });
+
+      // Handle direction toggle
+      this.sortDirectionBtns.click((e) => {
+        e.stopPropagation();
+        const direction = $(e.currentTarget).data("direction");
+        this.sortState.direction = direction;
+
+        // Update active state
+        this.sortDirectionBtns.removeClass("active");
+        $(e.currentTarget).addClass("active");
+      });
+
+      // Handle weekend visibility toggle
+      this.weekendVisibilityToggle.change((e) => {
+        this.showWeekends = $(e.target).is(":checked");
+      });
+
+      // Handle save button
+      this.sortMenuSaveBtn.click((e) => {
+        e.stopPropagation();
+
+        // Prepare settings to save
+        const settings = {};
+
+        // Add sort order if a field is selected
+        if (this.sortState.field) {
+          settings.sortOrder = `${this.sortState.field}-${this.sortState.direction}`;
+        }
+
+        // Add weekend visibility setting
+        settings.showWeekends = this.showWeekends;
+
+        // Save to backend
+        fetch("/TimeTable/TimeTable/saveSettings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          credentials: "include",
+          body: JSON.stringify(settings),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // Apply weekend visibility immediately
+              this.applyWeekendVisibility();
+              this.closeSortMenuModal();
+
+              // Only reload if sort order changed
+              if (settings.sortOrder) {
+                window.location.reload();
+              }
+            }
+          })
+          .catch((error) => console.error("Error saving settings:", error));
+      });
+
+      // Handle close button
+      this.sortMenuCloseBtn.click((e) => {
+        e.stopPropagation();
+        this.closeSortMenuModal();
+      });
+
+      // Date changer wrapper
+      $(".timesheet-date-wrapper")
+        .off("click")
+        .on("click", (event) => {
+          const $wrapper = $(event.currentTarget);
+
+          if ($wrapper.hasClass("open")) {
+            this.timelogDateChanger.close();
+            $wrapper.removeClass("open");
+          } else {
+            this.timelogDateChanger.open();
+            $wrapper.addClass("open");
+          }
+        });
     }
 
+    /**
+     * Highlights a set of target elements based on the given parameters.
+     * Used when previewing dates to be affected by timelog copying.
+     *
+     * @param {HTMLElement} element The element used as the reference for highlighting.
+     * @param {boolean} [overwrite=false] Indicates whether existing highlights should be overwritten.
+     * @param {boolean} [includeWeekends=false] Determines whether the operation should include weekends.
+     * @return {number} The number of target elements that were highlighted.
+     */
     handleHighlighting(element, overwrite = false, includeWeekends = false) {
       this.clearHighlighting();
       const parentElement = $(element).parent();
@@ -406,6 +844,14 @@ jQuery(document).ready(function ($) {
       return targetCount;
     }
 
+    /**
+     * Retrieves a collection of elements that can be used as target destinations for copying an entry.
+     *
+     * @param {Element} element The HTML element whose parent and siblings are to be analyzed.
+     * @param {boolean} overwrite Determines whether targets with existing values can be included.
+     * @param {boolean} includeWeekends Specifies whether weekend elements should be included as targets.
+     * @return {jQuery} A jQuery object containing the filtered target elements.
+     */
     getEntryCopyTargets(element, overwrite, includeWeekends) {
       const parentElement = $(element).parent();
       const elements = parentElement.nextAll(".timetable-edit-entry");
@@ -418,6 +864,17 @@ jQuery(document).ready(function ($) {
         return (includeWeekends || !isWeekend) && (overwrite || !hasValue);
       });
     }
+
+    /**
+     * Updates the text content of the entry copy form with specified date and count information.
+     *
+     * @param {Object} params - An object containing the parameters for updating the text.
+     * @param {string} params.formattedCopyFromDate - The formatted start date of the copy range.
+     * @param {string} params.formattedCopyToDate - The formatted end date of the copy range.
+     * @param {number} params.targetCount - The number of days to be changed.
+     *
+     * @return {void} No return value.
+     */
     setEntryCopyText({
       formattedCopyFromDate,
       formattedCopyToDate,
@@ -439,26 +896,9 @@ jQuery(document).ready(function ($) {
     }
 
     /**
-     * Opens the Edit Time Log modal for editing an entry.
-     *
-     * @param {HTMLElement} target - The HTML element representing the ticket being selected.
-     * @returns {void}
-     */
-    selectTicket({
-      innerText: taskName,
-      dataset: { value: taskId, hoursleft: hoursLeft },
-    }) {
-      // Set values from selected ticket
-      this.modalTicketInput.val(taskName);
-      this.modalTicketIdInput.val(taskId);
-      this.modalInputHoursLeft
-        .val(parseInt(hoursLeft) < 0 ? 0 : hoursLeft)
-        .attr("data-value", hoursLeft);
-    }
-
-    /**
      * Updates a time entry.
      *
+     * @param headline
      * @param {number} id - Time entry ID.
      * @param {string} ticketId - Ticket ID.
      * @param {number} hours - Hours spent.
@@ -523,18 +963,57 @@ jQuery(document).ready(function ($) {
         .then((response) => response.json())
         .then((data) => {
           if (data.status === "success") {
-            $('td.timetable-edit-entry[data-id="' + timesheetId + '"]')
+            const $cell = $(
+              'td.timetable-edit-entry[data-id="' + timesheetId + '"]',
+            );
+            const $row = $cell.closest("tr");
+
+            // Clear the cell data and content
+            $cell
               .children("span")
               .text("")
               .end()
               .attr("data-id", "")
               .attr("data-hours", "")
               .attr("data-description", "")
-              .attr("data-hoursleft", "")
-              .end()
-              .find("div.entry-copy-button")
-              .remove();
-            $(".recently-deleted-timelog-info").removeClass("hidden");
+              .attr("data-hoursleft", "");
+
+            // Ensure entry-copy-button exists (recreate if removed)
+            if ($cell.find("div.entry-copy-button").length === 0) {
+              $cell.append(
+                '<div class="entry-copy-button"><i class="fa-solid fa-angle-right"></i></div>',
+              );
+            }
+
+            // Update row total
+            let rowTotal = 0;
+            $row.find("td.timetable-edit-entry span").each(function () {
+              const hours = parseFloat($(this).text()) || 0;
+              rowTotal += hours;
+            });
+            $row.find("td:last").text(rowTotal || "");
+
+            // Update column totals
+            const cellIndex = $cell.index();
+            let columnTotal = 0;
+            $("table.timetable tbody tr:not(:last)")
+              .find("td:eq(" + cellIndex + ") span")
+              .each(function () {
+                const hours = parseFloat($(this).text()) || 0;
+                columnTotal += hours;
+              });
+            $("table.timetable tbody tr:last td:eq(" + cellIndex + ")").text(
+              columnTotal || "",
+            );
+
+            // Update grand total (last cell of last row)
+            let grandTotal = 0;
+            $("table.timetable tbody tr:last td:not(:first)").each(function () {
+              const total = parseFloat($(this).text()) || 0;
+              grandTotal += total;
+            });
+            $("table.timetable tbody tr:last td:last").text(grandTotal || "");
+
             this.closeEditTimeLogModal();
           } else {
             alert("An error has occurred");
@@ -566,6 +1045,28 @@ jQuery(document).ready(function ($) {
       this.entryCopyCheckboxOverwrite.prop("checked", false);
       this.entryCopyCheckboxWeekend.prop("checked", false);
       this.clearHighlighting();
+    }
+
+    closeTicketContextMenuModal() {
+      this.ticketContextMenuModal.removeClass("shown");
+    }
+
+    closeSortMenuModal() {
+      this.sortMenuModal.removeClass("shown");
+    }
+
+    /**
+     * Applies weekend visibility based on the current setting
+     *
+     * @returns {void}
+     */
+    applyWeekendVisibility() {
+      const $timetable = $(".timetable");
+      if (this.showWeekends) {
+        $timetable.removeClass("hide-weekends");
+      } else {
+        $timetable.addClass("hide-weekends");
+      }
     }
 
     /**
@@ -602,6 +1103,8 @@ jQuery(document).ready(function ($) {
             type: child.type,
             projectName: child.projectName,
             editorId: child.editorId,
+            isFavorite: child.isFavorite || false,
+            relevanceScore: child.relevanceScore || 0,
           };
         });
 
@@ -614,7 +1117,7 @@ jQuery(document).ready(function ($) {
         options: options,
         searchField: ["text", "value", "projectName"],
         loadingClass: "ts-loading",
-        placeholder: "+ New registration",
+        placeholder: "Tilføj ny registrering",
         create: function (input) {
           return { value: input, text: input };
         },
@@ -634,8 +1137,21 @@ jQuery(document).ready(function ($) {
 </div>`;
           },
           option: function (item, escape) {
-            // We only display to-do type if it is not "task", to reduce clutter.
-            return `<div><span>${escape(item.text)} <span><i class="fa fa-angle-right fa-xs"></i> ${escape(item.projectName)} <small>(${escape(item.value)})</small> <small style="float: right;">${item.editorId === pluginSettings.userId ? '<i class="your-task far fa-user" title="To-do is assigned to you"></i>' : ""}${item.type.toLowerCase() !== "task" ? `(${escape(item.type)})` : ""}</small></span></span></div>`;
+            // Style to match table rows - padding: 6px 12px to match .table td
+            const favoriteIcon = item.isFavorite
+              ? ' <i class="fa-regular fa-star" style="font-size: 12px; margin-left: 4px;" title="Favorite"></i>'
+              : "";
+            return `<div style="padding: 6px 12px;">
+                            <div style="display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-size: 14px;">
+                                ${escape(item.text)}${favoriteIcon}
+                            </div>
+                            <div style="color: #666; font-size: 12px; display: block;">
+                                ${escape(item.projectName)}
+                                <small style="margin-left: 4px;">(${escape(item.value)})</small>
+                                ${parseInt(item.editorId) === parseInt(pluginSettings.userId) ? '<i class="your-task far fa-user" title="To-do is assigned to you" style="margin-left: 4px;"></i>' : ""}
+                                ${item.type.toLowerCase() !== "task" ? `<small style="margin-left: 4px;">(${escape(item.type)})</small>` : ""}
+                            </div>
+                        </div>`;
           },
           option_create: function (data, escape) {
             return `<option data-value="add-new-ticket" class="create">+ Create new ticket with title: <strong>${escape(data.input)}</strong>&hellip;</option>`;
@@ -665,39 +1181,43 @@ jQuery(document).ready(function ($) {
           ) {
             const projectOptions = [
               {
-                value: "Select a project:",
-                text: "Select a project:",
+                value:
+                  "Vælg projekt til din nye opgave: '" +
+                  selectedOption.value +
+                  "'",
+                text:
+                  "Vælg projekt til din nye opgave: '" +
+                  selectedOption.value +
+                  "'",
                 disabled: "disabled",
               },
-              { value: selectedOption.value, text: selectedOption.value },
               ...projects
                 .filter((project) => project.text.trim() !== "")
                 .map((project) => ({ value: project.id, text: project.text })),
             ];
+            let ticketName = selectedOption.value;
+
+            const originalProjects = projects;
+            const originalTickets = tickets;
+            const parentContext = this;
 
             // Destroy select and populate with projects for the new ticket to be created in
             this.destroy();
             this.tomselect = null;
             this.tomselect = new TomSelect(".timetable-tomselect", {
               options: projectOptions,
+              placeholder: "",
               onItemRemove: function () {
                 // Reactivate the ticket search upon item removal
                 this.destroy();
               },
               onChange: function () {
-                const selectedValues = this.getValue();
-                const resultArray = selectedValues.split(",");
-                if (resultArray.length === 2) {
-                  const ticketName = resultArray[0];
-                  const projectId = resultArray[1];
-                  const projectName = this.options[projectId].text;
+                const projectId = this.getValue();
+                const projectName = this.options[projectId].text;
+                this.disable();
 
-                  this.disable();
-
-                  TimeTableApiHandler.createNewTicket(
-                    ticketName,
-                    projectId,
-                  ).then((data) => {
+                TimeTableApiHandler.createNewTicket(ticketName, projectId).then(
+                  (data) => {
                     const ticketId = data[0].value.result[0];
                     if (ticketId && ticketName && projectName) {
                       timeTable.addRowToTimetable(
@@ -707,12 +1227,33 @@ jQuery(document).ready(function ($) {
                       );
                       this.enable();
                       this.destroy();
-                      self.initTicketSearch(projects, tickets, false);
+                      parentContext.tomselect.clear();
+                      parentContext.tomselect.destroy();
+                      timeTable.initTicketSearch(
+                        originalProjects,
+                        originalTickets,
+                      );
                     }
-                  });
-                }
+                  },
+                );
               },
             });
+            this.tomselect.control_input.addEventListener(
+              "keydown",
+              function (e) {
+                if (e.key === "Backspace" && !this.value) {
+                  // Only trigger when input is empty
+                  parentContext.tomselect.destroy();
+                  // Create new instance using the original method
+                  timeTable.initTicketSearch(
+                    originalProjects,
+                    originalTickets,
+                    true,
+                  );
+                }
+              },
+            );
+
             this.tomselect.open();
             return;
           }
@@ -739,14 +1280,21 @@ jQuery(document).ready(function ($) {
         $('input[name="timetable-days-loaded"]').val(),
       );
 
+      // Get date parameters to preserve week selection
+      const fromDate = $(".fromdate-input").val();
+      const toDate = $(".todate-input").val();
+
       // Create a new date object to ensure the original date is preserved
       let dateIterator = new Date(firstDateOfWeek.getTime());
 
       const newRow = `
     <tr class="newly-added-tr">
         <td class="ticket-title">
-            <a href="?showTicketModal=${ticketId}#/tickets/showTicket/${ticketId}">${ticketText}</a>
+        <div>
+            <a href="?showTicketModal=${ticketId}&fromDate=${fromDate}&toDate=${toDate}#/tickets/showTicket/${ticketId}">${ticketText}</a>
             <span>${projectName}</span>
+            </div>
+            <div></div>
         </td>
         ${Array.from({ length: daysRendered })
           .map((_, i) => {

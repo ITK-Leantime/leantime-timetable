@@ -3,6 +3,7 @@
 namespace Leantime\Plugins\TimeTable\Repositories;
 
 use Carbon\CarbonInterface;
+use Illuminate\Database\Query\Builder;
 use Leantime\Core\Db\Db as DbCore;
 use Leantime\Domain\Tickets\Repositories\Tickets as TicketRepository;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
@@ -16,21 +17,35 @@ class TimeTable
     /**
      * @var DbCore|null - db connection
      */
-    private null|DbCore $db = null;
+    private ?DbCore $db = null;
 
     private TicketRepository $ticketRepo;
 
+    /**
+     * @var array<int|string, array<string, mixed>>
+     */
+    public array $statusListSeed;
 
     /**
      * __construct - get db connection
      *
-     * @access public
      * @return void
      */
     public function __construct(DbCore $db, TicketRepository $ticketRepo)
     {
         $this->db = $db;
         $this->ticketRepo = $ticketRepo;
+        $this->statusListSeed = $ticketRepo->statusListSeed;
+    }
+
+    /**
+     * Executes a database query using the specified database connection.
+     *
+     * @return Builder Returns an instance of the query builder.
+     */
+    private function query(): Builder
+    {
+        return app('db')->connection()->query();
     }
 
     /**
@@ -38,95 +53,81 @@ class TimeTable
      */
     public function getUniqueTicketIds(CarbonInterface $dateFrom, CarbonInterface $dateTo, int $userId): array
     {
-        $sql = 'SELECT DISTINCT
-        timesheet.ticketId,
-        zp_tickets.headline
-        FROM zp_timesheets AS timesheet
-        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
-        WHERE timesheet.userId = :userId AND timesheet.workDate >= :dateFrom AND timesheet.workDate <= :dateTo
-        ORDER BY zp_tickets.headline ASC';
-        $stmn = $this->db->database->prepare($sql);
-
-        if ($userId !== '') {
-            $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        }
-
-        $stmn->bindValue(':dateFrom', $dateFrom, PDO::PARAM_STR);
-        $stmn->bindValue(':dateTo', $dateTo, PDO::PARAM_STR);
-
-        $stmn->execute();
-        $values = $stmn->fetchAll();
-        $stmn->closeCursor();
-
-        return $values;
+        return $this->query()
+            ->from('zp_timesheets as timesheet')
+            ->select([
+                'timesheet.ticketId',
+                'zp_tickets.headline',
+            ])
+            ->leftJoin('zp_tickets', 'timesheet.ticketId', '=', 'zp_tickets.id')
+            ->where('timesheet.userId', '=', $userId)
+            ->where('timesheet.workDate', '>=', $dateFrom)
+            ->where('timesheet.workDate', '<=', $dateTo)
+            ->orderBy('zp_tickets.headline', 'ASC')
+            ->distinct()
+            ->get()
+            ->map(fn($item) => (array)$item)
+            ->toArray();
     }
 
     /**
-     * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date,
-     * optionally filtering by a search term.
+     * getTimesheetByTicketIdAndWorkDate - Retrieves timesheet data based on a given ticket ID and work date.
      *
-     * @access public
-     * @param string          $ticketId   The ticket ID to filter the timesheet data.
-     * @param CarbonInterface $workDate   The specific work date to filter the timesheet data.
-     * @param int             $userId     The id of the user to grab data for.
-     * @param string|null     $searchTerm An optional search term to further filter results by ticket ID or headline.
-     * @return array<string, mixed> Returns an array of matching timesheet data.
+     * @param  string          $ticketId The ticket ID to filter the timesheet data.
+     * @param  CarbonInterface $workDate The specific work date to filter the timesheet data.
+     * @param  int             $userId   The id of the user to grab data for.
+     * @return array<int, mixed> Returns an array of matching timesheet data.
      */
-    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId, ?string $searchTerm): array
+    public function getTimesheetByTicketIdAndWorkDate(string $ticketId, CarbonInterface $workDate, int $userId): array
     {
-
-        $searchTermQuery = isset($searchTerm)
-            ? " AND
-        (zp_tickets.id LIKE CONCAT( '%', :searchTerm, '%') OR
-        zp_tickets.headline LIKE CONCAT( '%', :searchTerm, '%')) "
-            : '';
-
-        $sql = 'SELECT
-        timesheet.id,
-        CAST(timesheet.workDate AS DATE) as workDate,
-        timesheet.hours,
-        timesheet.description,
-        timesheet.ticketId,
-        (SELECT SUM(hours) FROM zp_timesheets WHERE ticketId = zp_tickets.id) as hoursSum,
-        zp_tickets.headline,
-        zp_tickets.id as ticketId,
-        zp_tickets.type as ticketType,
-        zp_tickets.planHours,
-        zp_tickets.hourRemaining,
-        zp_projects.name
-        FROM zp_timesheets AS timesheet
-        LEFT JOIN zp_tickets ON timesheet.ticketId = zp_tickets.id
-        LEFT JOIN zp_projects ON zp_tickets.projectId = zp_projects.id
-        WHERE timesheet.userId = :userId AND timesheet.ticketId = :ticketId AND (timesheet.workDate BETWEEN :dateFrom AND :dateTo)' . $searchTermQuery . '
-        GROUP BY timesheet.id, workDate, timesheet.description, timesheet.ticketId, zp_tickets.headline, zp_tickets.id, zp_tickets.type, zp_tickets.planHours, zp_tickets.hourRemaining, zp_projects.name';
-
-        $stmn = $this->db->database->prepare($sql);
-
-        if ($userId) {
-            $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        }
-        if ($searchTerm !== null) {
-            $stmn->bindValue(':searchTerm', $searchTerm, PDO::PARAM_STR);
-        }
-
-        $stmn->bindValue(':ticketId', $ticketId, PDO::PARAM_INT);
-        $stmn->bindValue(':dateFrom', $workDate->startOfDay(), PDO::PARAM_STR);
-        $stmn->bindValue(':dateTo', $workDate->endOfDay(), PDO::PARAM_STR);
-
-        $stmn->execute();
-        $values = $stmn->fetchAll();
-        $stmn->closeCursor();
-        return $values;
+        return $this->query()
+            ->from('zp_timesheets as timesheet')
+            ->select([
+                'timesheet.id',
+                app('db')->connection()->raw('CAST(timesheet.workDate AS DATE) as workDate'),
+                'timesheet.hours',
+                'timesheet.description',
+                'timesheet.ticketId',
+                app('db')->connection()->raw('(SELECT SUM(hours) FROM zp_timesheets WHERE ticketId = zp_tickets.id) as hoursSum'),
+                'zp_tickets.headline',
+                'zp_tickets.id as ticketId',
+                'zp_tickets.type as ticketType',
+                'zp_tickets.planHours',
+                'zp_tickets.hourRemaining',
+                'zp_tickets.tags',
+                'zp_tickets.dateToFinish',
+                'zp_tickets.status',
+                'zp_projects.id as projectId',
+                'zp_projects.name',
+            ])
+            ->leftJoin('zp_tickets', 'timesheet.ticketId', '=', 'zp_tickets.id')
+            ->leftJoin('zp_projects', 'zp_tickets.projectId', '=', 'zp_projects.id')
+            ->where('timesheet.userId', '=', $userId)
+            ->where('timesheet.ticketId', '=', $ticketId)
+            ->whereBetween('timesheet.workDate', [$workDate->startOfDay(), $workDate->endOfDay()])
+            ->groupBy([
+                'timesheet.id',
+                'workDate',
+                'timesheet.description',
+                'timesheet.ticketId',
+                'zp_tickets.headline',
+                'zp_tickets.id',
+                'zp_tickets.type',
+                'zp_tickets.planHours',
+                'zp_tickets.hourRemaining',
+                'zp_projects.name',
+            ])
+            ->get()
+            ->map(fn($item) => (array)$item)
+            ->toArray();
     }
 
     /**
      * updateOrAddTimelogOnTicket - Updates or adds a timelog entry for a ticket
      *
-     * @param WorklogDTO $worklog    Worklog DTO
-     * @param int|null   $originalId (Optional) The original timelog id to check for updates or deletion
-     *
+     * @param  WorklogDTO $worklog    Worklog DTO
+     * @param  int|null   $originalId (Optional) The original timelog id to check for updates or deletion
      * @return void
-     * @access public
      */
     public function updateOrAddTimelogOnTicket(WorklogDTO $worklog, ?int $originalId = null): void
     {
@@ -318,7 +319,7 @@ class TimeTable
 
                 foreach ($values as $key => $status) {
                     if (is_int($key)) {
-                        if (!is_array($status)) {
+                        if (! is_array($status)) {
                             $statusList[$key] = $statusListSeed[$key];
                             if (is_array($statusList[$key]) && isset($statusList[$key]['name']) && $key !== -1) {
                                 $statusList[$key]['name'] = $status;
@@ -337,18 +338,15 @@ class TimeTable
             }
         }
 
-        if (!empty($allStatusLabels)) {
-            // Ensure every project has a state list
-            // Fetch all project IDs separately
-            $projectIds = $this->getAllProjectIds();
-            foreach ($projectIds as $projectId) {
-                if (!isset($allStatusLabels[$projectId])) {
-                    // Default to $statusListSeed if no state list exists
-                    $allStatusLabels[$projectId] = $statusListSeed;
-                }
+        // Ensure every project has a state list
+        // Fetch all project IDs separately
+        $projectIds = $this->getAllProjectIds();
+        foreach ($projectIds as $projectId) {
+            if (!isset($allStatusLabels[$projectId])) {
+                // Default to $statusListSeed if no state list exists
+                $allStatusLabels[$projectId] = $statusListSeed;
             }
         }
-
 
         return $allStatusLabels;
     }
@@ -356,91 +354,107 @@ class TimeTable
     /**
      * getAllProjectIds - Retrieve all project IDs from the database
      *
-     * @access private
      * @return array<string, string> Array of project IDs
      */
     private function getAllProjectIds(): array
     {
-        $sql = 'SELECT id FROM zp_projects';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->execute();
-        // Fetch all project IDs as a 1-dimensional array
-        $projectIds = $stmn->fetchAll(PDO::FETCH_COLUMN, 0);
-        $stmn->closeCursor();
-
-        return $projectIds;
+        return $this->query()
+            ->from('zp_projects')
+            ->select('id')
+            ->get()
+            ->pluck('id')
+            ->toArray();
     }
 
     /**
      * getAllUsers - Retrieves a list of all users from the database
      *
-     * @access public
-     * @return array<string, mixed> An array containing user details, including ID, full name, and role
+     * @return array<int, mixed> An array containing user details, including ID, full name, and role
      */
     public function getAllUsers(): array
     {
-        $sql = 'SELECT * FROM zp_user WHERE status = "a" AND (source IS NULL OR source != "api")';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->execute();
-        $users = $stmn->fetchAll(PDO::FETCH_ASSOC);
-        $stmn->closeCursor();
-
-        return array_map(function ($user) {
-            return [
-                'id' => $user['id'],
-                'fullName' => $user['firstname'] . ' ' . $user['lastname'],
-                'role' => $user['role'],
-            ];
-        }, $users);
+        return $this->query()
+            ->from('zp_user')
+            ->where('status', '=', 'a')
+            ->where(function ($query) {
+                $query->whereNull('source')
+                    ->orWhere('source', '!=', 'api');
+            })
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'fullName' => $user->firstname . ' ' . $user->lastname,
+                    'role' => $user->role,
+                ];
+            })
+            ->toArray();
     }
 
     /**
-     * getAllTickets - Retrieves all tickets for the authenticated user, filters them based on their status,
-     * and includes additional information such as project details and the last work date.
+     * getAllTickets - Retrieves all tickets for projects the authenticated user has access to,
+     * filters them based on their status, and includes additional information such as project details.
      *
-     * @access public
      * @return array<int<0, max>,mixed> An array of filtered tickets with their associated details.
      */
     public function getAllTickets(): array
     {
         $userId = session('userdata.id');
+        $clientId = session('userdata.clientId') ?? '';
+
         $allStateLabels = $this->getAllStateLabels();
 
-        $sql = 'SELECT
-                t.id,
-                t.headline,
-                LOWER(t.type) as type,
-                t.tags,
-                t.projectId,
-                p.name as projectName, -- Fetch project name via JOIN
-                t.editorId,
-                t.hourRemaining,
-                t.date
-            FROM zp_tickets t
-            LEFT JOIN zp_projects p ON t.projectId = p.id
-            LEFT JOIN zp_timesheets ts ON t.id = ts.ticketId AND ts.userId = :userId
-            WHERE t.type NOT IN (:story, :milestone)
-            GROUP BY t.id
-            ORDER BY (t.editorId = :userId) DESC, t.date DESC, id DESC';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->bindValue(':story', 'story', PDO::PARAM_STR);
-        $stmn->bindValue(':milestone', 'milestone', PDO::PARAM_STR);
-        $stmn->bindValue(':userId', $userId, PDO::PARAM_INT);
-        $stmn->execute();
-        $tickets = $stmn->fetchAll(PDO::FETCH_ASSOC);
-        $stmn->closeCursor();
+        $tickets = $this->query()
+            ->from('zp_tickets as t')
+            ->select([
+                't.id',
+                't.headline',
+                app('db')->connection()->raw('LOWER(t.type) as type'),
+                't.tags',
+                't.projectId',
+                'p.name as projectName',
+                't.editorId',
+                't.hourRemaining',
+                't.date',
+                't.status',
+            ])
+            ->leftJoin('zp_projects as p', 't.projectId', '=', 'p.id')
+            ->leftJoin('zp_relationuserproject as relation', 'p.id', '=', 'relation.projectId')
+            ->leftJoin('zp_timesheets as ts', function ($join) use ($userId) {
+                $join->on('t.id', '=', 'ts.ticketId')
+                    ->where('ts.userId', '=', $userId);
+            })
+            ->whereNotIn('t.type', ['story', 'milestone'])
+            ->where(function ($query) use ($userId, $clientId) {
+                $query->where('relation.userId', '=', $userId)
+                    ->orWhere('p.psettings', '=', 'all')
+                    ->orWhere(function ($q) use ($clientId) {
+                        $q->where('p.psettings', '=', 'clients')
+                            ->where('p.clientId', '=', $clientId);
+                    });
+            })
+            ->where(function ($query) {
+                $query->where('p.active', '>', '-1')
+                    ->orWhereNull('p.active');
+            })
+            ->where(function ($query) {
+                $query->where('p.state', '<>', '-1')
+                    ->orWhereNull('p.state');
+            })
+            ->groupBy('t.id')
+            ->orderByRaw('(t.editorId = ?) DESC', [$userId])
+            ->orderBy('t.date', 'DESC')
+            ->orderBy('t.id', 'DESC')
+            ->get()
+            ->map(fn($item) => (array)$item)
+            ->toArray();
 
-        // Pre-compute status label mappings
-        $stateLabelMappings = array_map(function ($labels) {
-            return array_column($labels, 'statusType');
-        }, $allStateLabels);
-
-        // Filter tickets using pre-computed mappings
+        // Filter tickets using status labels
         $filteredTickets = [];
         foreach ($tickets as $ticket) {
             $projectId = $ticket['projectId'] ?? null;
             $status = $ticket['status'] ?? null;
-            if (!isset($stateLabelMappings[$projectId][$status]) || $stateLabelMappings[$projectId][$status] !== 'DONE') {
+            if (!isset($allStateLabels[$projectId][$status]['statusType']) || $allStateLabels[$projectId][$status]['statusType'] !== 'DONE') {
                 $filteredTickets[] = $ticket;
             }
         }
@@ -449,25 +463,123 @@ class TimeTable
     }
 
     /**
-     * getAllProjects - Retrieves all projects for the authenticated user
+     * getAllProjects - Retrieves all projects that the user has access to
      *
-     * @access public
+     * @param  int    $userId   The user ID to check project access for
+     * @param  string $clientId The client ID of the user
      * @return array<array<string, mixed>> An array of projects with their associated details.
      */
-    public function getAllProjects(): array
+    public function getAllProjects(int $userId, string $clientId): array
     {
-        $sql = 'SELECT id, name FROM zp_projects';
-        $stmn = $this->db->database->prepare($sql);
-        $stmn->execute();
-        $projects = $stmn->fetchAll(PDO::FETCH_ASSOC);
-        $stmn->closeCursor();
+        return $this->query()
+            ->from('zp_projects as project')
+            ->select([
+                'project.id',
+                'project.name',
+            ])
+            ->leftJoin('zp_relationuserproject as relation', 'project.id', '=', 'relation.projectId')
+            ->where(function ($query) use ($userId, $clientId) {
+                $query->where('relation.userId', '=', $userId)
+                    ->orWhere('project.psettings', '=', 'all')
+                    ->orWhere(function ($q) use ($clientId) {
+                        $q->where('project.psettings', '=', 'clients')
+                            ->where('project.clientId', '=', $clientId);
+                    });
+            })
+            ->where(function ($query) {
+                $query->where('project.active', '>', '-1')
+                    ->orWhereNull('project.active');
+            })
+            ->where(function ($query) {
+                $query->where('project.state', '<>', '-1')
+                    ->orWhereNull('project.state');
+            })
+            ->distinct()
+            ->orderBy('project.name')
+            ->get()
+            ->map(function ($project) {
+                return [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'type' => 'project',
+                ];
+            })
+            ->toArray();
+    }
 
-        return array_map(function ($project) {
-            return [
-                'id' => $project['id'],
-                'name' => $project['name'],
-                'type' => 'project',
-            ];
-        }, $projects);
+    /**
+     * modifyTicketDetails - Modifies ticket details (status, dateToFinish, tags)
+     *
+     * @param  \Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO DTO containing ticket details to modify
+     * @return void
+     */
+    public function modifyTicketDetails(\Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO $ticketContextMenuDTO): void
+    {
+        $this->query()
+            ->from('zp_tickets')
+            ->where('id', '=', $ticketContextMenuDTO->ticketId)
+            ->update([
+                'status' => $ticketContextMenuDTO->status,
+                'dateToFinish' => $ticketContextMenuDTO->dateToFinish,
+                'tags' => $ticketContextMenuDTO->tags,
+            ]);
+    }
+
+    /**
+     * Get all unique tags from tickets in the system
+     *
+     * @return array<int, string> Array of unique tag strings
+     */
+    public function getAllUniqueTags(): array
+    {
+        $results = $this->query()
+            ->from('zp_tickets')
+            ->select('tags')
+            ->whereNotNull('tags')
+            ->where('tags', '!=', '')
+            ->distinct()
+            ->get()
+            ->pluck('tags')
+            ->toArray();
+
+        // Split comma-separated tags and collect unique values
+        $uniqueTags = [];
+
+        foreach ($results as $tagString) {
+            $tags = explode(',', $tagString);
+            foreach ($tags as $tag) {
+                $tag = trim($tag);
+                if ($tag !== '' && ! in_array($tag, $uniqueTags)) {
+                    $uniqueTags[] = $tag;
+                }
+            }
+        }
+
+        // Sort alphabetically
+        sort($uniqueTags);
+
+        return $uniqueTags;
+    }
+
+    /**
+     * Get recently viewed ticket IDs for a user from tickethistory
+     *
+     * @param int $userId The user ID
+     * @param int $limit  Maximum number of tickets to return
+     * @return array<int, int> Array of ticket IDs ordered by most recent first
+     */
+    public function getRecentlyViewedTicketIds(int $userId, int $limit = 20): array
+    {
+        return $this->query()
+            ->from('zp_tickethistory')
+            ->select('ticketId')
+            ->where('userId', '=', $userId)
+            ->whereNotNull('ticketId')
+            ->orderBy('dateModified', 'DESC')
+            ->limit($limit)
+            ->distinct()
+            ->get()
+            ->pluck('ticketId')
+            ->toArray();
     }
 }
