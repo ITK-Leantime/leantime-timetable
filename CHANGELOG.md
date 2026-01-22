@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.2.1] - 2026-01-22
+
 * [PR-81](https://github.com/ITK-Leantime/leantime-timetable/pull/81)
   Fix release scripts
 
@@ -217,7 +219,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.2.0...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.2.1...HEAD
+[4.2.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.2.0...4.2.1
 [4.2.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.7...4.2.0
 [4.1.7]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.6...4.1.7
 [4.1.6]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.1.5...4.1.6
