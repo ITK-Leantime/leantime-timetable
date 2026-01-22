@@ -5,6 +5,7 @@ namespace Leantime\Plugins\TimeTable\Helpers;
 use Carbon\CarbonImmutable;
 use Leantime\Core\Language as LanguageCore;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
+use Ramsey\Collection\Sort;
 
 /**
  * Helper class for TimeTable operations including date parsing, data aggregation, and sorting
@@ -16,21 +17,18 @@ class TimeTableHelper
         'project-name',
     ];
 
-    private const VALID_SORT_DIRECTIONS = [
-        'asc',
-        'desc',
-    ];
-
+    private const ASC = 'asc';
+    private const DESC = 'desc';
 
     /**
      * Constructor
      */
     public function __construct(
         private LanguageCore $language,
-        private TimeTableService $timeTableService
+        private TimeTableService $timeTableService,
+        private Sort $sort,
     ) {
     }
-
 
     /**
      * Parses a date string that can be either relative (e.g., "+1 week", "-2 days") or absolute (e.g., "2025-01-15")
@@ -174,11 +172,11 @@ class TimeTableHelper
 
         // Parse sort order to extract field and direction (e.g., "ticket-name-asc")
         $parts = explode('-', $sortOrder);
-        $direction = 'asc'; // default
+        $direction = self::ASC;
         $sortField = $sortOrder;
 
-        // Check if last part is a direction indicator
-        if (count($parts) > 1 && in_array(end($parts), ['asc', 'desc'])) {
+        // Check if the last part is a direction indicator
+        if (count($parts) > 1 && in_array(end($parts), [self::ASC, self::DESC])) {
             $direction = array_pop($parts);
             $sortField = implode('-', $parts);
         }
@@ -197,7 +195,7 @@ class TimeTableHelper
             $comparison = strcmp($aValue, $bValue);
 
             // Reverse comparison for descending order
-            return $direction === 'desc' ? -$comparison : $comparison;
+            return $direction === self::DESC ? -$comparison : $comparison;
         });
 
         return $timesheetsByTicket;
@@ -228,7 +226,7 @@ class TimeTableHelper
 
         if (
             !in_array($field, self::VALID_SORT_FIELDS, true) ||
-            !in_array($direction, self::VALID_SORT_DIRECTIONS, true)
+            !in_array($direction, [self::ASC, self::DESC], true)
         ) {
             return null;
         }
