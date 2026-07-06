@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* [PR-83](https://github.com/ITK-Leantime/leantime-timetable/pull/83)
+  Scaffolding normalization: streamlined Taskfile, audit ignore, build task.
+
 ## [4.2.1] - 2026-01-22
 
 * [PR-81](https://github.com/ITK-Leantime/leantime-timetable/pull/81)
