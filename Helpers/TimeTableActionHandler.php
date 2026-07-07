@@ -5,6 +5,7 @@ namespace Leantime\Plugins\TimeTable\Helpers;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Log\Logger;
 use Leantime\Domain\Timesheets\Repositories\Timesheets as TimesheetRepository;
+use Leantime\Plugins\TimeTable\DTO\TicketContextMenuDTO;
 use Leantime\Plugins\TimeTable\DTO\WorklogDTO;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 use Carbon\CarbonImmutable;
@@ -257,6 +258,45 @@ class TimeTableActionHandler
      */
     public function manageAs(array $postData, string $redirectUrl): string
     {
+        return $this->appendQueryParams($postData, $redirectUrl);
+    }
+
+    /**
+     * ticketContextMenu - Handles the ticket context menu action to modify ticket details
+     *
+     * @param  array<string, mixed> $postData    The POST data containing ticket details
+     * @param  string               $redirectUrl The URL to redirect to after the action
+     * @return string The redirect URL with appended query parameters
+     */
+    public function ticketContextMenu(array $postData, string $redirectUrl)
+    {
+        $dateToFinish = $postData['dateToFinish'] ?? null;
+        if ($dateToFinish && !empty(trim($dateToFinish))) {
+            $dateToFinish = CarbonImmutable::createFromFormat('d-m-Y', $dateToFinish)
+                ->setTime(0, 0, 0)
+                ->setToDbTimezone()
+                ->format('Y-m-d H:i:s');
+        } else {
+            $dateToFinish = '0000-00-00 00:00:00';
+        }
+
+        // Process tags - TomSelect sends as array
+        $tags = $postData['tags'] ?? '';
+        if (is_array($tags)) {
+            $tags = implode(',', $tags);
+        }
+
+        $ticketContextMenuDTO = new TicketContextMenuDTO(
+            ticketId: (int) $postData['ticketId'],
+            status: (int) $postData['status'],
+            manageAsUserId: (int) $postData['manageAsUserId'],
+            dateToFinish: $dateToFinish,
+            tags: $tags
+        );
+
+        $this->timeTableService->modifyTicketDetails($ticketContextMenuDTO);
+
+        // Delegate query parameter addition to appendQueryParams
         return $this->appendQueryParams($postData, $redirectUrl);
     }
 }
