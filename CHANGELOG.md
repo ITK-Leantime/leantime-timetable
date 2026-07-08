@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.3.2] - 2026-07-08
+
 * [PR-87](https://github.com/ITK-Leantime/leantime-timetable/pull/87)
   Fix issue with search dropdown placement.
 
@@ -232,7 +234,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.1...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.2...HEAD
+[4.3.2]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.1...4.3.2
 [4.3.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.2.1...4.3.0
 [4.2.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.2.0...4.2.1
