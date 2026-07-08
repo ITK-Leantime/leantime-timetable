@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
+* [PR-87](https://github.com/ITK-Leantime/leantime-timetable/pull/87)
+  Fix issue with search dropdown placement.
+
 ## [4.3.1] - 2026-07-07
+
+* [PR-85](https://github.com/ITK-Leantime/leantime-timetable/pull/85)
+  Align taskfile.
 
 ## [4.3.0] - 2026-07-07
 

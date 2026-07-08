@@ -592,26 +592,6 @@
     background-color: rgba(0, 0, 0, 0.4);
   }
 
-  .timetable-scroll-container:not(.overflowing) .ts-dropdown {
-    position: fixed !important;
-    top: calc(100% - 108px) !important;
-    left: 14px !important;
-    width: 600px !important;
-    height: 400px !important;
-  }
-
-  .ts-dropdown-content {
-    max-height: 100% !important;
-  }
-
-  .timetable-scroll-container.overflowing .ts-dropdown {
-    position: fixed !important;
-    top: calc(100% - 117px) !important;
-    left: 15px !important;
-    width: 500px !important;
-    height: 350px !important;
-  }
-
   .timetable-scroll-container.overflowing .table .ticket-title {
     background-color: blue;
 
