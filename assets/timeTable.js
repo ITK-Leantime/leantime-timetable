@@ -13,6 +13,30 @@ jQuery(document).ready(function ($) {
   const allStateLabels = timetableSettings.settings.allStateLabels;
   const allTags = timetableSettings.settings.allTags || [];
 
+  /**
+   * Anchors a body-appended TomSelect dropdown to its surrounding
+   * "add-new" table cell instead of the (padded) inner control, so the
+   * dropdown spans the full width of the column below the input. The cell
+   * is measured live, so it matches the column in both its normal and
+   * overflowing (narrower) states, and repositions on scroll/resize.
+   *
+   * @param {TomSelect} ts - The TomSelect instance to patch.
+   * @returns {void}
+   */
+  function anchorDropdownToCell(ts) {
+    ts.positionDropdown = function () {
+      const cell = this.wrapper.closest("td.add-new") || this.control;
+      const cellRect = cell.getBoundingClientRect();
+      const controlRect = this.control.getBoundingClientRect();
+
+      Object.assign(this.dropdown.style, {
+        width: `${cellRect.width}px`,
+        left: `${cellRect.left + window.scrollX}px`,
+        top: `${controlRect.bottom + window.scrollY}px`,
+      });
+    };
+  }
+
   class TimeTable {
     constructor() {
       this.tomselect = null;
@@ -1118,6 +1142,9 @@ jQuery(document).ready(function ($) {
         searchField: ["text", "value", "projectName"],
         loadingClass: "ts-loading",
         placeholder: "Tilføj ny registrering",
+        // Render the dropdown on <body> so it escapes the scroll container's
+        // overflow clipping and is positioned directly below the input.
+        dropdownParent: "body",
         create: function (input) {
           return { value: input, text: input };
         },
@@ -1207,6 +1234,7 @@ jQuery(document).ready(function ($) {
             this.tomselect = new TomSelect(".timetable-tomselect", {
               options: projectOptions,
               placeholder: "",
+              dropdownParent: "body",
               onItemRemove: function () {
                 // Reactivate the ticket search upon item removal
                 this.destroy();
@@ -1238,6 +1266,9 @@ jQuery(document).ready(function ($) {
                 );
               },
             });
+
+            anchorDropdownToCell(this.tomselect);
+
             this.tomselect.control_input.addEventListener(
               "keydown",
               function (e) {
@@ -1265,6 +1296,8 @@ jQuery(document).ready(function ($) {
           this.clear();
         },
       });
+
+      anchorDropdownToCell(this.tomselect);
 
       if (autofocus) {
         this.tomselect.focus();
