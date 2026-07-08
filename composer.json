@@ -3,7 +3,7 @@
     "description": "A time table for leantime",
     "license": "MIT",
     "type": "leantime-plugin",
-    "version": "4.3.0",
+    "version": "4.3.1",
     "authors": [
         {
             "name": "Jeppe Krogh",
