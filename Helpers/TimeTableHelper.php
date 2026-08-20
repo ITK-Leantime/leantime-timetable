@@ -57,10 +57,8 @@ class TimeTableHelper
         $dateIterator = $fromDate->setToUserTimezone()->copy();
 
         while ($dateIterator <= $toDate) {
-            $dayOfWeek = strtolower($dateIterator->locale(session('usersettings.language'))->dayName);
-
-            // If the day is a part of the week
-            if (in_array($dayOfWeek, $days)) {
+            // $days is language.dayNames rotated Monday first, so the ISO weekday maps onto its index.
+            if (isset($days[$dateIterator->dayOfWeekIso - 1])) {
                 $weekDates[$dateIterator->format('d-m-Y')] = $dateIterator->copy();
             }
 

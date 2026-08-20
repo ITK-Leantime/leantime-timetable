@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+* [PR-89](https://github.com/ITK-Leantime/leantime-timetable/pull/89)
+  Fix fatal error in generateWeekDates when the user language is missing from
+  the session.
+
 ## [4.3.2] - 2026-07-08
 
 * [PR-87](https://github.com/ITK-Leantime/leantime-timetable/pull/87)
