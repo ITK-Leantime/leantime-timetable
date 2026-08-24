@@ -3,7 +3,6 @@
 namespace Leantime\Plugins\TimeTable\Helpers;
 
 use Carbon\CarbonImmutable;
-use Leantime\Core\Language as LanguageCore;
 use Leantime\Plugins\TimeTable\Services\TimeTable as TimeTableService;
 
 /**
@@ -23,7 +22,6 @@ class TimeTableHelper
      * Constructor
      */
     public function __construct(
-        private LanguageCore $language,
         private TimeTableService $timeTableService,
     ) {
     }
@@ -42,7 +40,10 @@ class TimeTableHelper
     }
 
     /**
-     * Generates an array of dates between fromDate and toDate, filtered by the configured week days
+     * Generates an array of every date between fromDate and toDate
+     *
+     * Weekends are included: hiding them is a display concern driven by the
+     * showWeekends user setting in the template, not by the date range.
      *
      * @param CarbonImmutable $fromDate Start date
      * @param CarbonImmutable $toDate   End date
@@ -50,19 +51,11 @@ class TimeTableHelper
      */
     public function generateWeekDates(CarbonImmutable $fromDate, CarbonImmutable $toDate): array
     {
-        $days = explode(',', mb_strtolower($this->language->__('language.dayNames')));
-        $days[] = array_shift($days);
-
         $weekDates = [];
-        $dateIterator = $fromDate->setToUserTimezone()->copy();
+        $dateIterator = $fromDate->setToUserTimezone();
 
         while ($dateIterator <= $toDate) {
-            $dayOfWeek = strtolower($dateIterator->locale(session('usersettings.language'))->dayName);
-
-            // If the day is a part of the week
-            if (in_array($dayOfWeek, $days)) {
-                $weekDates[$dateIterator->format('d-m-Y')] = $dateIterator->copy();
-            }
+            $weekDates[$dateIterator->format('d-m-Y')] = $dateIterator;
 
             // Move on to the next day
             $dateIterator = $dateIterator->addDay();
