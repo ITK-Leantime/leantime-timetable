@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.3.3] - 2026-08-24
+
 * [PR-89](https://github.com/ITK-Leantime/leantime-timetable/pull/89)
   Fix fatal error in generateWeekDates when the user language is missing from
   the session. Removes the weekday name filter it relied on, which never
@@ -239,7 +241,8 @@
 * [PR-1](https://github.com/ITK-Leantime/leantime-timetable/pull/1)
   * Foundation for further development
 
-[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.2...HEAD
+[Unreleased]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.3...HEAD
+[4.3.3]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.2...4.3.3
 [4.3.2]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.1...4.3.2
 [4.3.1]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/ITK-Leantime/leantime-timetable/compare/4.2.1...4.3.0
